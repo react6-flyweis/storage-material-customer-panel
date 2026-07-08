@@ -4,6 +4,8 @@ import { CommonText } from "@/data/text/CommonText";
 import React, { useState, useRef, useEffect } from "react";
 import UserIcon from "../../assets/icon/UserIcon";
 import { useNavigate } from "react-router-dom";
+import { useAppDispatch } from "@/redux/hooks";
+import { logout } from "@/redux/slices/authSlice";
 
 interface SidePanelProps {
   isOpen: boolean;
@@ -26,9 +28,10 @@ const SidePanel: React.FC<SidePanelProps> = ({
     sidePanelPaddingTop + headerBlockHeight + activeTab * itemHeight;
 
   const currentNav = NAV_ITEMS[activeTab];
-    const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
   const profileRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -47,7 +50,10 @@ const SidePanel: React.FC<SidePanelProps> = ({
   }, []);
 
   const handleSignOut = () => {
-    navigate("/login");
+    dispatch(logout());
+    localStorage.removeItem("activeTab");
+    localStorage.removeItem("activeSubTab");
+    window.location.href = "/login";
   };
 
   return (
