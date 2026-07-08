@@ -1,0 +1,47 @@
+export const myProjectsData = [
+  {
+    projectName: "ABC Logistics Warehouse",
+    projectCode: "PEB-1021",
+    siteLocation: "Pune, Maharashtra",
+    startDate: "25-April-2025",
+    endDate: "13-March-2026",
+    manager: "John Doe",
+    role: "Project Lead",
+    status: "Active",
+    statusText: "Check",
+    projectAmount: "$1,35,000",
+    progress: 65,
+    progressColor: "bg-[#FEE2E2]", // light red bg for 65%
+    progressTextColor: "text-[#B44D4D]",
+  },
+  {
+    projectName: "Metro Cast Factory Shed",
+    projectCode: "PEB-0998",
+    siteLocation: "Ahmedabad, Gujarat",
+    startDate: "25-April-2025",
+    endDate: "13-March-2026",
+    manager: "John Doe",
+    role: "Project Lead",
+    status: "Active",
+    statusText: "Check",
+    projectAmount: "$1,35,000",
+    progress: 95,
+    progressColor: "bg-[#FEF9C3]", // light yellow bg for 95%
+    progressTextColor: "text-[#713F12]",
+  },
+  {
+    projectName: "Pebson Agro Storage",
+    projectCode: "PEB-0872",
+    siteLocation: "Indore, MP",
+    startDate: "25-April-2025",
+    endDate: "13-March-2026",
+    manager: "John Doe",
+    role: "Project Lead",
+    status: "Completed",
+    statusText: "INV 2024-001",
+    projectAmount: "$1,35,000",
+    progress: 100,
+    progressColor: "bg-[#DCFCE7]", // light green bg for 100%
+    progressTextColor: "text-[#166534]",
+  },
+];
