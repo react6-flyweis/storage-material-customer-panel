@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { MoveLeft,  Download,
+import {
+  MoveLeft, Download,
   Eye,
-  FileText, } from "lucide-react";
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import CustomSelect from "@/components/common_components/CustomSelect";
@@ -73,19 +75,19 @@ const buildingPhotos = [
 ];
 
 const ProjectDrawingPage = () => {
-    const location=useLocation();
-  const id=location?.pathname?.split("/")?.filter(Boolean)?.[1]
+  const location = useLocation();
+  const id = location?.pathname?.split("/")?.filter(Boolean)?.[1]
 
   const navigate = useNavigate();
   const [status, setStatus] = useState("");
- const [selectedDrawing, setSelectedDrawing] = useState<any | null>(null);
+  const [selectedDrawing, setSelectedDrawing] = useState<any | null>(null);
   const [selectedProjectInfo, setSelectedProjectInfo] =
     useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
-  const [modalTitle, setModalTitle] = useState("");
- const onViewDrawing = (drawing: any) => {
-  const projectData=myProjectsData?.find((i)=>i.projectCode===id)
+  // const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
+  // const [modalTitle, setModalTitle] = useState("");
+  const onViewDrawing = (drawing: any) => {
+    const projectData = myProjectsData?.find((i) => i.projectCode === id)
     setSelectedDrawing(drawing);
     setSelectedProjectInfo(projectData);
     setIsModalOpen(true);
@@ -105,7 +107,7 @@ const ProjectDrawingPage = () => {
       </div>
       <div className="flex items-center justify-between gap-3">
         <TitleSubtitle title="Project 1 - Drawings" subtitle="" />
-              <CustomSelect
+        <CustomSelect
           className="h-10 min-w-[150px]"
           placeholder="Status"
           value={status}
@@ -120,132 +122,132 @@ const ProjectDrawingPage = () => {
           ]}
         />
       </div>
-    <div className="rounded-lg border border-[#D0D5DD] bg-white p-5">
-      <div>
-        <h2 className="mb-5 text-[16px] font-bold text-[#101828]">
-          Attached Drawings
-        </h2>
+      <div className="rounded-lg border border-[#D0D5DD] bg-white p-5">
+        <div>
+          <h2 className="mb-5 text-[16px] font-bold text-[#101828]">
+            Attached Drawings
+          </h2>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {drawingFiles.map((file) => (
-            <div
-              key={file.id}
-              className="relative rounded-lg border border-[#EAECF0] bg-white p-3 shadow-sm"
-            >
-              <span
-                className={`absolute right-4 top-[-14px] rounded-full px-3 py-0.5 text-[12px] font-medium ${file.statusColor}`}
+          <div className="grid gap-4 lg:grid-cols-3">
+            {drawingFiles.map((file) => (
+              <div
+                key={file.id}
+                className="relative rounded-lg border border-[#EAECF0] bg-white p-3 shadow-sm"
               >
-                {file.status}
-              </span>
+                <span
+                  className={`absolute right-4 top-[-14px] rounded-full px-3 py-0.5 text-[12px] font-medium ${file.statusColor}`}
+                >
+                  {file.status}
+                </span>
 
-              <div className="flex items-center justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-2">
-                  <FileText
-                    size={36}
-                    className="text-[#F04478] min-w-9"
-                  />
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <FileText
+                      size={36}
+                      className="text-[#F04478] min-w-9"
+                    />
 
-                  <div>
-                    <p className="truncate text-[14px] font-semibold text-[#101828]">
-                      {file.name}
-                    </p>
+                    <div>
+                      <p className="truncate text-[14px] font-semibold text-[#101828]">
+                        {file.name}
+                      </p>
 
-                    <p className=" text-[14px] text-[#667085]">
-                      {file.size}
-                    </p>
+                      <p className=" text-[14px] text-[#667085]">
+                        {file.size}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button>
+                      <Download
+                        size={16}
+                        className="text-[#101828]"
+                      />
+                    </button>
+
+                    <button onClick={() => onViewDrawing(file)}>
+                      <Eye
+                        size={16}
+                        className="text-[#2563EB]"
+
+                      />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <button>
-                    <Download
-                      size={16}
-                      className="text-[#101828]"
-                    />
-                  </button>
-
-                  <button onClick={()=>onViewDrawing(file)}>
-                    <Eye
-                      size={16}
-                      className="text-[#2563EB]"
-                      
-                    />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
 
-      <div className="mt-10">
-        <h2 className="mb-5 text-[16px] font-bold text-[#101828]">
-          Attached Building Photos
-        </h2>
+        <div className="mt-10">
+          <h2 className="mb-5 text-[16px] font-bold text-[#101828]">
+            Attached Building Photos
+          </h2>
 
-        <div className="grid gap-4 lg:grid-cols-3">
-          {buildingPhotos.map((file) => (
-            <div
-              key={file.id}
-              className="relative rounded-lg border border-[#EAECF0] bg-white p-3 shadow-sm"
-            >
-              <span
-                className={`absolute right-4 top-[-14px] rounded-full px-3 py-0.5 text-[12px] font-medium ${file.statusColor}`}
+          <div className="grid gap-4 lg:grid-cols-3">
+            {buildingPhotos.map((file) => (
+              <div
+                key={file.id}
+                className="relative rounded-lg border border-[#EAECF0] bg-white p-3 shadow-sm"
               >
-                {file.status}
-              </span>
+                <span
+                  className={`absolute right-4 top-[-14px] rounded-full px-3 py-0.5 text-[12px] font-medium ${file.statusColor}`}
+                >
+                  {file.status}
+                </span>
 
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex min-w-0 items-center gap-3">
-                  <img
-                    src={file.image}
-                    alt={file.name}
-                    className="h-[50px] w-[50px] rounded object-cover"
-                  />
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <img
+                      src={file.image}
+                      alt={file.name}
+                      className="h-[50px] w-[50px] rounded object-cover"
+                    />
 
-                  <div>
-                    <p className="truncate text-[14px] font-semibold text-[#101828]">
-                      {file.name}
-                    </p>
+                    <div>
+                      <p className="truncate text-[14px] font-semibold text-[#101828]">
+                        {file.name}
+                      </p>
 
-                    <p className="mt-1 text-[14px] text-[#667085]">
-                      {file.size}
-                    </p>
+                      <p className="mt-1 text-[14px] text-[#667085]">
+                        {file.size}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <button>
+                      <Download
+                        size={16}
+                        className="text-[#101828]"
+                      />
+                    </button>
+
+                    <button onClick={() => onViewDrawing(file)}>
+                      <Eye
+                        size={16}
+                        className="text-[#2563EB]"
+                      />
+                    </button>
                   </div>
                 </div>
-
-                <div className="flex items-center gap-3">
-                  <button>
-                    <Download
-                      size={16}
-                      className="text-[#101828]"
-                    />
-                  </button>
-
-                  <button onClick={()=>onViewDrawing(file)}>
-                    <Eye
-                      size={16}
-                      className="text-[#2563EB]"
-                    />
-                  </button>
-                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
-    </div>
-       <ViewDrawingModal
-            isOpen={isModalOpen}
-            onClose={() => setIsModalOpen(false)}
-            drawing={selectedDrawing}
-            projectInfo={selectedProjectInfo}
-            onSendMessage={() => {
-              setIsModalOpen(false);
-              setIsSuccessModalOpen(true);
-              setModalTitle("Comment Sent Successfully");
-            }}
-          />
+      <ViewDrawingModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        drawing={selectedDrawing}
+        projectInfo={selectedProjectInfo}
+        onSendMessage={() => {
+          setIsModalOpen(false);
+          // setIsSuccessModalOpen(true);
+          // setModalTitle("Comment Sent Successfully");
+        }}
+      />
     </div>
   );
 };

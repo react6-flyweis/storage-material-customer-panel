@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { MoveLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { myProjectsData } from "@/data/text/MyProjectsData";
+// import { myProjectsData } from "@/data/text/MyProjectsData";
 
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import ProjectBasicInfo from "@/components/my_projects/ProjectBasicInfo";
@@ -29,8 +29,8 @@ const tabs = [
 ];
 
 const ProjectDetailsPage = () => {
-  const location=useLocation();
-  const id=location?.pathname?.split("/")?.filter(Boolean)?.[1]
+  const location = useLocation();
+  const id = location?.pathname?.split("/")?.filter(Boolean)?.[1]
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const navigate = useNavigate();
@@ -39,26 +39,26 @@ const ProjectDetailsPage = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [reasonError, setReasonError] = useState("");
-const handleCancelProject = () => {
-  if (!cancelReason.trim()) {
-    setReasonError("Please enter cancellation reason");
-    return;
-  }
+  const handleCancelProject = () => {
+    if (!cancelReason.trim()) {
+      setReasonError("Please enter cancellation reason");
+      return;
+    }
 
-  setReasonError("");
-  setCancelReason("");
-  setIsCancelModalOpen(false);
+    setReasonError("");
+    setCancelReason("");
+    setIsCancelModalOpen(false);
 
-  setModalTitle("Project Cancelled Successfully");
-  setIsSuccessModalOpen(true);
+    setModalTitle("Project Cancelled Successfully");
+    setIsSuccessModalOpen(true);
 
-  console.log("Cancellation Reason:", cancelReason);
+    console.log("Cancellation Reason:", cancelReason);
 
-  setTimeout(() => {
-    setIsSuccessModalOpen(false);
-    navigate("/my_projects");
-  }, 5000);
-};
+    setTimeout(() => {
+      setIsSuccessModalOpen(false);
+      navigate("/my_projects");
+    }, 5000);
+  };
 
   return (
     <div className="p-5 space-y-6">
@@ -72,7 +72,7 @@ const handleCancelProject = () => {
         </Button>
         {activeTab === "Basic info" && (
           <div className="flex items-center gap-3">
-            <Button onClick={()=>navigate(`/project-drawings/${id}`)} className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
+            <Button onClick={() => navigate(`/project-drawings/${id}`)} className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
               Drawings & Images
             </Button>
             <Button
@@ -138,9 +138,8 @@ const handleCancelProject = () => {
                 }}
                 placeholder="Enter Reason"
                 rows={5}
-                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
-                  reasonError ? "border-red-500" : "border-[#D0D5DD]"
-                }`}
+                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${reasonError ? "border-red-500" : "border-[#D0D5DD]"
+                  }`}
               />
 
               {reasonError && (
@@ -158,7 +157,7 @@ const handleCancelProject = () => {
             </div>
           </div>
         </Modal>
-        
+
       </div>
       <TitleSubtitle
         title="Project Details"
