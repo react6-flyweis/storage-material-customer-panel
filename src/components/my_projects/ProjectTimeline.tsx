@@ -1,44 +1,59 @@
 import { Check, CheckCheck } from "lucide-react";
+import type { ProjectDetailsResponseData } from "@/redux/api/projectsApi";
 
-const steps = [
-  {
-    id: 1,
-    title: "Initial Contact",
-    status: "completed",
-  },
-  {
-    id: 2,
-    title: "Requirements Gathered",
-    status: "completed",
-  },
-  {
-    id: 3,
-    title: "Proposal Sent",
-    status: "completed",
-  },
-  {
-    id: 4,
-    title: "Negotiation",
-    status: "current",
-  },
-  {
-    id: 5,
-    title: "Deal Closed",
-    status: "pending",
-  },
-  {
-    id: 6,
-    title: "Payment Done",
-    status: "pending",
-  },
-  {
-    id: 7,
-    title: "Delivered",
-    status: "pending",
-  },
+const LIFECYCLE_STEPS = [
+  { key: "initial_contact", title: "Initial Contact" },
+  { key: "requirements_gathered", title: "Requirements Gathered" },
+  { key: "proposal_received", title: "Proposal Received" },
+  { key: "negotiation", title: "Negotiation" },
+  { key: "deal_closed", title: "Deal Closed" },
+  { key: "paid", title: "Payment Done" },
+  { key: "delivered", title: "Delivered" },
+  { key: "building_done", title: "Building Done" },
 ];
 
-const ProjectTimeline = () => {
+const STATUS_MAP: Record<string, number> = {
+  initial_contact: 0,
+  requirements_gathered: 1,
+  proposal_received: 2,
+  proposal_sent: 2,
+  quotation_sent: 2,
+  negotiation: 3,
+  deal_closed: 4,
+  paid: 5,
+  payment_done: 5,
+  delivered: 6,
+  building_done: 7,
+  completed: 7,
+  complete: 7,
+};
+
+interface ProjectTimelineProps {
+  data?: ProjectDetailsResponseData;
+}
+
+const ProjectTimeline = ({ data }: ProjectTimelineProps) => {
+  const lead = data?.lead;
+  const currentStatusKey = lead?.lifecycleStatus?.toLowerCase() || "";
+  const currentStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
+  const currentStep = currentStepIndex + 1;
+  const totalSteps = LIFECYCLE_STEPS.length;
+
+  const dynamicSteps = LIFECYCLE_STEPS.map((step, index) => {
+    let status = "pending";
+    if (index < currentStepIndex) {
+      status = "completed";
+    } else if (index === currentStepIndex) {
+      status = "current";
+    }
+
+    return {
+      id: index + 1,
+      title: step.title,
+      status,
+    };
+  });
+
   return (
     <div className="rounded-lg bg-white p-5">
       <div className="flex items-center gap-2">
@@ -47,7 +62,7 @@ const ProjectTimeline = () => {
         </span>
 
         <span className="text-[18px] font-bold text-[#101828]">
-          Q-2025-1047
+          {lead?.jobId || lead?.projectId || "-"}
         </span>
       </div>
 
@@ -56,7 +71,7 @@ const ProjectTimeline = () => {
       </h2>
 
       <div className="mt-5">
-        {steps.map((step) => (
+        {dynamicSteps.map((step) => (
           <div
             key={step.id}
             className="flex items-start justify-between py-5"
@@ -114,7 +129,7 @@ const ProjectTimeline = () => {
 
       <div className="mt-4 border-t border-[#D0D5DD] pt-5">
         <p className="text-[16px] text-[#667085]">
-          Progress: Step 4 of 7
+          Progress: Step {currentStep} of {totalSteps}
         </p>
       </div>
     </div>
