@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { MoveLeft } from "lucide-react";
+import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 // import { myProjectsData } from "@/data/text/MyProjectsData";
+import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import ProjectBasicInfo from "@/components/my_projects/ProjectBasicInfo";
@@ -30,7 +31,11 @@ const tabs = [
 
 const ProjectDetailsPage = () => {
   const location = useLocation();
-  const id = location?.pathname?.split("/")?.filter(Boolean)?.[1]
+  const id = location?.pathname?.split("/")?.filter(Boolean)?.[1] || "";
+  const { data, isLoading, error } = useGetProjectDetailsQuery(id, {
+    skip: !id,
+  });
+
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
   const navigate = useNavigate();
@@ -39,6 +44,7 @@ const ProjectDetailsPage = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [reasonError, setReasonError] = useState("");
+
   const handleCancelProject = () => {
     if (!cancelReason.trim()) {
       setReasonError("Please enter cancellation reason");
@@ -164,7 +170,7 @@ const ProjectDetailsPage = () => {
         subtitle="Stay updated with your latest activities and alerts"
       />
 
-      <div className="border-b border-gray-300 overflow-x-auto px-2 md:px-0">
+      <div className="border-b border-gray-300 overflow-x-auto px-2 md:px-0 scrollbar-thin">
         <div className="flex items-center justify-start md:gap-20 gap-12 min-w-max">
           {tabs.map((tab) => (
             <button
@@ -194,8 +200,16 @@ const ProjectDetailsPage = () => {
 
       {/* Content Area */}
       <div className="min-h-[400px] max-w-7xl">
-        {activeTab === "Basic info" ? (
-          <ProjectBasicInfo />
+        {isLoading ? (
+          <div className="flex h-[400px] w-full items-center justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+          </div>
+        ) : error ? (
+          <div className="flex h-[400px] w-full items-center justify-center text-red-500">
+            Failed to load project details. Please try again later.
+          </div>
+        ) : activeTab === "Basic info" ? (
+          <ProjectBasicInfo data={data} />
         ) : activeTab === "RFQ" ? (
           <ProjectRFQ />
         ) : activeTab === "Quotation" ? (
@@ -203,11 +217,11 @@ const ProjectDetailsPage = () => {
         ) : activeTab === "Open Chat" ? (
           <ProjectOpenChat />
         ) : activeTab === "Timeline" ? (
-          <ProjectTimeline />
+          <ProjectTimeline data={data} />
         ) : activeTab === "Follow Ups" ? (
-          <ProjectFollowUps />
+          <ProjectFollowUps leadId={id} />
         ) : activeTab === "Payments" ? (
-          <ProjectPayments />
+          <ProjectPayments invoices={data?.invoices} leadId={data?.lead?.projectId || id} />
         ) : (
           <>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
