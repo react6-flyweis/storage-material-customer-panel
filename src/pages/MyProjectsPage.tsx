@@ -10,7 +10,7 @@ import SalmonGrowthIcon from "../assets/icon/SalmonGrowthIcon.svg";
 const DashboardStats = [
   {
     title: "Total Projects",
-    value: "4",
+    value: "-",
     icon: (
       <img
         src={BlueAddUserIcon}
@@ -22,7 +22,7 @@ const DashboardStats = [
   },
   {
     title: "Active Projects",
-    value: "1",
+    value: "-",
     icon: (
       <img
         src={GreenCheckIcon}
@@ -34,7 +34,7 @@ const DashboardStats = [
   },
   {
     title: "Work in Progress",
-    value: "2",
+    value: "-",
     icon: (
       <img
         src={YellowDollerIcon}
@@ -46,7 +46,7 @@ const DashboardStats = [
   },
   {
     title: "Canceled",
-    value: "1",
+    value: "-",
     icon: (
       <img
         src={SalmonGrowthIcon}
