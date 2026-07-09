@@ -2,16 +2,16 @@ import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 interface User {
   _id: string;
-  name: string;
+  firstName: string;
   email: string;
-  role: string;
+  customerId: string;
+  photo: string | null;
 }
 
 interface AuthState {
   user: User | null;
   accessToken: string | null;
   refreshToken: string | null;
-  role: string | null;
   isAuthenticated: boolean;
 }
 
@@ -19,7 +19,6 @@ const initialState: AuthState = {
   user: null,
   accessToken: null,
   refreshToken: null,
-  role: null,
   isAuthenticated: false,
 };
 
@@ -30,17 +29,15 @@ const authSlice = createSlice({
     loginSuccess: (
       state,
       action: PayloadAction<{
-        user: User;
+        customer: User;
         accessToken: string;
         refreshToken: string;
-        role: string;
       }>,
     ) => {
       state.isAuthenticated = true;
-      state.user = action.payload.user;
+      state.user = action.payload.customer;
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
-      state.role = action.payload.role;
     },
     updateTokens: (
       state,
@@ -60,7 +57,6 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.accessToken = null;
       state.refreshToken = null;
-      state.role = null;
     },
     updateUser: (state, action: PayloadAction<Partial<User>>) => {
       if (state.user) {
