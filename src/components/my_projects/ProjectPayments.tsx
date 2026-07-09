@@ -1,10 +1,37 @@
 import { mockPaymentsData } from "../../data/mockData";
 import { cn } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
+import type { ProjectInvoice } from "@/redux/api/projectsApi";
 
-const ProjectPayments = () => {
+interface ProjectPaymentsProps {
+  invoices?: ProjectInvoice[];
+  leadId?: string;
+}
+
+const formatDate = (dateString: string | null | undefined) => {
+  if (!dateString) return "-";
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const year = date.getFullYear();
+    return `${day}-${month}-${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
+const formatCurrency = (amount: number | undefined | null) => {
+  if (amount === undefined || amount === null) return "-";
+  return `$${amount.toLocaleString()}`;
+};
+
+const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
   const navigate = useNavigate();
-  const { summary, history, id } = mockPaymentsData;
+  const { id: mockId } = mockPaymentsData;
+
+  const displayId = leadId || mockId;
 
   return (
     <div className="space-y-6 md:p-6 p-4 md:space-y-8 bg-white rounded-[10px]">
@@ -13,7 +40,7 @@ const ProjectPayments = () => {
           Lead ID -
         </span>
         <span className="text-(--text-color-black) text-lg font-bold">
-          {id}
+          {displayId}
         </span>
       </div>
 
@@ -26,13 +53,13 @@ const ProjectPayments = () => {
           <div className="space-y-2">
             <p className="text-[#717171] text-sm font-normal">Total Payment</p>
             <p className="text-lg font-bold text-gray-900">
-              {summary.totalPayment}
+              -
             </p>
           </div>
           <div className="space-y-2">
             <p className="text-[#717171] text-sm font-normal">Total Paid</p>
             <p className="text-lg font-bold text-[#3AB449]">
-              {summary.totalPaid}
+              -
             </p>
           </div>
           <div className="space-y-2">
@@ -40,7 +67,7 @@ const ProjectPayments = () => {
               Outstanding Balance
             </p>
             <p className="text-lg font-bold text-[#EF4444]">
-              {summary.outstandingBalance}
+              -
             </p>
           </div>
         </div>
@@ -73,39 +100,47 @@ const ProjectPayments = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {history.map((payment, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition-colors">
-                  <td className="px-6 py-4 text-xs text-gray-500">
-                    {payment.invoiceNo}
-                  </td>
-                  <td className="px-6 py-4 text-xs text-[#2563EB] font-medium">
-                    {payment.date}
-                  </td>
-                  <td className="px-6 py-4 text-xs font-bold text-black">
-                    {payment.amount}
-                  </td>
-                  <td className="px-6 py-4 text-xs text-gray-500">
-                    {payment.dueDate}
-                  </td>
-                  <td className="px-6 py-4 flex">
-                    <div
-                      className={cn(
-                        "min-w-[100px] w-fit px-3 py-1 flex items-center justify-center rounded-full text-xs font-semibold",
-                        payment.status === "Paid"
-                          ? "bg-[#DCFCE7] text-[#16A34A]"
-                          : "bg-[#FFF7ED] text-[#EA580C]"
-                      )}
-                    >
-                      {payment.status}
-                    </div>
-                    {payment.status === "Pending" && (
-                      <button onClick={() => navigate("/payments")} className="text-[#3AB449] ml-5 text-xs font-normal hover:underline">
-                        Pay
-                      </button>
-                    )}
+              {invoices.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-500">
+                    No invoices found.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                invoices.map((payment, index) => (
+                  <tr key={payment._id || index} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {payment.invoiceNumber}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-[#2563EB] font-medium">
+                      {formatDate(payment.date)}
+                    </td>
+                    <td className="px-6 py-4 text-xs font-bold text-black">
+                      {formatCurrency(payment.totalAmount)}
+                    </td>
+                    <td className="px-6 py-4 text-xs text-gray-500">
+                      {formatDate(payment.dueDate)}
+                    </td>
+                    <td className="px-6 py-4 flex items-center">
+                      <div
+                        className={cn(
+                          "min-w-[100px] w-fit px-3 py-1 flex items-center justify-center rounded-full text-xs font-semibold",
+                          payment.status === "Paid"
+                            ? "bg-[#DCFCE7] text-[#16A34A]"
+                            : "bg-[#FFF7ED] text-[#EA580C]"
+                        )}
+                      >
+                        {payment.status}
+                      </div>
+                      {payment.status === "Pending" && (
+                        <button onClick={() => navigate("/payments")} className="text-[#3AB449] ml-5 text-xs font-normal hover:underline">
+                          Pay
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
