@@ -1,5 +1,7 @@
 import ReactECharts from "echarts-for-react";
 import ProgressSteps from "./ProgressSteps";
+import ProjectActivityLog from "./ProjectActivityLog";
+import ProjectNotes from "./ProjectNotes";
 import {
   Building2,
   Landmark,
@@ -8,147 +10,90 @@ import {
   CircleDollarSign,
 } from "lucide-react";
 
-const projectDetails = [
-  {
-    icon: Building2,
-    title: "Building Type",
-    value: "Workshop",
-  },
-  {
-    icon: CircleDollarSign,
-    title: "Quote Value",
-    value: "$12,500",
-  },
-  {
-    icon: CalendarDays,
-    title: "Created On",
-    value: "2024-10-10",
-  },
-  {
-    icon: MapPin,
-    title: "Location",
-    value: "1816 Bayone Ave, Manchester, NNJ, 098765",
-  },
+
+const LIFECYCLE_STEPS = [
+  { key: "initial_contact", title: "Initial Contact" },
+  { key: "requirements_gathered", title: "Requirements Gathered" },
+  { key: "proposal_received", title: "Proposal Received" },
+  { key: "negotiation", title: "Negotiation" },
+  { key: "deal_closed", title: "Deal Closed" },
+  { key: "paid", title: "Payment Done" },
+  { key: "delivered", title: "Delivered" },
+  { key: "building_done", title: "Building Done" },
 ];
 
-const progress = {
-  currentStep: 6,
-  totalSteps: 8,
-  steps: [
-    {
-      id: 1,
-      title: "Initial Contact",
-      date: "24-10-10",
-      status: "completed",
-    },
-    {
-      id: 2,
-      title: "Requirements Gathered",
-      date: "24-10-10",
-      status: "completed",
-    },
-    {
-      id: 3,
-      title: "Proposal Received",
-      date: "24-10-10",
-      status: "completed",
-    },
-    {
-      id: 4,
-      title: "Negotiation",
-      date: "24-10-10",
-      status: "completed",
-    },
-    {
-      id: 5,
-      title: "Deal Closed",
-      date: "24-10-10",
-      status: "completed",
-    },
-    {
-      id: 6,
-      title: "Payment Done",
-      status: "current",
-    },
-    {
-      id: 7,
-      title: "Delivered",
-      status: "pending",
-    },
-    {
-      id: 8,
-      title: "Building Done",
-      status: "pending",
-    },
-  ],
+const STATUS_MAP: Record<string, number> = {
+  initial_contact: 0,
+  requirements_gathered: 1,
+  proposal_received: 2,
+  proposal_sent: 2,
+  quotation_sent: 2,
+  negotiation: 3,
+  deal_closed: 4,
+  paid: 5,
+  payment_done: 5,
+  delivered: 6,
+  building_done: 7,
+  completed: 7,
+  complete: 7,
 };
 
-const projectStatusData = {
-  currentStep: 6,
-  totalSteps: 14,
-  currentStepName: "Payment Done",
-  startedOn: "2024-10-10",
-  estimatedCompletion: "2024-10-10",
-};
+import type { ProjectDetailsResponseData } from "@/redux/api/projectsApi";
 
-const recentActivities = [
-  {
-    title: "Step updated: Requirements gathered",
-    date: "19 Jan 2025",
-  },
-  {
-    title: "Proposal Sent - PR1234",
-    date: "18 Jan 2025",
-  },
-  {
-    title: "Negotiated Price received from client",
-    date: "18 Jan 2025",
-  },
-  {
-    title: "Deal closed",
-    date: "17 Jan 2025",
-  },
-  {
-    title: "2 unread messages",
-    date: "17 Jan 2025",
-    highlight: true,
-  },
-];
+interface ProjectBasicInfoProps {
+  data?: ProjectDetailsResponseData;
+}
 
-const notes = [
-  {
-    lines: [
-      "Reliable for long-distance steel transport.",
-      "Preferred carrier for Texas routes.",
-      "Fast response time during bidding.",
-    ],
-  },
-  {
-    lines: [
-      "Reliable for long-distance steel transport.",
-      "Preferred carrier for Texas routes.",
-      "Fast response time during bidding.",
-    ],
-  },
-  {
-    lines: [
-      "Reliable for long-distance steel transport.",
-      "Preferred carrier for Texas routes.",
-      "Fast response time during bidding.",
-    ],
-  },
-  {
-    lines: [
-      "Reliable for long-distance steel transport.",
-      "Preferred carrier for Texas routes.",
-      "Fast response time during bidding.",
-    ],
-  },
-];
+const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
+  const lead = data?.lead;
 
-const ProjectBasicInfo = () => {
-  const percentage =
-    (projectStatusData.currentStep / projectStatusData.totalSteps) * 100;
+  const currentStatusKey = lead?.lifecycleStatus?.toLowerCase() || "";
+  const currentStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
+  const currentStep = currentStepIndex + 1;
+  const totalSteps = LIFECYCLE_STEPS.length;
+
+  const dynamicSteps = LIFECYCLE_STEPS.map((step, index) => {
+    let status = "pending";
+    if (index < currentStepIndex) {
+      status = "completed";
+    } else if (index === currentStepIndex) {
+      status = "current";
+    }
+
+    const date = lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : undefined;
+
+    return {
+      id: index + 1,
+      title: step.title,
+      date: index <= currentStepIndex ? date : undefined,
+      status,
+    };
+  });
+
+  const projectDetails = [
+    {
+      icon: Building2,
+      title: "Building Type",
+      value: lead?.buildingType || "-",
+    },
+    {
+      icon: CircleDollarSign,
+      title: "Quote Value",
+      value: lead?.quoteValue !== undefined ? `$${lead.quoteValue.toLocaleString()}` : "-",
+    },
+    {
+      icon: CalendarDays,
+      title: "Created On",
+      value: lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : "-",
+    },
+    {
+      icon: MapPin,
+      title: "Location",
+      value: lead?.location || "-",
+    },
+  ];
+
+  const percentage = (currentStep / totalSteps) * 100;
 
   const chartOption = {
     series: [
@@ -176,6 +121,24 @@ const ProjectBasicInfo = () => {
       },
     ],
   };
+
+  const getStatusLabelAndColor = (status?: string) => {
+    if (!status) return { label: "-", className: "bg-gray-100 text-gray-800" };
+
+    // Format status: replace underscores with spaces and capitalize words
+    const label = status
+      .split("_")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
+
+    if (status === "deal_closed" || status === "quotation_sent" || status === "paid") {
+      return { label, className: "bg-[#DDF5E5] text-[#34A853]" };
+    }
+    return { label, className: "bg-[#EEF4FF] text-[#2563EB]" };
+  };
+
+  const statusInfo = getStatusLabelAndColor(lead?.lifecycleStatus);
+
   return (
     <div className="space-y-5">
       <div className="overflow-hidden rounded-lg border border-[#00000057] bg-white">
@@ -187,15 +150,17 @@ const ProjectBasicInfo = () => {
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-4">
               <h2 className="text-[20px] font-bold text-[#101828]">
-                Project 1- ABC Warehouse
+                {lead?.buildingType ? `${lead.buildingType} (${lead.location})` : "Project Details"}
               </h2>
 
-              <span className="inline-flex items-center gap-2 rounded-full bg-[#DDF5E5] px-3 py-1 text-sm font-medium text-[#34A853]">
-                🟢 Quotation Sent
+              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${statusInfo.className}`}>
+                🟢 {statusInfo.label}
               </span>
             </div>
 
-            <p className="mt-1 text-[14px] text-[#101828]">Q-2025-1047</p>
+            <p className="mt-1 text-[14px] text-[#101828]">
+              {lead?.jobId || lead?.projectId || "-"}
+            </p>
           </div>
         </div>
 
@@ -223,9 +188,10 @@ const ProjectBasicInfo = () => {
       </div>
 
       <ProgressSteps
-        steps={progress.steps}
-        currentStep={progress.currentStep}
-        totalSteps={progress.totalSteps}
+        steps={dynamicSteps}
+        currentStep={currentStep}
+        totalSteps={totalSteps}
+        assignedSales={lead?.assignedSales}
       />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -248,9 +214,9 @@ const ProjectBasicInfo = () => {
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <p className="text-[14px] text-[#667085]">Step</p>
 
-              <p className="text-[54px] font-semibold leading-none">6</p>
+              <p className="text-[54px] font-semibold leading-none">{currentStep}</p>
 
-              <p className="text-[14px] text-[#667085]">of 14</p>
+              <p className="text-[14px] text-[#667085]">of {totalSteps}</p>
             </div>
           </div>
 
@@ -258,7 +224,7 @@ const ProjectBasicInfo = () => {
             <p className="text-[14px] text-[#667085]">Current step</p>
 
             <p className="text-[14px] font-medium text-[#1D4ED8]">
-              Payment Done
+              {LIFECYCLE_STEPS[currentStepIndex]?.title || "-"}
             </p>
           </div>
 
@@ -270,7 +236,9 @@ const ProjectBasicInfo = () => {
                 Started on
               </p>
 
-              <p className="text-[14px] text-[#667085]">2024-10-10</p>
+              <p className="text-[14px] text-[#667085]">
+                {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : "-"}
+              </p>
             </div>
           </div>
 
@@ -279,64 +247,13 @@ const ProjectBasicInfo = () => {
               Estimate Completion
             </p>
 
-            <p className="text-[14px] text-[#667085]">2024-10-10</p>
+            <p className="text-[14px] text-[#667085]">-</p>
           </div>
         </div>
 
-        <div className="rounded-lg border border-[#98A2B3] bg-white p-5">
-          <h2 className="text-[20px] font-bold text-[#101828]">
-            Recent Activity
-          </h2>
+        <ProjectActivityLog leadId={lead?._id || ""} />
 
-          <div className="my-4 border-t" />
-
-          <div className="relative">
-            <div className="absolute left-[10px] top-2 bottom-2 border-l border-dashed border-[#D0D5DD]" />
-
-            <div className="space-y-8">
-              {recentActivities.map((item) => (
-                <div key={item.title} className="relative flex gap-2">
-                  <div className="z-10 h-5 w-5 rounded-full border-2 border-[#7C3AED] bg-white">
-                    <div className="m-[3px] h-2.5 w-2.5 rounded-full bg-[#7C3AED]" />
-                  </div>
-
-                  <div>
-                    <p
-                      className={`text-[14px] ${
-                        item.highlight ? "font-semibold" : "font-medium"
-                      } text-[#101828]`}
-                    >
-                      {item.title}
-                    </p>
-
-                    <div className="mt-1 flex text-sm items-center gap-2 text-[#667085]">
-                      <CalendarDays size={14} />
-                      <span>{item.date}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-lg border border-[#98A2B3] bg-white p-5">
-          <h2 className="text-[20px] font-bold text-[#101828]">Notes</h2>
-
-          <div className="my-4 border-t" />
-
-          <div className="space-y-8">
-            {notes.map((group, index) => (
-              <div key={index} className="space-y-1">
-                {group.lines.map((line, idx) => (
-                  <p key={idx} className="text-[14px] text-[#667085]">
-                    {line}
-                  </p>
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
+        <ProjectNotes leadId={lead?._id || ""} />
       </div>
     </div>
   );
