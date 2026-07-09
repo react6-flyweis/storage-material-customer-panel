@@ -48,11 +48,7 @@ function Login() {
 
   const onSubmit = async (values: LoginFormValues) => {
     try {
-      const response = await login(values).unwrap();
-      if (response.role !== "customer") {
-        setError("root", { message: "Only customers are allowed to log in." });
-        return;
-      }
+      await login(values).unwrap();
       navigate("/dashboard");
     } catch (unknownError) {
       setError("root", { message: getApiErrorMessage(unknownError) });
