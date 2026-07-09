@@ -8,25 +8,24 @@ export interface LoginRequest {
   password: string;
 }
 
-export interface LoginResponseUser {
+export interface LoginCustomer {
   _id: string;
-  name: string;
+  firstName: string;
   email: string;
-  role: string;
+  customerId: string;
+  photo: string | null;
 }
 
 export type LoginApiResponse = ApiResponse<{
   accessToken: string;
   refreshToken: string;
-  role: string;
-  user: LoginResponseUser;
+  customer: LoginCustomer;
 }>;
 
 export interface LoginSession {
-  user: LoginResponseUser;
+  customer: LoginCustomer;
   accessToken: string;
   refreshToken: string;
-  role: string;
 }
 
 export const authApi = createApi({
@@ -35,16 +34,14 @@ export const authApi = createApi({
   endpoints: (builder) => ({
     login: builder.mutation<LoginSession, LoginRequest>({
       query: (credentials) => ({
-        url: "/api/auth/login",
+        url: "/api/customer/auth/login",
         method: "POST",
         body: credentials,
       }),
       async onQueryStarted(_credentials, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          if (data.role === "customer") {
-            dispatch(loginSuccess(data));
-          }
+          dispatch(loginSuccess(data));
         } catch {
           // Login errors are handled by the caller.
         }
