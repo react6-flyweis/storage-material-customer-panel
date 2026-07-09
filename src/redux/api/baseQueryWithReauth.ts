@@ -43,8 +43,8 @@ export const baseQueryWithReauth: BaseQueryFn<
   }
 
   if (
-    isAuthEndpoint(args, "/api/auth/login") ||
-    isAuthEndpoint(args, "/api/auth/refresh")
+    isAuthEndpoint(args, "/api/customer/auth/login") ||
+    isAuthEndpoint(args, "/api/customer/auth/refresh")
   ) {
     return result;
   }
@@ -59,7 +59,7 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   const refreshResult = await rawBaseQuery(
     {
-      url: "/api/auth/refresh",
+      url: "/api/customer/auth/refresh",
       method: "POST",
       body: { refreshToken },
     },
@@ -74,8 +74,8 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   const refreshData = refreshResult.data as
     | ApiResponse<{
-        accessToken: string;
-      }>
+      accessToken: string;
+    }>
     | undefined;
   const nextAccessToken = refreshData?.data?.accessToken;
 
