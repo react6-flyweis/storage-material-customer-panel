@@ -170,7 +170,7 @@ export const paymentsApi = createApi({
         method: "GET",
       }),
       transformResponse: (response: GetPaymentsApiResponse) =>
-        response.data as GetPaymentsApiResponse["data"],
+        response.data as PaymentsResponseData,
     }),
     getInvoices: builder.query<InvoicesResponseData, void>({
       query: () => ({
