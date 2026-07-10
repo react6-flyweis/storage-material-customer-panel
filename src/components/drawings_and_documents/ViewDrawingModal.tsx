@@ -3,7 +3,11 @@ import { X, ArrowDown, Paperclip, Loader2 } from "lucide-react";
 import DrawingPlanImg from "../../assets/DrawingPlanImg.svg";
 import Modal from "../common_components/Modal";
 import { Button } from "../ui/button";
-import { useUpdateDrawingStatusMutation } from "@/redux/api/projectsApi";
+import {
+  useUpdateDrawingStatusMutation,
+  useApproveDrawingMutation,
+  useRequestDrawingRevisionMutation,
+} from "@/redux/api/projectsApi";
 
 interface ViewDrawingModalProps {
   isOpen: boolean;
@@ -31,7 +35,11 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   const [reasonError, setReasonError] = useState("");
   const [comment, setComment] = useState("");
 
-  const [updateDrawingStatus, { isLoading: isUpdating }] = useUpdateDrawingStatusMutation();
+  const [updateDrawingStatus, { isLoading: isSendingComment }] = useUpdateDrawingStatusMutation();
+  const [approveDrawing, { isLoading: isApproving }] = useApproveDrawingMutation();
+  const [requestDrawingRevision, { isLoading: isRequestingRevision }] = useRequestDrawingRevisionMutation();
+
+  const isUpdating = isSendingComment || isApproving || isRequestingRevision;
 
   const handleCancelProject = async () => {
     if (!cancelReason.trim()) {
@@ -43,11 +51,10 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     if (!leadId || !drawingId) return;
 
     try {
-      await updateDrawingStatus({
+      await requestDrawingRevision({
         leadId,
         drawingId,
-        status: "revision required",
-        notes: cancelReason,
+        note: cancelReason,
       }).unwrap();
       setReasonError("");
       setCancelReason("");
@@ -64,10 +71,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     if (!leadId || !drawingId) return;
 
     try {
-      await updateDrawingStatus({
+      await approveDrawing({
         leadId,
         drawingId,
-        status: "approved",
       }).unwrap();
       onClose();
     } catch (err) {
