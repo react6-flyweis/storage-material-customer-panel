@@ -12,44 +12,7 @@ import DashboardWidgets from "@/components/dashbord/DashboardWidgets";
 import Ship1 from "../assets/new-images/ship-1.svg";
 import Ship2 from "../assets/new-images/ship-2.svg";
 import { useState } from "react";
-
-const nextDeliveryData = {
-  title: "Primary Frame Steel",
-  description: "Main structural steel beams for warehouse frame",
-  deliveryId: "DEL-1001",
-  status: "inTransit",
-
-  deliveryInfo: {
-    date: "Wednesday, March 25, 2026",
-    trackingStatus: "Out for Delivery",
-    eta: "Arriving in 45 mins",
-    timeWindow: "08:00 - 12:00",
-    company: "FastFreight Logistics",
-    driver: "John Driver",
-    driverPhone: "(555) 999-8888",
-    estimatedWeight: "45,000 lbs",
-    equipment: ["5,000 lb Forklift required", "Crane needed"],
-  },
-
-  siteContact: {
-    name: "Warehouse Supervisor",
-    phone: "(555) 789-0123",
-    instructions: "Please coordinate with the loading dock before arrival.",
-    specialNotes: "Site requires proof of delivery and photo confirmation.",
-  },
-
-  logistics: {
-    company: "ABC Logistics",
-    driver: "John Doe",
-    phone: "(555) 123-4567",
-    communications: [
-      "Confirmation sent ✔",
-      "48hr reminder ✔",
-      "24hr reminder ✔",
-      "Reschedule notification ⚠️",
-    ],
-  },
-};
+import { useGetDashboardQuery } from "@/redux/api/dashboardApi";
 
 import {
   Truck,
@@ -62,148 +25,197 @@ import {
   RefreshCcw,
   ClipboardList,
   CircleCheck,
+  Loader2,
 } from "lucide-react";
 import DashStatCard from "@/components/ui/dash-stat-card";
 import NextDeliveryCard from "@/components/dashbord/NextDeliveryCard";
 
-const shipmentBreakdown = [
-  {
-    title: "Total Loads",
-    value: "3 trucks",
-    description: "Load 1 → 45,000 lbs → 12 bundles",
-    icon: ClipboardList,
-    iconBg: "bg-violet-600",
-    accent: "text-emerald-600",
-    shape: "bg-violet-100",
-    bgImg: Ship1,
-  },
-  {
-    title: "Total Bundles",
-    value: "72 bundles",
-    description: "Load 2 → 42,500 lbs → 10 bundles",
-    icon: CircleCheck,
-    iconBg: "bg-emerald-600",
-    accent: "text-emerald-600",
-    shape: "bg-emerald-100",
-    bgImg: Ship2,
-  },
-];
-
-export const deliveryTrackingStats = [
-  {
-    title: "In Transit",
-    value: 1,
-    icon: Truck,
-    borderColor: "#3B82F6",
-    iconBg: "#3B82F6",
-  },
-  {
-    title: "Staged",
-    value: 5,
-    icon: BadgeDollarSign,
-    borderColor: "#3B82F6",
-    iconBg: "#3B82F6",
-  },
-  {
-    title: "Ready",
-    value: 6,
-    icon: PackageCheck,
-    borderColor: "#3B82F6",
-    iconBg: "#3B82F6",
-  },
-  {
-    title: "Total Today",
-    value: 7,
-    icon: Users,
-    borderColor: "#3B82F6",
-    iconBg: "#3B82F6",
-  },
-  {
-    title: "Upcoming Deliveries",
-    value: 3,
-    icon: CalendarDays,
-    borderColor: "#22C55E",
-    iconBg: "#22C55E",
-  },
-  {
-    title: "Deliveries This Week",
-    value: 4,
-    icon: Clock3,
-    borderColor: "#22C55E",
-    iconBg: "#22C55E",
-  },
-  {
-    title: "Delayed Deliveries",
-    value: 5,
-    icon: AlertCircle,
-    borderColor: "#22C55E",
-    iconBg: "#22C55E",
-  },
-  {
-    title: "Rescheduled Deliveries",
-    value: 6,
-    icon: RefreshCcw,
-    borderColor: "#22C55E",
-    iconBg: "#22C55E",
-  },
-];
-
 type TabType = "today" | "week" | "month";
-
-export const DashboardStats = [
-  {
-    title: "Active Projects",
-    value: "1",
-    icon: (
-      <img
-        src={BlueAddUserIcon}
-        alt="active-projects"
-        className="md:size-6 size-5 p-1"
-      />
-    ),
-    color: "bg-[#1D51A4]",
-  },
-  {
-    title: "Projects Closed",
-    value: "12",
-    icon: (
-      <img
-        src={GreenCheckIcon}
-        alt="projects-closed"
-        className="md:size-6 size-5 p-1"
-      />
-    ),
-    color: "bg-[#3AB449]",
-  },
-  {
-    title: "Drawings and Approvals",
-    value: "74",
-    icon: (
-      <img
-        src={YellowDollerIcon}
-        alt="drawings-approvals"
-        className="md:size-7 size-5"
-      />
-    ),
-    color: "bg-[#EAB308]",
-  },
-  {
-    title: "Project Timeline",
-    value: "5 days",
-    icon: (
-      <img
-        src={SalmonGrowthIcon}
-        alt="project-timeline"
-        className="md:size-7 size-5 p-1"
-      />
-    ),
-    color: "bg-[#FD8D5B]",
-  },
-];
 
 const Dashboard = () => {
   const [activeTab, setActiveTab] = useState<TabType>("today");
   console.log("activeTab:", setActiveTab);
+
+  const { data: dashboardData, isLoading } = useGetDashboardQuery();
+
+  if (isLoading) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+      </div>
+    );
+  }
+
+  const dashboardStats = [
+    {
+      title: "Active Projects",
+      value: String(dashboardData?.activeProjects ?? 0),
+      icon: (
+        <img
+          src={BlueAddUserIcon}
+          alt="active-projects"
+          className="md:size-6 size-5 p-1"
+        />
+      ),
+      color: "bg-[#1D51A4]",
+    },
+    {
+      title: "Projects Closed",
+      value: String(dashboardData?.closedProjects ?? 0),
+      icon: (
+        <img
+          src={GreenCheckIcon}
+          alt="projects-closed"
+          className="md:size-6 size-5 p-1"
+        />
+      ),
+      color: "bg-[#3AB449]",
+    },
+    {
+      title: "Drawings and Approvals",
+      value: String(dashboardData?.drawingsAndApprovals ?? 0),
+      icon: (
+        <img
+          src={YellowDollerIcon}
+          alt="drawings-approvals"
+          className="md:size-7 size-5"
+        />
+      ),
+      color: "bg-[#EAB308]",
+    },
+    {
+      title: "Project Timeline",
+      value: dashboardData?.projectTimeline ? `${dashboardData.projectTimeline}` : "-",
+      icon: (
+        <img
+          src={SalmonGrowthIcon}
+          alt="project-timeline"
+          className="md:size-7 size-5 p-1"
+        />
+      ),
+      color: "bg-[#FD8D5B]",
+    },
+  ];
+
+  const deliveryTrackingStats = [
+    {
+      title: "In Transit",
+      value: dashboardData?.deliveryTracking?.inTransit ?? "-",
+      icon: Truck,
+      borderColor: "#3B82F6",
+      iconBg: "#3B82F6",
+    },
+    {
+      title: "Staged",
+      value: dashboardData?.deliveryTracking?.staged ?? "-",
+      icon: BadgeDollarSign,
+      borderColor: "#3B82F6",
+      iconBg: "#3B82F6",
+    },
+    {
+      title: "Ready",
+      value: dashboardData?.deliveryTracking?.ready ?? "-",
+      icon: PackageCheck,
+      borderColor: "#3B82F6",
+      iconBg: "#3B82F6",
+    },
+    {
+      title: "Total Today",
+      value: dashboardData?.deliveryTracking?.totalToday ?? "-",
+      icon: Users,
+      borderColor: "#3B82F6",
+      iconBg: "#3B82F6",
+    },
+    {
+      title: "Upcoming Deliveries",
+      value: dashboardData?.deliveryTracking?.upcomingDeliveries ?? "-",
+      icon: CalendarDays,
+      borderColor: "#22C55E",
+      iconBg: "#22C55E",
+    },
+    {
+      title: "Deliveries This Week",
+      value: dashboardData?.deliveryTracking?.deliveriesThisWeek ?? "-",
+      icon: Clock3,
+      borderColor: "#22C55E",
+      iconBg: "#22C55E",
+    },
+    {
+      title: "Delayed Deliveries",
+      value: dashboardData?.deliveryTracking?.delayedDeliveries ?? "-",
+      icon: AlertCircle,
+      borderColor: "#22C55E",
+      iconBg: "#22C55E",
+    },
+    {
+      title: "Rescheduled Deliveries",
+      value: dashboardData?.deliveryTracking?.rescheduledDeliveries ?? "-",
+      icon: RefreshCcw,
+      borderColor: "#22C55E",
+      iconBg: "#22C55E",
+    },
+  ];
+
+  const shipmentBreakdown = [
+    {
+      title: "Total Loads",
+      value: `${dashboardData?.shipmentBreakdown?.totalLoads ?? "-"} loads`,
+      description: `Active loads assigned to your shipments`,
+      icon: ClipboardList,
+      iconBg: "bg-violet-600",
+      accent: "text-emerald-600",
+      shape: "bg-violet-100",
+      bgImg: Ship1,
+    },
+    {
+      title: "Total Bundles",
+      value: dashboardData?.shipmentBreakdown?.totalBundles !== null && dashboardData?.shipmentBreakdown?.totalBundles !== undefined
+        ? `${dashboardData.shipmentBreakdown.totalBundles} bundles`
+        : "-",
+      description: dashboardData?.shipmentBreakdown?.totalBundles !== null && dashboardData?.shipmentBreakdown?.totalBundles !== undefined
+        ? `Total bundles in transit: ${dashboardData.shipmentBreakdown.totalBundles}`
+        : "No bundle information available",
+      icon: CircleCheck,
+      iconBg: "bg-emerald-600",
+      accent: "text-emerald-600",
+      shape: "bg-emerald-100",
+      bgImg: Ship2,
+    },
+  ];
+
+  const nextDelivery = dashboardData?.nextDelivery;
+  const nextDeliveryData = nextDelivery ? {
+    title: nextDelivery.deliveryNumber || "Delivery",
+    description: nextDelivery.description || "",
+    deliveryId: nextDelivery.deliveryId || "",
+    status: nextDelivery.status === "in_transit" ? "inTransit" : (nextDelivery.status || "scheduled"),
+    deliveryInfo: {
+      date: nextDelivery.deliveryDate ? new Date(nextDelivery.deliveryDate).toLocaleDateString("en-US", {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+      }) : "-",
+      trackingStatus: nextDelivery.status === "in_transit" ? "Out for Delivery" : "-",
+      eta: "-",
+      timeWindow: "-",
+      company: "-",
+      driver: "-",
+      driverPhone: "-",
+      estimatedWeight: nextDelivery.estimatedWeight ? `${nextDelivery.estimatedWeight.toLocaleString()} lbs` : "-",
+      equipment: [],
+    },
+    siteContact: {
+      name: "-",
+      phone: "-",
+      instructions: "-",
+      specialNotes: "-",
+    },
+    logistics: {
+      company: "-",
+      driver: "-",
+      phone: "-",
+      communications: [],
+    },
+  } : null;
+
   return (
     <div className="p-5 space-y-6">
       {/* <FilterTabs
@@ -216,7 +228,7 @@ const Dashboard = () => {
       />
 
       <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
-        {DashboardStats.map((stat, index) => (
+        {dashboardStats.map((stat, index) => (
           <StatCard
             key={index}
             title={stat.title}
@@ -298,7 +310,9 @@ const Dashboard = () => {
         })}
       </div>
 
-      <NextDeliveryCard data={nextDeliveryData} dashboardpage={true} />
+      {nextDeliveryData && (
+        <NextDeliveryCard data={nextDeliveryData} dashboardpage={true} />
+      )}
     </div>
   );
 };
