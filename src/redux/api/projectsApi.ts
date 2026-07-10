@@ -36,6 +36,12 @@ export interface GetProjectsResponseData {
   total: number;
   page: number;
   limit: number;
+  stats?: {
+    total: number;
+    active: number;
+    workInProgress: number;
+    cancelled: number;
+  };
 }
 
 export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
@@ -43,6 +49,7 @@ export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Drawings"],
   endpoints: (builder) => ({
     getProjects: builder.query<GetProjectsResponseData, GetProjectsParams>({
       query: ({ page, limit }) => ({
@@ -66,6 +73,7 @@ export const projectsApi = createApi({
         url: `/api/customer/projects/${id}/drawings`,
         method: "GET",
       }),
+      providesTags: (_result, _error, id) => [{ type: "Drawings", id }],
       transformResponse: (response: GetProjectDrawingsApiResponse) =>
         response.data as GetProjectDrawingsResponseData,
     }),
@@ -78,6 +86,27 @@ export const projectsApi = createApi({
         method: "PUT",
         body: { status, notes },
       }),
+    }),
+    approveDrawing: builder.mutation<
+      ApiResponse<Drawing>,
+      { leadId: string; drawingId: string }
+    >({
+      query: ({ leadId, drawingId }) => ({
+        url: `/api/customer/projects/${leadId}/drawings/${drawingId}/approve`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, { leadId }) => [{ type: "Drawings", id: leadId }],
+    }),
+    requestDrawingRevision: builder.mutation<
+      ApiResponse<Drawing>,
+      { leadId: string; drawingId: string; note: string }
+    >({
+      query: ({ leadId, drawingId, note }) => ({
+        url: `/api/customer/projects/${leadId}/drawings/${drawingId}/request-revision`,
+        method: "POST",
+        body: { note },
+      }),
+      invalidatesTags: (_result, _error, { leadId }) => [{ type: "Drawings", id: leadId }],
     }),
     getProjectActivity: builder.query<GetProjectActivityResponseData, GetProjectActivityParams>({
       query: ({ leadId, page = 1, limit = 20 }) => ({
@@ -114,8 +143,112 @@ export const projectsApi = createApi({
       transformResponse: (response: GetProjectMeetingsApiResponse) =>
         response.data as GetProjectMeetingsResponseData,
     }),
+    getProjectRFQ: builder.query<ProjectRFQResponseData, string>({
+      query: (leadId) => ({
+        url: `/api/customer/projects/${leadId}/rfq`,
+        method: "GET",
+      }),
+      transformResponse: (response: GetProjectRFQApiResponse) =>
+        response.data as ProjectRFQResponseData,
+    }),
+    cancelProject: builder.mutation<
+      ApiResponse<void>,
+      { leadId: string; reason: string }
+    >({
+      query: ({ leadId, reason }) => ({
+        url: `/api/customer/projects/${leadId}/cancel`,
+        method: "POST",
+        body: { reason },
+      }),
+    }),
+    getCustomerDocuments: builder.query<GetCustomerDocumentsResponseData, { type?: string } | void>({
+      query: (params) => ({
+        url: "/api/customer/documents",
+        method: "GET",
+        params: params || { type: "drawing" },
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.projects.map(({ lead }) => ({ type: "Drawings" as const, id: lead._id })),
+              "Drawings",
+            ]
+          : ["Drawings"],
+      transformResponse: (response: GetCustomerDocumentsApiResponse) =>
+        response.data as GetCustomerDocumentsResponseData,
+    }),
   }),
 });
+
+export interface RFQInfo {
+  jobId: string;
+  projectName: string;
+  buildingType: string;
+  roofStyle: string;
+  sqft: string;
+  width: number;
+  length: number;
+  location: string;
+  quoteValue: number;
+  isQuoteReady: boolean;
+  lifecycleStatus: string;
+  aiSummary: string | null;
+  aiQuoteData: string | null;
+}
+
+export interface IncludedMaterial {
+  name: string;
+  description: string;
+  quantity: number;
+  _id: string;
+}
+
+export interface OptionalAddOn {
+  name: string;
+  description: string;
+  price: number;
+  _id: string;
+}
+
+export interface Quotation {
+  _id: string;
+  leadId: string;
+  customerId: string;
+  createdBy: string;
+  buildingType: string;
+  basePrice: number;
+  maxPrice: number;
+  sqft: string;
+  width: number;
+  length: number;
+  height: number;
+  currency: string;
+  roofStyle: string;
+  validTill: string;
+  location: string;
+  windLoad: string;
+  snowLoad: string;
+  paymentTerms: string;
+  companyName: string;
+  estimatedDelivery: string;
+  includedMaterials: IncludedMaterial[];
+  optionalAddOns: OptionalAddOn[];
+  specialNote: string;
+  internalNotes: string;
+  priorityLevel: string;
+  status: string;
+  sentAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+  __v: number;
+}
+
+export interface ProjectRFQResponseData {
+  rfq: RFQInfo;
+  quotation: Quotation | null;
+}
+
+export type GetProjectRFQApiResponse = ApiResponse<ProjectRFQResponseData>;
 
 export interface MeetingCreator {
   _id: string;
@@ -366,14 +499,59 @@ export interface GetProjectNotesResponseData {
 
 export type GetProjectNotesApiResponse = ApiResponse<GetProjectNotesResponseData>;
 
+export interface CustomerDocument {
+  _id: string;
+  name: string;
+  url: string;
+  type: string;
+  documentType: string;
+  status: string;
+  fileType: string;
+  fileSize: number;
+  notes: string;
+  revisionNote?: string;
+  uploadedBy: {
+    _id: string;
+    name: string;
+  };
+  uploadedAt: string;
+  source: string;
+}
+
+export interface CustomerProjectWithDrawings {
+  lead: {
+    _id: string;
+    jobId: string;
+    projectName: string;
+    buildingType: string;
+    location: string;
+    lifecycleStatus: string;
+  };
+  documents: CustomerDocument[];
+  count: number;
+}
+
+export interface GetCustomerDocumentsResponseData {
+  projects: CustomerProjectWithDrawings[];
+  totalDocuments: number;
+}
+
+export type GetCustomerDocumentsApiResponse = ApiResponse<GetCustomerDocumentsResponseData>;
+
 export const {
   useGetProjectsQuery,
   useGetProjectDetailsQuery,
   useGetProjectDrawingsQuery,
   useUpdateDrawingStatusMutation,
+  useApproveDrawingMutation,
+  useRequestDrawingRevisionMutation,
   useGetProjectActivityQuery,
   useGetProjectNotesQuery,
   useGetProjectFollowUpsQuery,
   useGetProjectMeetingsQuery,
+  useGetProjectRFQQuery,
+  useCancelProjectMutation,
+  useGetCustomerDocumentsQuery,
 } = projectsApi;
+
 
