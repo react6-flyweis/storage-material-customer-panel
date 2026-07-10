@@ -4,7 +4,7 @@ import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 // import { myProjectsData } from "@/data/text/MyProjectsData";
-import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
+import { useGetProjectDetailsQuery, useCancelProjectMutation } from "@/redux/api/projectsApi";
 
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import ProjectBasicInfo from "@/components/my_projects/ProjectBasicInfo";
@@ -44,26 +44,32 @@ const ProjectDetailsPage = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [reasonError, setReasonError] = useState("");
+  const [cancelProject, { isLoading: isCancelling }] = useCancelProjectMutation();
 
-  const handleCancelProject = () => {
+  const handleCancelProject = async () => {
     if (!cancelReason.trim()) {
       setReasonError("Please enter cancellation reason");
       return;
     }
 
-    setReasonError("");
-    setCancelReason("");
-    setIsCancelModalOpen(false);
+    try {
+      setReasonError("");
+      await cancelProject({ leadId: id, reason: cancelReason }).unwrap();
+      
+      setCancelReason("");
+      setIsCancelModalOpen(false);
 
-    setModalTitle("Project Cancelled Successfully");
-    setIsSuccessModalOpen(true);
+      setModalTitle("Project Cancelled Successfully");
+      setIsSuccessModalOpen(true);
 
-    console.log("Cancellation Reason:", cancelReason);
-
-    setTimeout(() => {
-      setIsSuccessModalOpen(false);
-      navigate("/my_projects");
-    }, 5000);
+      setTimeout(() => {
+        setIsSuccessModalOpen(false);
+        navigate("/my_projects");
+      }, 5000);
+    } catch (err) {
+      const error = err as { data?: { message?: string } };
+      setReasonError(error?.data?.message || "Failed to cancel project. Please try again.");
+    }
   };
 
   return (
@@ -156,8 +162,10 @@ const ProjectDetailsPage = () => {
             <div className="mt-10 flex justify-center">
               <button
                 onClick={handleCancelProject}
-                className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white"
+                disabled={isCancelling}
+                className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
               >
+                {isCancelling && <Loader2 className="h-4 w-4 animate-spin" />}
                 Cancel Project
               </button>
             </div>
