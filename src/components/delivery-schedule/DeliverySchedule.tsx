@@ -1,299 +1,76 @@
 import { useState } from "react";
 import TitleSubtitle from "../common_components/TitleSubtitle";
-import { QrCode } from "lucide-react";
+import { QrCode, Loader2 } from "lucide-react";
 import NextDeliveryCard from "../dashbord/NextDeliveryCard";
 import ScanQrModal from "./ScanQrModal";
 import CustomSelect from "../common_components/CustomSelect";
-
-const deliveries = [
-  {
-    className:
-      "border border-lime-300 bg-[#F8FBF0] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-    deliveryId: "DEL-1001",
-    title: "Primary Frame Steel",
-    description: "Main structural steel beams for warehouse frame",
-    status: "inTransit",
-    deliveryInfo: {
-      date: "Wednesday, March 25, 2026",
-      trackingStatus: "Out for Delivery",
-      eta: "Arriving in 45 mins",
-      timeWindow: "08:00 - 12:00",
-      company: "FastFreight Logistics",
-      driver: "John Driver",
-      driverPhone: "(555) 999-8888",
-      estimatedWeight: "45,000 lbs",
-      equipment: ["5,000 lb Forklift required", "Crane needed"],
-    },
-    siteContact: {
-      name: "Mike Roberts",
-      phone: "(555) 123-4567",
-      email: "mike@test.com",
-      address: "Warehouse A",
-      instructions: "Keep materials dry, covered storage area",
-      specialNotes: "Weather protection required",
-    },
-    logistics: {
-      company: "ABC Logistics",
-      driver: "John Doe",
-      phone: "(555) 123-4567",
-      communications: [
-        "Confirmation sent ✔",
-        "48hr reminder ✔",
-        "24hr reminder ✔",
-        "Reschedule notification ⚠",
-      ],
-    },
-      loadSummary: {
-    loadId: "LOAD-001",
-    bundleCount: 6,
-    truckNumber: "TX-4582",
-    totalWeight: "36,000 lbs",
-  },
-  },
-
-  {
-    isSite: true,
-    className:
-      "border border-white bg-[#FFFFFF] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-    deliveryId: "DEL-1002",
-    title: "Roll-up Doors (3 units)",
-    description: "Commercial grade roll-up doors",
-    status: "confirmed",
-    deliveryInfo: {
-      date: "Thursday, March 26, 2026",
-      trackingStatus: "",
-      eta: "",
-      timeWindow: "13:00 - 17:00",
-      company: "QuickTransport Co.",
-      driver: "Sarah Transport",
-      driverPhone: "(555) 777-6666",
-      estimatedWeight: "2,500 lbs",
-      equipment: ["5,000 lb Forklift required", "Crane needed"],
-    },
-    siteContact: {
-      name: "Mike Roberts",
-      phone: "(555) 123-4567",
-      email: "mike@test.com",
-      address: "Warehouse B",
-      instructions: "Keep materials dry, covered storage area",
-      specialNotes: "Weather protection required",
-    },
-    logistics: {
-      company: "ABC Logistics",
-      driver: "John Doe",
-      phone: "(555) 123-4567",
-      communications: ["Confirmation sent ✔", "48hr reminder ✔"],
-    },
-      loadSummary: {
-    loadId: "LOAD-001",
-    bundleCount: 6,
-    truckNumber: "TX-4582",
-    totalWeight: "36,000 lbs",
-  },
-  },
-
-  {
-    isSite: true,
-    className:
-      "border border-white bg-[#FFFFFF] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-    deliveryId: "DEL-1003",
-    title: "Roll-up Doors (3 units)",
-    description: "Commercial grade roll-up doors",
-    status: "confirmed",
-    deliveryInfo: {
-      date: "Thursday, March 26, 2026",
-      trackingStatus: "",
-      eta: "",
-      timeWindow: "13:00 - 17:00",
-      company: "QuickTransport Co.",
-      driver: "Sarah Transport",
-      driverPhone: "(555) 777-6666",
-      estimatedWeight: "2,500 lbs",
-      equipment: ["5,000 lb Forklift required", "Crane needed"],
-    },
-    siteContact: {
-      name: "Mike Roberts",
-      phone: "(555) 123-4567",
-      email: "mike@test.com",
-      address: "Warehouse B",
-      instructions: "Keep materials dry, covered storage area",
-      specialNotes: "Weather protection required",
-    },
-    logistics: {
-      company: "ABC Logistics",
-      driver: "John Doe",
-      phone: "(555) 123-4567",
-      communications: ["Confirmation sent ✔", "48hr reminder ✔"],
-    },
-      loadSummary: {
-    loadId: "LOAD-001",
-    bundleCount: 6,
-    truckNumber: "TX-4582",
-    totalWeight: "36,000 lbs",
-  },
-  },
-
-  {
-  isSite: false,
-  className:
-    "border border-white bg-[#FFFFFF] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-  deliveryId: "DEL-1005",
-  title: "Trim & Hardware",
-  description: "Finishing materials and fasteners",
-  status: "delivered",
-
-  deliveryInfo: {
-    date: "Sunday, March 22, 2026",
-    trackingStatus: "",
-    eta: "",
-    timeWindow: "10:00 - 14:00",
-    company: "Local Delivery Services",
-    driver: "Tom Local",
-    driverPhone: "(555) 555-4444",
-    estimatedWeight: "850 lbs",
-    equipment: [
-      "5,000 lb Forklift required",
-      "Crane needed",
-    ],
-  },
-
-  siteContact: {
-    name: "Mike Roberts",
-    phone: "(555) 123-4567",
-    email: "mike@test.com",
-    address: "Warehouse A",
-    instructions:
-      "Keep materials dry, covered storage area",
-    specialNotes:
-      "Weather protection required",
-  },
-
-  logistics: {
-    company: "ABC Logistics",
-    driver: "John Doe",
-    phone: "(555) 123-4567",
-    communications: [
-      "Confirmation sent ✔",
-      "48hr reminder ✔",
-    ],
-  },
-
-  loadSummary: {
-    loadId: "LOAD-001",
-    bundleCount: 6,
-    truckNumber: "TX-4582",
-    totalWeight: "36,000 lbs",
-  },
-},
-
-  {
-  isSite: true,
-  className:
-    "border border-white bg-[#FFFFFF] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.08)]",
-  deliveryId: "DEL-1006",
-  title: "Insulation Materials",
-  description: "Wall and roof insulation",
-  status: "rescheduled",
-
-  rescheduleInfo: {
-    previousDate: "March 28",
-    newDate: "March 29",
-    reason: "Weather",
-  },
-
-  deliveryInfo: {
-    date: "Sunday, March 29, 2026",
-    trackingStatus: "",
-    eta: "",
-    timeWindow: "08:00 - 12:00",
-    company: "Regional Freight",
-    driver: "Carlos Freight",
-    driverPhone: "(555) 333-2222",
-    estimatedWeight: "12,000 lbs",
-    equipment: [
-      "5,000 lb Forklift required",
-      "Crane needed",
-    ],
-  },
-
-  siteContact: {
-    name: "Mike Roberts",
-    phone: "(555) 123-4567",
-    email: "mike@test.com",
-    address: "Warehouse A",
-    instructions:
-      "Keep materials dry, covered storage area",
-    specialNotes:
-      "Weather protection required",
-  },
-
-  logistics: {
-    company: "ABC Logistics",
-    driver: "John Doe",
-    phone: "(555) 123-4567",
-    communications: [
-      "Reschedule notification ⚠",
-    ],
-  },
-
-  loadSummary: {
-    loadId: "LOAD-001",
-    bundleCount: 6,
-    truckNumber: "TX-4582",
-    totalWeight: "36,000 lbs",
-  },
-
-  siteStatus: {
-    siteReady: false,
-    equipmentReady: false,
-  },
-}
-];
+import { useGetDeliveriesQuery } from "@/redux/api/deliveriesApi";
 
 const DeliverySchedule = () => {
   const [scanModal, setScanModal] = useState(false);
   const [bundleId, setBundleId] = useState("BND-001");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [status, setStatus] = useState("");
+
+  const { data, isLoading } = useGetDeliveriesQuery({ tab: activeTab });
+
   const tabs = [
-  {
-    id: "upcoming",
-    label: "Upcoming Deliveries",
-    count: deliveries.filter(
-      (d) =>
-        d.status !== "delivered" &&
-        d.status !== "rescheduled"
-    ).length,
-  },
-  {
-    id: "past",
-    label: "Past Deliveries",
-    count: deliveries.filter(
-      (d) => d.status === "delivered"
-    ).length,
-  },
-  {
-    id: "rescheduled",
-    label: "Rescheduled Deliveries",
-    count: deliveries.filter(
-      (d) => d.status === "rescheduled"
-    ).length,
-  },
-];
-  const filteredDeliveries = deliveries.filter((delivery) => {
-  if (activeTab === "past") {
-    return delivery.status === "delivered";
-  }
+    {
+      id: "upcoming",
+      label: "Upcoming Deliveries",
+      count: data?.tabs?.upcoming ?? 0,
+    },
+    {
+      id: "past",
+      label: "Past Deliveries",
+      count: data?.tabs?.past ?? 0,
+    },
+    {
+      id: "rescheduled",
+      label: "Rescheduled Deliveries",
+      count: data?.tabs?.rescheduled ?? 0,
+    },
+  ];
 
-  if (activeTab === "rescheduled") {
-    return delivery.status === "rescheduled";
-  }
+  const filteredDeliveries = (data?.deliveries || []).map((delivery) => {
+    return {
+      title: delivery.description || delivery.deliveryNumber || "Delivery",
+      description: delivery.description || "",
+      deliveryId: delivery.deliveryId,
+      status: delivery.status === "in_transit" ? "inTransit" : (delivery.status || "scheduled"),
+      deliveryInfo: {
+        date: delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString("en-US", {
+          weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+        }) : "-",
+        trackingStatus: delivery.status === "in_transit" ? "Out for Delivery" : "-",
+        eta: "-",
+        timeWindow: delivery.timings || "-",
+        company: delivery.deliveryCompany?.name || "-",
+        driver: delivery.deliveryCompany?.driver || "-",
+        driverPhone: delivery.deliveryCompany?.phone || "-",
+        estimatedWeight: delivery.estimatedWeight ? `${delivery.estimatedWeight.toLocaleString()} lbs` : "-",
+        equipment: delivery.loadingEquipment || [],
+      },
+      siteContact: {
+        name: delivery.siteContact?.name || "-",
+        phone: delivery.siteContact?.phone || "-",
+        instructions: delivery.siteInstructions || "-",
+        specialNotes: delivery.specialNotes || "-",
+      },
+      logistics: {
+        company: delivery.deliveryCompany?.name || "-",
+        driver: delivery.deliveryCompany?.driver || "-",
+        phone: delivery.deliveryCompany?.phone || "-",
+        communications: [],
+      },
+      rescheduleInfo: delivery.status === "rescheduled" ? {
+        previousDate: delivery.pickupDate ? new Date(delivery.pickupDate).toLocaleDateString() : "-",
+        newDate: delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : "-",
+        reason: delivery.specialNotes || "Rescheduled",
+      } : undefined,
+    };
+  });
 
-  return (
-    delivery.status !== "delivered" &&
-    delivery.status !== "rescheduled"
-  );
-});
   return (
     <div className="p-5 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -372,9 +149,20 @@ const DeliverySchedule = () => {
         </div>
       </div>
 
-      {filteredDeliveries.map((delivery) => (
-        <NextDeliveryCard key={delivery.deliveryId} data={delivery} />
-      ))}
+      {isLoading ? (
+        <div className="flex h-[50vh] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+        </div>
+      ) : filteredDeliveries.length === 0 ? (
+        <div className="flex h-[30vh] flex-col items-center justify-center text-center p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
+          <p className="text-gray-500 font-medium text-lg">No deliveries found</p>
+          <p className="text-gray-400 text-sm mt-1">There are no deliveries in this tab at the moment.</p>
+        </div>
+      ) : (
+        filteredDeliveries.map((delivery) => (
+          <NextDeliveryCard key={delivery.deliveryId} data={delivery} />
+        ))
+      )}
     </div>
   );
 };
