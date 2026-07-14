@@ -1,7 +1,7 @@
 import { mockPaymentsData } from "../../data/mockData";
 import { cn } from "@/lib/utils";
-import { useNavigate } from "react-router-dom";
-import type { ProjectInvoice } from "@/redux/api/projectsApi";
+import { useNavigate, useParams } from "react-router-dom";
+import { useGetProjectPaymentsSummaryQuery, type ProjectInvoice } from "@/redux/api/projectsApi";
 
 interface ProjectPaymentsProps {
   invoices?: ProjectInvoice[];
@@ -29,9 +29,15 @@ const formatCurrency = (amount: number | undefined | null) => {
 
 const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
   const { id: mockId } = mockPaymentsData;
 
   const displayId = leadId || mockId;
+  const activeLeadId = id || "";
+
+  const { data: summary, isLoading: isSummaryLoading } = useGetProjectPaymentsSummaryQuery(activeLeadId, {
+    skip: !activeLeadId,
+  });
 
   return (
     <div className="space-y-6 md:p-6 p-4 md:space-y-8 bg-white rounded-[10px]">
@@ -53,13 +59,13 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
           <div className="space-y-2">
             <p className="text-[#717171] text-sm font-normal">Total Payment</p>
             <p className="text-lg font-bold text-gray-900">
-              -
+              {isSummaryLoading ? "Loading..." : formatCurrency(summary?.totalPayment)}
             </p>
           </div>
           <div className="space-y-2">
             <p className="text-[#717171] text-sm font-normal">Total Paid</p>
             <p className="text-lg font-bold text-[#3AB449]">
-              -
+              {isSummaryLoading ? "Loading..." : formatCurrency(summary?.totalPaid)}
             </p>
           </div>
           <div className="space-y-2">
@@ -67,7 +73,7 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
               Outstanding Balance
             </p>
             <p className="text-lg font-bold text-[#EF4444]">
-              -
+              {isSummaryLoading ? "Loading..." : formatCurrency(summary?.outstandingBalance)}
             </p>
           </div>
         </div>
