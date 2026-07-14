@@ -49,7 +49,7 @@ export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Drawings"],
+  tagTypes: ["Drawings", "Quotation"],
   endpoints: (builder) => ({
     getProjects: builder.query<GetProjectsResponseData, GetProjectsParams>({
       query: ({ page, limit }) => ({
@@ -177,6 +177,90 @@ export const projectsApi = createApi({
       transformResponse: (response: GetCustomerDocumentsApiResponse) =>
         response.data as GetCustomerDocumentsResponseData,
     }),
+    getProjectPaymentsSummary: builder.query<ProjectPaymentsSummaryResponseData, string>({
+      query: (leadId) => ({
+        url: `/api/customer/projects/${leadId}/payments/summary`,
+        method: "GET",
+      }),
+      transformResponse: (response: GetProjectPaymentsSummaryApiResponse) =>
+        response.data as ProjectPaymentsSummaryResponseData,
+    }),
+    getProjectQuotation: builder.query<GetProjectQuotationResponseData, string>({
+      query: (leadId) => ({
+        url: `/api/customer/projects/${leadId}/quotation`,
+        method: "GET",
+      }),
+      providesTags: (_result, _error, leadId) => [{ type: "Quotation", id: leadId }],
+      transformResponse: (response: GetProjectQuotationApiResponse) =>
+        response.data as GetProjectQuotationResponseData,
+    }),
+    approveQuotation: builder.mutation<ApiResponse<unknown>, string>({
+      query: (leadId) => ({
+        url: `/api/customer/projects/${leadId}/quotation/approve`,
+        method: "POST",
+      }),
+      invalidatesTags: (_result, _error, leadId) => [{ type: "Quotation", id: leadId }],
+    }),
+    rejectQuotation: builder.mutation<
+      ApiResponse<unknown>,
+      { leadId: string; reason?: string }
+    >({
+      query: ({ leadId, reason }) => ({
+        url: `/api/customer/projects/${leadId}/quotation/reject`,
+        method: "POST",
+        body: { reason },
+      }),
+      invalidatesTags: (_result, _error, { leadId }) => [{ type: "Quotation", id: leadId }],
+    }),
+    getChatHistory: builder.query<
+      {
+        isChatEnded: boolean;
+        chatEndedAt: string | null;
+        isStaffChatActive: boolean;
+        isHandedToSales: boolean;
+        isAiActive: boolean;
+        canCustomerSend: boolean;
+        messages: {
+          senderType: "customer" | "ai" | "sales" | "admin";
+          content: string;
+          createdAt: string;
+          senderName?: string;
+        }[];
+      },
+      string
+    >({
+      query: (leadId) => ({
+        url: `/api/public/chat/history/${leadId}`,
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<{
+        isChatEnded: boolean;
+        chatEndedAt: string | null;
+        isStaffChatActive: boolean;
+        isHandedToSales: boolean;
+        isAiActive: boolean;
+        canCustomerSend: boolean;
+        messages: {
+          senderType: "customer" | "ai" | "sales" | "admin";
+          content: string;
+          createdAt: string;
+          senderName?: string;
+        }[];
+      }>) => response.data as {
+        isChatEnded: boolean;
+        chatEndedAt: string | null;
+        isStaffChatActive: boolean;
+        isHandedToSales: boolean;
+        isAiActive: boolean;
+        canCustomerSend: boolean;
+        messages: {
+          senderType: "customer" | "ai" | "sales" | "admin";
+          content: string;
+          createdAt: string;
+          senderName?: string;
+        }[];
+      },
+    }),
   }),
 });
 
@@ -237,6 +321,7 @@ export interface Quotation {
   internalNotes: string;
   priorityLevel: string;
   status: string;
+  rejectReason?: string;
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -538,6 +623,20 @@ export interface GetCustomerDocumentsResponseData {
 
 export type GetCustomerDocumentsApiResponse = ApiResponse<GetCustomerDocumentsResponseData>;
 
+export interface ProjectPaymentsSummaryResponseData {
+  totalPayment: number;
+  totalPaid: number;
+  outstandingBalance: number;
+}
+
+export type GetProjectPaymentsSummaryApiResponse = ApiResponse<ProjectPaymentsSummaryResponseData>;
+
+export interface GetProjectQuotationResponseData {
+  quotation: Quotation | null;
+}
+
+export type GetProjectQuotationApiResponse = ApiResponse<GetProjectQuotationResponseData>;
+
 export const {
   useGetProjectsQuery,
   useGetProjectDetailsQuery,
@@ -552,6 +651,11 @@ export const {
   useGetProjectRFQQuery,
   useCancelProjectMutation,
   useGetCustomerDocumentsQuery,
+  useGetProjectPaymentsSummaryQuery,
+  useGetProjectQuotationQuery,
+  useApproveQuotationMutation,
+  useRejectQuotationMutation,
+  useGetChatHistoryQuery,
 } = projectsApi;
 
 
