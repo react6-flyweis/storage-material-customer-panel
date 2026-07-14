@@ -19,7 +19,7 @@ export default function CalendarModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[520px] rounded-lg bg-white p-4 shadow-xl">
+      <div className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#F97316]">
