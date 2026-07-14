@@ -1,5 +1,4 @@
-//@ts-nocheck
-"use client";
+
 
 import {
   Truck,
@@ -31,11 +30,11 @@ import AcknowledgeRescheduleModal from "./AcknowledgeRescheduleModal";
 
 export const statusConfig = {
   inTransit: {
-  label: "In Transit",
-  bg: "bg-[#DCE8FF]",
-  text: "text-[#1D4ED8]",
-  icon: Truck,
-},
+    label: "In Transit",
+    bg: "bg-[#DCE8FF]",
+    text: "text-[#1D4ED8]",
+    icon: Truck,
+  },
   scheduled: {
     label: "Scheduled",
     bg: "bg-[#DCE8FF]",
@@ -69,6 +68,8 @@ type NextDeliveryCardProps = {
     description: string;
     deliveryId: string;
     status: string;
+    className?: string;
+    isSite?: boolean;
 
     deliveryInfo: {
       date: string;
@@ -138,7 +139,11 @@ export default function NextDeliveryCard({
     type: "driver",
   });
 
-  const StatusIcon = statusConfig[data.status].icon;
+  const statusKey = (data.status in statusConfig
+    ? data.status
+    : "scheduled") as keyof typeof statusConfig;
+
+  const StatusIcon = statusConfig[statusKey].icon;
 
   return (
     <div
@@ -198,13 +203,12 @@ export default function NextDeliveryCard({
       <div className="mb-12 flex flex-wrap items-start gap-5">
         <div
           className={`flex h-20 w-20 items-center justify-center rounded-lg shadow-lg
-  ${
-    data.status === "delivered"
-      ? "bg-[#667085]"
-      : data.status === "rescheduled"
-        ? "bg-[#22C55E]"
-        : "bg-gradient-to-br from-[#22C55E] to-[#16A34A]"
-  }`}
+  ${data.status === "delivered"
+              ? "bg-[#667085]"
+              : data.status === "rescheduled"
+                ? "bg-[#22C55E]"
+                : "bg-gradient-to-br from-[#22C55E] to-[#16A34A]"
+            }`}
         >
           <Truck className="h-10 w-10 text-white" />
         </div>
@@ -219,10 +223,10 @@ export default function NextDeliveryCard({
             </h2>
 
             <span
-              className={`rounded-full flex items-center gap-2 px-2 py-1.5 text-sm font-medium ${statusConfig[data.status].bg} ${statusConfig[data.status].text}`}
+              className={`rounded-full flex items-center gap-2 px-2 py-1.5 text-sm font-medium ${statusConfig[statusKey].bg} ${statusConfig[statusKey].text}`}
             >
               <StatusIcon className="h-4 w-4" />
-              {statusConfig[data.status].label}
+              {statusConfig[statusKey].label}
             </span>
           </div>
 
@@ -487,11 +491,10 @@ export default function NextDeliveryCard({
               <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-8">
                 <div className="flex items-center gap-3">
                   <div
-                    className={`h-5 w-5 rounded-full ${
-                      data.siteStatus?.siteReady
-                        ? "bg-[#22C55E]"
-                        : "bg-[#D0D5DD]"
-                    }`}
+                    className={`h-5 w-5 rounded-full ${data.siteStatus?.siteReady
+                      ? "bg-[#22C55E]"
+                      : "bg-[#D0D5DD]"
+                      }`}
                   />
 
                   <span>
@@ -502,11 +505,10 @@ export default function NextDeliveryCard({
 
                 <div className="flex items-center gap-3">
                   <div
-                    className={`h-5 w-5 rounded-full ${
-                      data.siteStatus?.siteReady
-                        ? "bg-[#22C55E]"
-                        : "bg-[#D0D5DD]"
-                    }`}
+                    className={`h-5 w-5 rounded-full ${data.siteStatus?.siteReady
+                      ? "bg-[#22C55E]"
+                      : "bg-[#D0D5DD]"
+                      }`}
                   />
 
                   <span>
@@ -538,77 +540,77 @@ export default function NextDeliveryCard({
 
       {data.status != "delivered" && (<>
 
-      <div className="my-8 border-t border-slate-200" />
+        <div className="my-8 border-t border-slate-200" />
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <button
-          onClick={() =>
-            setContactModal({
-              open: true,
-              type: "driver",
-            })
-          }
-          className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-4 text-sm px-2 font-semibold text-white"
-        >
-          <Phone size={20} />
-          Contact Driver
-        </button>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <button
+            onClick={() =>
+              setContactModal({
+                open: true,
+                type: "driver",
+              })
+            }
+            className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-2 text-sm px-2 font-semibold text-white"
+          >
+            <Phone size={20} />
+            Contact Driver
+          </button>
 
-        <button
-          onClick={() =>
-            setContactModal({
-              open: true,
-              type: "company",
-            })
-          }
-          className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-4 text-sm px-2 font-semibold text-white"
-        >
-          <Phone size={20} />
-          Delivery Company
-        </button>
+          <button
+            onClick={() =>
+              setContactModal({
+                open: true,
+                type: "company",
+              })
+            }
+            className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-2 text-sm px-2 font-semibold text-white"
+          >
+            <Phone size={20} />
+            Delivery Company
+          </button>
 
-        <button
-          onClick={() => setIsEmailModalOpen(true)}
-          className="flex items-center justify-center gap-2 rounded-lg border bg-white py-4 text-sm px-2 font-semibold text-[#101828]"
-        >
-          <Mail size={20} />
-          Confirmation Email Sent
-        </button>
+          <button
+            onClick={() => setIsEmailModalOpen(true)}
+            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#101828]"
+          >
+            <Mail size={20} />
+            Confirmation Email Sent
+          </button>
 
-        <button
-          onClick={() => setCalendarModal(true)}
-          className="flex items-center justify-center gap-2 rounded-lg border bg-white py-4 text-sm px-2 font-semibold text-[#101828]"
-        >
-          <CalendarDays size={20} />
-          Add to Calendar
-        </button>
-      </div>
+          <button
+            onClick={() => setCalendarModal(true)}
+            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#101828]"
+          >
+            <CalendarDays size={20} />
+            Add to Calendar
+          </button>
+        </div>
 
-      <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <button
-          onClick={() => setFullInstructionModal(true)}
-          className="flex items-center justify-center gap-2 rounded-lg border bg-white py-4 text-sm px-2 font-semibold text-[#9333EA]"
-        >
-          <Eye size={20} />
-          View Full Delivery Instructions
-        </button>
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <button
+            onClick={() => setFullInstructionModal(true)}
+            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#9333EA]"
+          >
+            <Eye size={20} />
+            View Full Delivery Instructions
+          </button>
 
-        <button
-          onClick={() => setCallbackModal(true)}
-          className="flex items-center justify-center gap-2 rounded-lg border bg-white py-4 text-sm px-2 font-semibold text-[#3B5FB8]"
-        >
-          <MessageSquare size={20} />
-          Request Call Back
-        </button>
+          <button
+            onClick={() => setCallbackModal(true)}
+            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#3B5FB8]"
+          >
+            <MessageSquare size={20} />
+            Request Call Back
+          </button>
 
-        <button
-          onClick={() => setDocumentModal(true)}
-          className="flex items-center justify-center gap-2 rounded-lg border bg-white py-4 text-sm px-2 font-semibold text-[#F97316]"
-        >
-          <Download size={20} />
-          Download Info (PDF)
-        </button>
-      </div>
+          <button
+            onClick={() => setDocumentModal(true)}
+            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#F97316]"
+          >
+            <Download size={20} />
+            Download Info (PDF)
+          </button>
+        </div>
       </>)}
 
       <ContactModal
@@ -640,6 +642,7 @@ export default function NextDeliveryCard({
       />
       <FullDeliveryInstructionModal
         open={fullInstructionModal}
+        deliveryId={data.deliveryId}
         onClose={() => setFullInstructionModal(false)}
       />
       <EmailConfirmationModal
