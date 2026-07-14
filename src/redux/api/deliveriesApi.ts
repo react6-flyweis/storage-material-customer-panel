@@ -20,6 +20,13 @@ export interface Project {
   projectName: string;
 }
 
+export interface LoadAndBundle {
+  loadId: string;
+  bundleCount: number;
+  truckNumber: string;
+  totalWeight: string;
+}
+
 export interface Delivery {
   deliveryId: string;
   deliveryNumber: string;
@@ -35,6 +42,7 @@ export interface Delivery {
   siteContact: SiteContact;
   deliveryCompany?: DeliveryCompany | null;
   project: Project;
+  loadAndBundle?: LoadAndBundle | null;
 }
 
 export interface GetDeliveriesResponseData {
@@ -62,7 +70,15 @@ export const deliveriesApi = createApi({
       transformResponse: (response: GetDeliveriesApiResponse) =>
         response.data as GetDeliveriesResponseData,
     }),
+    getDeliveryById: builder.query<Delivery, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}`,
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<{ delivery: Delivery }>) =>
+        response.data?.delivery as Delivery,
+    }),
   }),
 });
 
-export const { useGetDeliveriesQuery } = deliveriesApi;
+export const { useGetDeliveriesQuery, useGetDeliveryByIdQuery } = deliveriesApi;
