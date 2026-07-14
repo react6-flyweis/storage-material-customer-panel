@@ -68,6 +68,12 @@ const DeliverySchedule = () => {
         newDate: delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : "-",
         reason: delivery.specialNotes || "Rescheduled",
       } : undefined,
+      loadSummary: delivery.loadAndBundle ? {
+        loadId: delivery.loadAndBundle.loadId,
+        bundleCount: delivery.loadAndBundle.bundleCount,
+        truckNumber: delivery.loadAndBundle.truckNumber,
+        totalWeight: delivery.loadAndBundle.totalWeight
+      } : undefined,
     };
   });
 
