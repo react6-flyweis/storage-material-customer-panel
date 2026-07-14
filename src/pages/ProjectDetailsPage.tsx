@@ -4,7 +4,13 @@ import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 // import { myProjectsData } from "@/data/text/MyProjectsData";
-import { useGetProjectDetailsQuery, useCancelProjectMutation } from "@/redux/api/projectsApi";
+import {
+  useGetProjectDetailsQuery,
+  useCancelProjectMutation,
+  useGetProjectQuotationQuery,
+  useApproveQuotationMutation,
+  useRejectQuotationMutation,
+} from "@/redux/api/projectsApi";
 
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import ProjectBasicInfo from "@/components/my_projects/ProjectBasicInfo";
@@ -45,6 +51,47 @@ const ProjectDetailsPage = () => {
   const [cancelReason, setCancelReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [cancelProject, { isLoading: isCancelling }] = useCancelProjectMutation();
+
+  const { data: quotationData } = useGetProjectQuotationQuery(id, {
+    skip: !id,
+  });
+  const [approveQuotation, { isLoading: isApprovingQuotation }] = useApproveQuotationMutation();
+  const [rejectQuotation, { isLoading: isRejectingQuotation }] = useRejectQuotationMutation();
+
+  const [isRejectQuotationModalOpen, setIsRejectQuotationModalOpen] = useState(false);
+  const [rejectQuotationReason, setRejectQuotationReason] = useState("");
+  const [rejectReasonError, setRejectReasonError] = useState("");
+
+  const handleApproveQuotation = async () => {
+    try {
+      await approveQuotation(id).unwrap();
+      setModalTitle("Quotation Approved Successfully");
+      setIsSuccessModalOpen(true);
+      setTimeout(() => {
+        setIsSuccessModalOpen(false);
+      }, 5000);
+    } catch (err) {
+      console.error("Failed to approve quotation:", err);
+    }
+  };
+
+  const handleRejectQuotationSubmit = async () => {
+    try {
+      setRejectReasonError("");
+      await rejectQuotation({ leadId: id, reason: rejectQuotationReason }).unwrap();
+      setIsRejectQuotationModalOpen(false);
+      setRejectQuotationReason("");
+      setModalTitle("Quotation Rejected Successfully");
+      setIsSuccessModalOpen(true);
+      setTimeout(() => {
+        setIsSuccessModalOpen(false);
+      }, 5000);
+    } catch (err) {
+      console.error("Failed to reject quotation:", err);
+      const error = err as { data?: { message?: string } };
+      setRejectReasonError(error?.data?.message || "Failed to reject quotation. Please try again.");
+    }
+  };
 
   const handleCancelProject = async () => {
     if (!cancelReason.trim()) {
@@ -95,25 +142,26 @@ const ProjectDetailsPage = () => {
             </Button>
           </div>
         )}
-        {activeTab === "Quotation" && (
+        {activeTab === "Quotation" && quotationData?.quotation?.status?.toLowerCase() !== "accepted" && quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
           <div className="flex items-center gap-3">
-            <Button className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
+            <Button
+              onClick={() => setIsRejectQuotationModalOpen(true)}
+              disabled={isApprovingQuotation || isRejectingQuotation}
+              className="bg-[#78787833] hover:bg-[#78787855] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md transition-all"
+            >
               Reject
             </Button>
             <Button
-              onClick={() => {
-                setIsSuccessModalOpen(true);
-                setModalTitle("Approved Successfully");
-                setTimeout(() => {
-                  setIsSuccessModalOpen(false);
-                }, 5000);
-              }}
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md"
+              onClick={handleApproveQuotation}
+              disabled={isApprovingQuotation || isRejectingQuotation}
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md flex items-center gap-1.5 transition-all"
             >
+              {isApprovingQuotation && <Loader2 className="h-3 w-3 animate-spin" />}
               Approve to proceed
             </Button>
           </div>
         )}
+
 
         <SuccessModal
           isOpen={isSuccessModalOpen}
@@ -172,6 +220,59 @@ const ProjectDetailsPage = () => {
           </div>
         </Modal>
 
+        {/* Reject Quotation Modal */}
+        <Modal
+          isOpen={isRejectQuotationModalOpen}
+          onClose={() => {
+            setIsRejectQuotationModalOpen(false);
+            setRejectQuotationReason("");
+            setRejectReasonError("");
+          }}
+          showHeader={false}
+          width="max-w-[520px]"
+          customPadding="p-0"
+        >
+          <div className="rounded-lg bg-white px-5 py-8">
+            <h2 className="text-center text-[32px] font-bold text-[#101828]">
+              Reject Quotation
+            </h2>
+
+            <div className="mt-10">
+              <label className="mb-4 block text-[18px] font-medium text-[#101828]">
+                Add Rejection Reason (Optional)
+              </label>
+
+              <textarea
+                value={rejectQuotationReason}
+                onChange={(e) => {
+                  setRejectQuotationReason(e.target.value);
+                  if (rejectReasonError) setRejectReasonError("");
+                }}
+                placeholder="Enter Reason"
+                rows={5}
+                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
+                  rejectReasonError ? "border-red-500" : "border-[#D0D5DD]"
+                }`}
+              />
+
+              {rejectReasonError && (
+                <p className="mt-2 text-sm text-red-500">{rejectReasonError}</p>
+              )}
+            </div>
+
+            <div className="mt-10 flex justify-center">
+              <button
+                onClick={handleRejectQuotationSubmit}
+                disabled={isRejectingQuotation}
+                className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isRejectingQuotation && <Loader2 className="h-4 w-4 animate-spin" />}
+                Reject Quotation
+              </button>
+            </div>
+          </div>
+        </Modal>
+
       </div>
       <TitleSubtitle
         title="Project Details"
@@ -221,7 +322,7 @@ const ProjectDetailsPage = () => {
         ) : activeTab === "RFQ" ? (
           <ProjectRFQ />
         ) : activeTab === "Quotation" ? (
-          <ProjectQuotation />
+          <ProjectQuotation leadId={id} />
         ) : activeTab === "Open Chat" ? (
           <ProjectOpenChat />
         ) : activeTab === "Timeline" ? (
