@@ -1,4 +1,4 @@
-"use client";
+
 
 import {
   Eye,
@@ -222,7 +222,9 @@ export default function FullDeliveryInstructionModal({
 
                       <div>
                         <p className="text-sm text-[#4A5565]">Total Weight</p>
-                        <p className="text-base font-semibold">{delivery.loadAndBundle.totalWeight || "-"}</p>
+                        <p className="text-base font-semibold">
+                          {delivery.loadAndBundle.totalWeight ? `${delivery.loadAndBundle.totalWeight.toLocaleString()} lbs` : "-"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -236,17 +238,23 @@ export default function FullDeliveryInstructionModal({
                   <div className="mt-5 grid grid-cols-3 gap-6">
                     <div>
                       <p className="text-sm text-[#4A5565]">Total Parts</p>
-                      <p className="text-base font-semibold">-</p>
+                      <p className="text-base font-semibold">
+                        {delivery.packingListSummary?.totalParts ?? "-"}
+                      </p>
                     </div>
 
                     <div>
                       <p className="text-sm text-[#4A5565]">Bundle Types</p>
-                      <p className="text-base font-semibold">-</p>
+                      <p className="text-base font-semibold">
+                        {delivery.packingListSummary?.bundleTypes?.join(", ") || "-"}
+                      </p>
                     </div>
 
                     <div>
                       <p className="text-sm text-[#4A5565]">Material</p>
-                      <p className="text-base font-semibold">-</p>
+                      <p className="text-base font-semibold">
+                        {delivery.packingListSummary?.material || "-"}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -275,25 +283,25 @@ export default function FullDeliveryInstructionModal({
               <div className="space-y-5">
                 <ContactCard
                   title="Receiving POC"
-                  name="-"
-                  phone="-"
-                  email="-"
+                  name={delivery.receivingPoc?.name || "-"}
+                  phone={delivery.receivingPoc?.phone || "-"}
+                  email={delivery.receivingPoc?.email || "-"}
                 />
 
                 <ContactCard
                   title="Delivery Team"
                   company
-                  name={delivery.deliveryCompany?.name || "-"}
-                  phone={delivery.deliveryCompany?.phone || "-"}
-                  email={delivery.deliveryCompany?.email || "-"}
-                  driver={delivery.deliveryCompany?.driver || "-"}
+                  name={delivery.deliveryTeam?.company || delivery.deliveryCompany?.name || "-"}
+                  phone={delivery.deliveryTeam?.phone || delivery.deliveryCompany?.phone || "-"}
+                  email={delivery.deliveryTeam?.email || delivery.deliveryCompany?.email || "-"}
+                  driver={delivery.deliveryTeam?.driver || delivery.deliveryCompany?.driver || "-"}
                 />
 
                 <ContactCard
                   title="Site Contact"
                   name={delivery.siteContact?.name || "-"}
                   phone={delivery.siteContact?.phone || "-"}
-                  email="-"
+                  email={delivery.siteContact?.email || "-"}
                 />
               </div>
             </div>
