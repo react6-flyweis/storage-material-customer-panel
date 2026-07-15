@@ -107,9 +107,9 @@ type NextDeliveryCardProps = {
 
     loadSummary?: {
       loadId: string;
-      bundleCount: number;
-      truckNumber: string;
-      totalWeight: string;
+      bundleCount: number | null;
+      truckNumber: string | null;
+      totalWeight: string | number;
     };
 
     siteStatus?: {
@@ -616,6 +616,7 @@ export default function NextDeliveryCard({
       <ContactModal
         open={contactModal.open}
         type={contactModal.type}
+        deliveryData={data}
         onClose={() =>
           setContactModal((prev) => ({
             ...prev,
@@ -625,14 +626,17 @@ export default function NextDeliveryCard({
       />
       <DocumentModal
         open={documentModal}
+        deliveryData={data}
         onClose={() => setDocumentModal(false)}
       />
       <CalendarModal
         open={calendarModal}
+        deliveryData={data}
         onClose={() => setCalendarModal(false)}
       />
       <CallbackModal
         open={callbackModal}
+        deliveryData={data}
         onClose={() => setCallbackModal(false)}
       />
       <SiteConfirmedModal
@@ -647,6 +651,7 @@ export default function NextDeliveryCard({
       />
       <EmailConfirmationModal
         open={isEmailModalOpen}
+        deliveryData={data}
         onClose={() => setIsEmailModalOpen(false)}
       />
       <ConfirmEquipmentModal
