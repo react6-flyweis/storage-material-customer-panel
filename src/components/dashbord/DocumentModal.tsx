@@ -1,30 +1,79 @@
 import { Download, X } from "lucide-react";
+import {
+  useLazyDownloadDeliveryDetailsQuery,
+  useLazyDownloadPackingListQuery,
+  useLazyDownloadInstructionsQuery,
+} from "@/redux/api/deliveriesApi";
 
 interface DocumentModalProps {
   open: boolean;
+  deliveryData?: {
+    deliveryId: string;
+    title?: string;
+  };
   onClose: () => void;
 }
 
 const documents = [
   {
+    id: "details",
     title: "Delivery Details PDF",
-    size: "22 MB",
+    filename: "delivery-details.pdf",
   },
   {
+    id: "packing-list",
     title: "Packing List",
-    size: "22 MB",
+    filename: "packing-list.pdf",
   },
   {
+    id: "instructions",
     title: "Instructions",
-    size: "22 MB",
+    filename: "instructions.pdf",
   },
 ];
 
 export default function DocumentModal({
   open,
+  deliveryData,
   onClose,
 }: DocumentModalProps) {
+  const [triggerDownloadDetails] = useLazyDownloadDeliveryDetailsQuery();
+  const [triggerDownloadPackingList] = useLazyDownloadPackingListQuery();
+  const [triggerDownloadInstructions] = useLazyDownloadInstructionsQuery();
+
   if (!open) return null;
+
+  const handleDownload = async (docId: string, filename: string) => {
+    if (!deliveryData?.deliveryId) return;
+    try {
+      let resultBlob: Blob | undefined;
+      if (docId === "details") {
+        resultBlob = await triggerDownloadDetails(deliveryData.deliveryId).unwrap();
+      } else if (docId === "packing-list") {
+        resultBlob = await triggerDownloadPackingList(deliveryData.deliveryId).unwrap();
+      } else if (docId === "instructions") {
+        resultBlob = await triggerDownloadInstructions(deliveryData.deliveryId).unwrap();
+      }
+      if (resultBlob) {
+        const url = window.URL.createObjectURL(resultBlob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        window.URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error(`Failed to download ${filename}:`, error);
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    for (const doc of documents) {
+      await handleDownload(doc.id, doc.filename);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -48,7 +97,7 @@ export default function DocumentModal({
         <div className="mt-6 space-y-3">
           {documents.map((item) => (
             <div
-              key={item.title}
+              key={item.id}
               className="flex items-center justify-between rounded-xl border-2 border-[#BEDBFF] bg-[#EFF6FF] p-4"
             >
               <div>
@@ -59,13 +108,12 @@ export default function DocumentModal({
                 <p className="mt-1 text-base font-bold text-[#101828]">
                   {item.title}
                 </p>
-
-                <p className="mt-1 text-sm text-[#4A5565]">
-                  {item.size}
-                </p>
               </div>
 
-              <button className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#22C55E] to-[#16A34A]">
+              <button
+                onClick={() => handleDownload(item.id, item.filename)}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#22C55E] to-[#16A34A] transition-transform active:scale-95"
+              >
                 <Download className="h-5 w-5 text-white" />
               </button>
             </div>
@@ -80,7 +128,10 @@ export default function DocumentModal({
             Cancel
           </button>
 
-          <button className="rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-3 text-sm font-medium text-white">
+          <button
+            onClick={handleDownloadAll}
+            className="rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-3 text-sm font-medium text-white transition-transform active:scale-95"
+          >
             Download All
           </button>
         </div>
