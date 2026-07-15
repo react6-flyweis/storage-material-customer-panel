@@ -145,7 +145,7 @@ export default function ChatCard({ leadId }: Props) {
     const joinRoom = () => {
       socket.emit("join_lead", {
         leadId,
-        customerId: currentUser.customerId,
+        customerId: currentUser._id,
       });
     };
 
@@ -235,7 +235,7 @@ export default function ChatCard({ leadId }: Props) {
     // Emit message to backend
     socket.emit("customer_message", {
       leadId,
-      customerId: currentUser.customerId,
+      customerId: currentUser._id,
       content: text,
     });
 
