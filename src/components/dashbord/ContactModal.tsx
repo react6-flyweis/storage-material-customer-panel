@@ -10,16 +10,40 @@ interface ContactModalProps {
   open: boolean;
   type: "driver" | "company";
   onClose: () => void;
+  deliveryData: {
+    title: string;
+    deliveryId: string;
+    status: string;
+    deliveryInfo: {
+      company: string;
+      driver: string;
+      driverPhone: string;
+    };
+    siteContact: {
+      name: string;
+      phone: string;
+    };
+    logistics: {
+      company: string;
+      driver: string;
+      phone: string;
+    };
+  };
 }
 
 export default function ContactModal({
   open,
   type,
   onClose,
+  deliveryData,
 }: ContactModalProps) {
-  if (!open) return null;
+  if (!open || !deliveryData) return null;
 
   const isDriver = type === "driver";
+  
+  const statusLabel = deliveryData.status === "inTransit" 
+    ? "In Transit" 
+    : deliveryData.status.charAt(0).toUpperCase() + deliveryData.status.slice(1);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -48,15 +72,15 @@ export default function ContactModal({
           </p>
 
           <p className="mt-1 text-base font-bold text-[#101828]">
-            Primary Frame Steel
+            {deliveryData.title}
           </p>
 
           <p className="mt-2 text-sm text-[#4A5565]">
-            DEL-1001
+            {deliveryData.deliveryId}
           </p>
 
           <p className="mt-2 text-sm font-semibold text-[#155DFC]">
-            Status: Scheduled
+            Status: {statusLabel}
           </p>
         </div>
 
@@ -67,7 +91,7 @@ export default function ContactModal({
               bg="bg-[#DDF5E5]"
               color="text-[#16A34A]"
               label="Driver Name"
-              value="John Driver"
+              value={deliveryData.deliveryInfo.driver}
             />
 
             <InfoCard
@@ -75,7 +99,7 @@ export default function ContactModal({
               bg="bg-[#DCE8FF]"
               color="text-[#2563EB]"
               label="Driver Phone"
-              value="(555) 999-8888"
+              value={deliveryData.deliveryInfo.driverPhone}
             />
 
             <InfoCard
@@ -83,7 +107,7 @@ export default function ContactModal({
               bg="bg-[#F1E2FF]"
               color="text-[#9333EA]"
               label="Delivery Company"
-              value="FastFreight Logistics"
+              value={deliveryData.deliveryInfo.company}
             />
 
             <InfoCard
@@ -91,7 +115,7 @@ export default function ContactModal({
               bg="bg-[#DCE8FF]"
               color="text-[#2563EB]"
               label="Company Phone"
-              value="(555) 7677-654"
+              value={deliveryData.logistics.phone}
             />
 
             <InfoCard
@@ -99,15 +123,15 @@ export default function ContactModal({
               bg="bg-[#DDF5E5]"
               color="text-[#16A34A]"
               label="Site Contact"
-              value="Mike Roberts"
+              value={deliveryData.siteContact.name}
             />
 
             <InfoCard
               icon={<Phone />}
               bg="bg-[#DCE8FF]"
               color="text-[#2563EB]"
-              label="Site Contact"
-              value="(555) 999-8888"
+              label="Site Phone"
+              value={deliveryData.siteContact.phone}
             />
           </div>
         ) : (
@@ -116,16 +140,16 @@ export default function ContactModal({
               icon={<User />}
               bg="bg-[#DDF5E5]"
               color="text-[#16A34A]"
-              label="Company Manager Name"
-              value="John Doe"
+              label="Company Driver Name"
+              value={deliveryData.deliveryInfo.driver}
             />
 
             <InfoCard
               icon={<Phone />}
               bg="bg-[#DCE8FF]"
               color="text-[#2563EB]"
-              label="Manager Phone"
-              value="(555) 999-8888"
+              label="Driver Phone"
+              value={deliveryData.deliveryInfo.driverPhone}
             />
 
             <InfoCard
@@ -133,7 +157,7 @@ export default function ContactModal({
               bg="bg-[#F1E2FF]"
               color="text-[#9333EA]"
               label="Delivery Company"
-              value="FastFreight Logistics"
+              value={deliveryData.deliveryInfo.company}
             />
           </div>
         )}
@@ -144,20 +168,29 @@ export default function ContactModal({
           }`}
         >
           {isDriver && (
-            <button className="rounded-lg bg-[#9E9E9E] py-3 text-sm font-medium text-white">
+            <a
+              href={`tel:${deliveryData.logistics.phone}`}
+              className="flex items-center justify-center rounded-lg bg-[#9E9E9E] py-3 text-sm font-medium text-white text-center"
+            >
               Call Dispatcher
-            </button>
+            </a>
           )}
 
-          <button className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-3 text-sm font-medium text-white">
+          <a
+            href={`tel:${isDriver ? deliveryData.deliveryInfo.driverPhone : deliveryData.logistics.phone}`}
+            className="flex items-center justify-center gap-2 rounded-lg bg-gradient-to-br from-[#22C55E] to-[#16A34A] py-3 text-sm font-medium text-white text-center"
+          >
             <Phone size={18} />
             {isDriver ? "Call Driver" : "Call Now"}
-          </button>
+          </a>
 
-          <button className="flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium">
+          <a
+            href={`sms:${isDriver ? deliveryData.deliveryInfo.driverPhone : deliveryData.logistics.phone}`}
+            className="flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium text-center"
+          >
             <MessageSquare size={18} />
             Send SMS
-          </button>
+          </a>
         </div>
       </div>
     </div>
