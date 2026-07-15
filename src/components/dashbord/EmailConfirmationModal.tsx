@@ -3,17 +3,56 @@ import {
   Mail,
   X,
 } from "lucide-react";
+import { useAppSelector } from "@/redux/hooks";
+import { useSendConfirmationEmailMutation } from "@/redux/api/deliveriesApi";
 
 interface EmailConfirmationModalProps {
   open: boolean;
   onClose: () => void;
+  deliveryData: {
+    title: string;
+    deliveryId: string;
+    status: string;
+    deliveryInfo: {
+      date: string;
+      timeWindow: string;
+      company: string;
+      driver: string;
+      driverPhone: string;
+    };
+    siteContact: {
+      name: string;
+      phone: string;
+      email?: string;
+    };
+    logistics: {
+      company: string;
+      driver: string;
+      phone: string;
+    };
+  };
 }
 
 export default function EmailConfirmationModal({
   open,
   onClose,
+  deliveryData,
 }: EmailConfirmationModalProps) {
-  if (!open) return null;
+  const loggedInEmail = useAppSelector((state) => state.auth.user?.email);
+  const [sendConfirmationEmail, { isLoading }] = useSendConfirmationEmailMutation();
+
+  if (!open || !deliveryData) return null;
+
+  const handleSendEmail = async () => {
+    try {
+      await sendConfirmationEmail(deliveryData.deliveryId).unwrap();
+      alert("Email confirmation sent successfully!");
+      onClose();
+    } catch (error) {
+      console.error("Failed to send email confirmation:", error);
+      alert("Failed to send email confirmation. Please try again.");
+    }
+  };
 
   const details = [
     "Delivery date and time",
@@ -78,12 +117,12 @@ export default function EmailConfirmationModal({
               Site Contact
             </p>
 
-            <h4 className="text-[20px] font-bold text-[#101828]">
-              John Doe
+            <h4 className="text-[20px] font-bold text-[#101828] truncate">
+              {deliveryData.siteContact.name}
             </h4>
 
             <p className="mt-1 text-[14px] text-[#667085]">
-              0987654321
+              {deliveryData.siteContact.phone}
             </p>
           </div>
 
@@ -92,12 +131,12 @@ export default function EmailConfirmationModal({
               Delivery Company Contact
             </p>
 
-            <h4 className="text-[20px] font-bold text-[#101828]">
-              Willum Manager
+            <h4 className="text-[20px] font-bold text-[#101828] truncate">
+              {deliveryData.deliveryInfo.company}
             </h4>
 
             <p className="mt-1 text-[14px] text-[#667085]">
-              0987654321
+              {deliveryData.logistics.phone}
             </p>
           </div>
         </div>
@@ -106,19 +145,19 @@ export default function EmailConfirmationModal({
           {[
             {
               label: "Delivery ID:",
-              value: "DEL-1001",
+              value: deliveryData.deliveryId,
             },
             {
               label: "Item:",
-              value: "Primary Frame Steel",
+              value: deliveryData.title,
             },
             {
               label: "Date:",
-              value: "Mar 25, 2026",
+              value: deliveryData.deliveryInfo.date,
             },
             {
               label: "Time:",
-              value: "08:00 - 12:00",
+              value: deliveryData.deliveryInfo.timeWindow,
             },
           ].map((item) => (
             <div
@@ -145,13 +184,13 @@ export default function EmailConfirmationModal({
               />
             </div>
 
-            <div>
+            <div className="min-w-0 flex-1">
               <p className="text-[14px] text-[#667085]">
                 Send to
               </p>
 
-              <p className="text-[16px] font-bold text-[#101828]">
-                austin.mcclume@abclogistics.com
+              <p className="text-[16px] font-bold text-[#101828] truncate">
+                {loggedInEmail || deliveryData.siteContact.email || "austin.mcclume@abclogistics.com"}
               </p>
             </div>
           </div>
@@ -165,10 +204,14 @@ export default function EmailConfirmationModal({
             Cancel
           </button>
 
-          <button className="h-[56px] flex-1 rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-[16px] font-medium text-white">
+          <button
+            onClick={handleSendEmail}
+            disabled={isLoading}
+            className="h-[56px] flex-1 rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-[16px] font-medium text-white disabled:opacity-50"
+          >
             <div className="flex items-center justify-center gap-3">
               <Mail size={20} />
-              Send Email
+              {isLoading ? "Sending..." : "Send Email"}
             </div>
           </button>
         </div>
