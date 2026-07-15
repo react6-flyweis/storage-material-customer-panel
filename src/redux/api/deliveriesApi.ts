@@ -12,6 +12,20 @@ export interface DeliveryCompany {
 export interface SiteContact {
   name: string;
   phone: string;
+  email?: string;
+}
+
+export interface ReceivingPoc {
+  name: string;
+  phone: string;
+  email: string;
+}
+
+export interface DeliveryTeam {
+  company: string;
+  driver: string;
+  phone: string;
+  email: string;
 }
 
 export interface Project {
@@ -22,9 +36,15 @@ export interface Project {
 
 export interface LoadAndBundle {
   loadId: string;
-  bundleCount: number;
-  truckNumber: string;
-  totalWeight: string;
+  bundleCount: number | null;
+  truckNumber: string | null;
+  totalWeight: number;
+}
+
+export interface PackingListSummary {
+  totalParts: number | null;
+  bundleTypes: string[] | null;
+  material: string;
 }
 
 export interface Delivery {
@@ -35,14 +55,18 @@ export interface Delivery {
   deliveryDate: string;
   timings?: string;
   pickupDate?: string | null;
+  deliveryLocation?: string;
   estimatedWeight: number;
   loadingEquipment: string[];
   siteInstructions?: string;
   specialNotes?: string;
   siteContact: SiteContact;
+  receivingPoc?: ReceivingPoc | null;
   deliveryCompany?: DeliveryCompany | null;
+  deliveryTeam?: DeliveryTeam | null;
   project: Project;
   loadAndBundle?: LoadAndBundle | null;
+  packingListSummary?: PackingListSummary | null;
 }
 
 export interface GetDeliveriesResponseData {
@@ -78,7 +102,96 @@ export const deliveriesApi = createApi({
       transformResponse: (response: ApiResponse<{ delivery: Delivery }>) =>
         response.data?.delivery as Delivery,
     }),
+    sendConfirmationEmail: builder.mutation<ApiResponse<unknown>, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/confirmation-email`,
+        method: "POST",
+      }),
+    }),
+    getDeliveryCalendar: builder.query<string, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/calendar`,
+        method: "GET",
+        responseHandler: (response) => response.text(),
+      }),
+    }),
+    getDeliveryCalendarDetails: builder.query<
+      {
+        title: string;
+        description: string;
+        location: string;
+        startDate: string;
+        endDate: string;
+        googleCalendarUrl: string;
+        outlookCalendarUrl: string;
+        plainText: string;
+        icsDownloadUrl: string;
+      },
+      string
+    >({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/calendar/details`,
+        method: "GET",
+      }),
+      transformResponse: (
+        response: ApiResponse<{
+          title: string;
+          description: string;
+          location: string;
+          startDate: string;
+          endDate: string;
+          googleCalendarUrl: string;
+          outlookCalendarUrl: string;
+          plainText: string;
+          icsDownloadUrl: string;
+        }>
+      ) => response.data!,
+    }),
+    requestCallback: builder.mutation<
+      { message: string; eta: string },
+      { deliveryId: string; body: { note?: string; priority?: string; reason?: string } }
+    >({
+      query: ({ deliveryId, body }) => ({
+        url: `/api/customer/deliveries/${deliveryId}/request-callback`,
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ApiResponse<{ message: string; eta: string }>) =>
+        response.data!,
+    }),
+    downloadDeliveryDetails: builder.query<Blob, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/download`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+    downloadPackingList: builder.query<Blob, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/download/packing-list`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+    downloadInstructions: builder.query<Blob, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/download/instructions`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
-export const { useGetDeliveriesQuery, useGetDeliveryByIdQuery } = deliveriesApi;
+export const {
+  useGetDeliveriesQuery,
+  useGetDeliveryByIdQuery,
+  useSendConfirmationEmailMutation,
+  useLazyGetDeliveryCalendarQuery,
+  useGetDeliveryCalendarDetailsQuery,
+  useRequestCallbackMutation,
+  useLazyDownloadDeliveryDetailsQuery,
+  useLazyDownloadPackingListQuery,
+  useLazyDownloadInstructionsQuery,
+} = deliveriesApi;
+
