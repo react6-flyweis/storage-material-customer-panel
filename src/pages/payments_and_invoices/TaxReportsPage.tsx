@@ -1,40 +1,54 @@
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import PaymentStatGrid from "@/components/payments_and_invoices/PaymentStatGrid";
 import PaymentTable from "@/components/payments_and_invoices/PaymentTable";
-import { taxReportList } from "@/data/PaymentsData";
-import type { TaxReportItem } from "@/data/PaymentsData";
+import { useGetTaxReportQuery, type TaxReportRow } from "@/redux/api/paymentsApi";
+
+const formatDate = (dateString?: string | null) => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return "-";
+  const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const day = date.getUTCDate();
+  const month = months[date.getUTCMonth()];
+  const year = date.getUTCFullYear();
+  return `${day}-${month}-${year}`;
+};
+
+const formatCurrency = (val?: number | null) => {
+  if (val === undefined || val === null || val === 0) return "-";
+  return `$${val.toLocaleString()}`;
+};
 
 const TaxReportsPage = () => {
-  const renderTaxReportRow = (item: TaxReportItem, index: number) => (
-    <tr key={index} className="">
+  const { data, isLoading } = useGetTaxReportQuery();
+
+  const renderTaxReportRow = (item: TaxReportRow, index: number) => (
+    <tr key={index} className="border-b border-gray-50 last:border-0">
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280] first:pl-0">
-        {item.date}
+        {formatDate(item.date)}
+      </td>
+      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
+        {item.invoiceNumber || "-"}
+      </td>
+      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
+        {item.projectName || "-"}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs">
         <span className="bg-[#EBF5FF] text-[#2563EB] px-3 py-1 rounded-full text-[10px] font-medium uppercase">
-          {item.buildingType}
+          {item.buildingType || "-"}
         </span>
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        {item.city}
+        {item.location || "-"}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        {item.taxId}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        {item.state}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        {item.zip}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        {item.taxRate}
+        {item.taxRate ? `${item.taxRate}%` : "-"}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs font-normal text-black">
-        {item.contractAmount}
+        {formatCurrency(item.contractAmount)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs font-normal text-[#EF4444] text-center">
-        {item.taxDue}
+        {formatCurrency(item.taxDue)}
       </td>
     </tr>
   );
@@ -50,25 +64,29 @@ const TaxReportsPage = () => {
 
       <PaymentStatGrid />
 
-      <PaymentTable
-        title=""
-        headers={[
-          "Date",
-          "Building Type",
-          "City",
-          "Tax ID",
-          "State",
-          "zip",
-          "Tax Rate",
-          "Contract Amount",
-          "Tax Due",
-        ]}
-        data={taxReportList}
-        renderRow={renderTaxReportRow}
-        headRowClassName="border-b border-[#00000033]"
-      />
+      {isLoading ? (
+        <div className="text-center py-10 text-gray-500">Loading tax reports...</div>
+      ) : (
+        <PaymentTable
+          title=""
+          headers={[
+            "Date",
+            "Invoice No.",
+            "Project Name",
+            "Building Type",
+            "Location",
+            "Tax Rate",
+            "Contract Amount",
+            "Tax Due",
+          ]}
+          data={data?.rows || []}
+          renderRow={renderTaxReportRow}
+          headRowClassName="border-b border-[#00000033]"
+        />
+      )}
     </div>
   );
 };
 
 export default TaxReportsPage;
+

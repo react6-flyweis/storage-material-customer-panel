@@ -182,7 +182,7 @@ export const paymentsApi = createApi({
     }),
     getInvoiceDetail: builder.query<InvoiceDetailResponseData, string>({
       query: (invoiceId) => ({
-        url: `/api/invoices/${invoiceId}`,
+        url: `/api/customer/payments/invoices/${invoiceId}`,
         method: "GET",
       }),
       transformResponse: (response: InvoiceDetailApiResponse) =>
@@ -196,14 +196,49 @@ export const paymentsApi = createApi({
       transformResponse: (response: GetInvoiceStatsApiResponse) =>
         response.data as InvoiceStatsResponseData,
     }),
+    getTaxReport: builder.query<TaxReportResponseData, void>({
+      query: () => ({
+        url: "/api/customer/payments/tax-report",
+        method: "GET",
+      }),
+      transformResponse: (response: GetTaxReportApiResponse) =>
+        response.data as TaxReportResponseData,
+    }),
   }),
 });
+
+export interface TaxReportRow {
+  date: string;
+  invoiceNumber: string;
+  projectId: string;
+  projectName: string;
+  buildingType: string;
+  location: string;
+  contractAmount: number;
+  taxRate: number;
+  taxDue: number;
+  status: string;
+}
+
+export interface TaxReportSummary {
+  totalContractAmount: number;
+  totalTaxDue: number;
+}
+
+export interface TaxReportResponseData {
+  rows: TaxReportRow[];
+  summary: TaxReportSummary;
+}
+
+export type GetTaxReportApiResponse = ApiResponse<TaxReportResponseData>;
 
 export const {
   useGetPaymentsQuery,
   useGetInvoicesQuery,
   useGetInvoiceDetailQuery,
   useGetInvoiceStatsQuery,
+  useGetTaxReportQuery,
 } = paymentsApi;
+
 
 
