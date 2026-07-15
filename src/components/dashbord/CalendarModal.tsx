@@ -3,19 +3,62 @@ import {
   Clock3,
   MapPin,
   Copy,
+  Check,
   X,
 } from "lucide-react";
+import { useState } from "react";
+import {
+  useLazyGetDeliveryCalendarQuery,
+  useGetDeliveryCalendarDetailsQuery,
+} from "@/redux/api/deliveriesApi";
 
 interface CalendarModalProps {
   open: boolean;
   onClose: () => void;
+  deliveryData: {
+    title: string;
+    description: string;
+    deliveryId: string;
+    deliveryInfo: {
+      date: string;
+      timeWindow: string;
+      company: string;
+      driver: string;
+      driverPhone: string;
+    };
+    siteContact: {
+      address?: string;
+    };
+  };
 }
 
 export default function CalendarModal({
   open,
   onClose,
+  deliveryData,
 }: CalendarModalProps) {
+  const [triggerGetCalendar, { isFetching }] = useLazyGetDeliveryCalendarQuery();
+  const { data: detailsData, isLoading: isLoadingDetails } = useGetDeliveryCalendarDetailsQuery(
+    deliveryData.deliveryId,
+    { skip: !open }
+  );
+  const [copied, setCopied] = useState(false);
+
   if (!open) return null;
+
+  const handleCopyToClipboard = async () => {
+    try {
+      const calendarText = await triggerGetCalendar(deliveryData.deliveryId).unwrap();
+      await navigator.clipboard.writeText(calendarText);
+      setCopied(true);
+      setTimeout(() => {
+        setCopied(false);
+      }, 1000);
+    } catch (error) {
+      console.error("Failed to copy calendar text:", error);
+      alert("Failed to copy to clipboard. Please try again.");
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -38,7 +81,7 @@ export default function CalendarModal({
 
         <div className="mt-8 rounded-xl border-2 border-[#F7C48A] bg-[#FFF8F1] p-5">
           <h3 className="text-base font-bold text-[#101828]">
-            Primary Frame Steel
+            {deliveryData.title}
           </h3>
 
           <div className="mt-4 space-y-3">
@@ -47,18 +90,20 @@ export default function CalendarModal({
                 size={18}
                 className="text-[#F97316]"
               />
-              Wednesday, March 25, 2026
+              {deliveryData.deliveryInfo.date}
             </div>
 
             <div className="flex items-center gap-3 text-sm text-[#101828]">
               <Clock3 size={18} className="text-[#F97316]" />
-              08:00 - 12:00
+              {deliveryData.deliveryInfo.timeWindow}
             </div>
 
-            <div className="flex items-center gap-3 text-sm text-[#101828]">
-              <MapPin size={18} className="text-[#F97316]" />
-              ABC Logistics Warehouse
-            </div>
+            {deliveryData.siteContact.address && (
+              <div className="flex items-center gap-3 text-sm text-[#101828]">
+                <MapPin size={18} className="text-[#F97316]" />
+                {deliveryData.siteContact.address}
+              </div>
+            )}
           </div>
         </div>
 
@@ -68,16 +113,16 @@ export default function CalendarModal({
           </p>
 
           <p className="mt-3 text-sm text-[#101828]">
-            Main structural steel beams for warehouse frame
+            {deliveryData.description}
           </p>
 
           <div className="my-4 border-t" />
 
           <div className="space-y-1 text-sm text-[#4A5565]">
-            <p>Driver: John Driver</p>
-            <p>Phone: (555) 999-8888</p>
-            <p>Delivery Company: FastFreight Logistics</p>
-            <p>Delivery ID: DEL-1001</p>
+            <p>Driver: {deliveryData.deliveryInfo.driver}</p>
+            <p>Phone: {deliveryData.deliveryInfo.driverPhone}</p>
+            <p>Delivery Company: {deliveryData.deliveryInfo.company}</p>
+            <p>Delivery ID: {deliveryData.deliveryId}</p>
           </div>
         </div>
 
@@ -87,15 +132,61 @@ export default function CalendarModal({
           </h4>
 
           <div className="space-y-3">
-            <button className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828]">
-              <Copy size={18} />
-              Copy event details to (Apple Calendar,
-              Outlook, etc.)
-            </button>
+            {isLoadingDetails ? (
+              <div className="text-sm text-slate-500 py-3 text-center">Loading calendar options...</div>
+            ) : (
+              <>
+                {detailsData?.googleCalendarUrl && (
+                  <button
+                    onClick={() => window.open(detailsData.googleCalendarUrl, "_blank")}
+                    className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828]"
+                  >
+                    <CalendarDays size={18} className="text-[#4285F4]" />
+                    Add to Google Calendar
+                  </button>
+                )}
 
-            <button className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828]">
-              <Copy size={18} />
-              Copy event details to clipboard
+                {detailsData?.outlookCalendarUrl && (
+                  <button
+                    onClick={() => window.open(detailsData.outlookCalendarUrl, "_blank")}
+                    className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828]"
+                  >
+                    <CalendarDays size={18} className="text-[#0078D4]" />
+                    Add to Outlook Calendar
+                  </button>
+                )}
+
+                {detailsData?.icsDownloadUrl && (
+                  <button
+                    onClick={() => {
+                      const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
+                      const link = document.createElement("a");
+                      link.href = `${baseUrl}${detailsData.icsDownloadUrl}`;
+                      link.setAttribute("download", `delivery-${deliveryData.deliveryId}.ics`);
+                      document.body.appendChild(link);
+                      link.click();
+                      document.body.removeChild(link);
+                    }}
+                    className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828]"
+                  >
+                    <CalendarDays size={18} className="text-[#F97316]" />
+                    Add to Apple Calendar (.ics)
+                  </button>
+                )}
+              </>
+            )}
+
+            <button
+              onClick={handleCopyToClipboard}
+              disabled={isFetching}
+              className="flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left text-sm font-medium text-[#101828] disabled:opacity-50"
+            >
+              {copied ? (
+                <Check size={18} className="text-green-600" />
+              ) : (
+                <Copy size={18} />
+              )}
+              {isFetching ? "Generating event..." : copied ? "Copied!" : "Copy event details to clipboard"}
             </button>
           </div>
         </div>
