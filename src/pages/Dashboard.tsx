@@ -28,7 +28,7 @@ import {
   Loader2,
 } from "lucide-react";
 import DashStatCard from "@/components/ui/dash-stat-card";
-import NextDeliveryCard from "@/components/dashbord/NextDeliveryCard";
+import NextDeliveryCard, { type DeliveryCardData } from "@/components/dashbord/NextDeliveryCard";
 
 type TabType = "today" | "week" | "month";
 
@@ -184,7 +184,7 @@ const Dashboard = () => {
   ];
 
   const nextDelivery = dashboardData?.nextDelivery;
-  const nextDeliveryData = nextDelivery ? {
+  const nextDeliveryData: DeliveryCardData | null = nextDelivery ? {
     title: nextDelivery.deliveryNumber || "Delivery",
     description: nextDelivery.description || "",
     deliveryId: nextDelivery.deliveryId || "",

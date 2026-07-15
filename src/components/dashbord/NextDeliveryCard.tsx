@@ -61,62 +61,56 @@ export const statusConfig = {
   },
 };
 
-type NextDeliveryCardProps = {
-  dashboardpage?: boolean;
-  data: {
-    title: string;
-    description: string;
-    deliveryId: string;
-    status: string;
-    className?: string;
-    isSite?: boolean;
-
-    deliveryInfo: {
-      date: string;
-      trackingStatus: string;
-      eta: string;
-      timeWindow: string;
-      company: string;
-      driver: string;
-      driverPhone: string;
-      estimatedWeight: string;
-      equipment: string[];
-    };
-
-    siteContact: {
-      name: string;
-      phone: string;
-      email?: string;
-      address?: string;
-      instructions: string;
-      specialNotes: string;
-    };
-
-    logistics: {
-      company: string;
-      driver: string;
-      phone: string;
-      communications: string[];
-    };
-
-    rescheduleInfo?: {
-      previousDate: string;
-      newDate: string;
-      reason: string;
-    };
-
-    loadSummary?: {
-      loadId: string;
-      bundleCount: number | null;
-      truckNumber: string | null;
-      totalWeight: string | number;
-    };
-
-    siteStatus?: {
-      siteReady: boolean;
-      equipmentReady: boolean;
-    };
+export interface DeliveryCardData {
+  className?: string;
+  title: string;
+  description: string;
+  deliveryId: string;
+  status: string;
+  deliveryInfo: {
+    date: string;
+    trackingStatus: string;
+    eta: string;
+    timeWindow: string;
+    company: string;
+    driver: string;
+    driverPhone: string;
+    estimatedWeight: string;
+    equipment: string[];
   };
+  siteContact: {
+    name: string;
+    phone: string;
+    instructions: string;
+    specialNotes: string;
+    address?: string;
+  };
+  logistics: {
+    company: string;
+    driver: string;
+    phone: string;
+    communications: string[];
+  };
+  rescheduleInfo?: {
+    previousDate: string;
+    newDate: string;
+    reason: string;
+  };
+  loadSummary?: {
+    loadId: string;
+    bundleCount: number | null;
+    truckNumber: string | null;
+    totalWeight: number;
+  };
+  isSite?: boolean;
+  siteStatus?: {
+    siteReady: boolean;
+  };
+}
+
+type NextDeliveryCardProps = {
+  data: DeliveryCardData;
+  dashboardpage?: boolean;
 };
 
 export default function NextDeliveryCard({

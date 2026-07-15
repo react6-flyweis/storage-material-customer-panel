@@ -1,7 +1,7 @@
 import { useState } from "react";
 import TitleSubtitle from "../common_components/TitleSubtitle";
 import { QrCode, Loader2 } from "lucide-react";
-import NextDeliveryCard from "../dashbord/NextDeliveryCard";
+import NextDeliveryCard, { type DeliveryCardData } from "../dashbord/NextDeliveryCard";
 import ScanQrModal from "./ScanQrModal";
 import CustomSelect from "../common_components/CustomSelect";
 import { useGetDeliveriesQuery } from "@/redux/api/deliveriesApi";
@@ -32,7 +32,7 @@ const DeliverySchedule = () => {
     },
   ];
 
-  const filteredDeliveries = (data?.deliveries || []).map((delivery) => {
+  const filteredDeliveries: DeliveryCardData[] = (data?.deliveries || []).map((delivery) => {
     return {
       title: delivery.description || delivery.deliveryNumber || "Delivery",
       description: delivery.description || "",
