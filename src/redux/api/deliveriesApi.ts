@@ -85,11 +85,11 @@ export const deliveriesApi = createApi({
   reducerPath: "deliveriesApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    getDeliveries: builder.query<GetDeliveriesResponseData, { tab: string }>({
-      query: ({ tab }) => ({
+    getDeliveries: builder.query<GetDeliveriesResponseData, { tab: string; project?: string }>({
+      query: ({ tab, project }) => ({
         url: "/api/customer/deliveries",
         method: "GET",
-        params: { tab },
+        params: { tab, project },
       }),
       transformResponse: (response: GetDeliveriesApiResponse) =>
         response.data as GetDeliveriesResponseData,
