@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils";
 // import { myProjectsData } from "@/data/text/MyProjectsData";
 import {
   useGetProjectDetailsQuery,
@@ -20,6 +20,7 @@ import ProjectRFQ from "@/components/my_projects/ProjectRFQ";
 import ProjectTimeline from "@/components/my_projects/ProjectTimeline";
 import ProjectFollowUps from "@/components/my_projects/ProjectFollowUps";
 import ProjectPayments from "@/components/my_projects/ProjectPayments";
+import ProjectTracking from "@/components/my_projects/ProjectTracking";
 import TrackLeadsLifecycleModal from "@/components/my_projects/TrackLeadsLifecycleModal";
 import SuccessModal from "@/components/common_components/SuccessModal";
 import Modal from "@/components/common_components/Modal";
@@ -29,8 +30,8 @@ const tabs = [
   "RFQ",
   "Quotation",
   "Open Chat",
-  "Timeline",
-  "Follow Ups",
+  // "Timeline",
+  // "Follow Ups",
   "Payments",
   "Project Tracking",
 ];
@@ -102,7 +103,7 @@ const ProjectDetailsPage = () => {
     try {
       setReasonError("");
       await cancelProject({ leadId: id, reason: cancelReason }).unwrap();
-      
+
       setCancelReason("");
       setIsCancelModalOpen(false);
 
@@ -250,9 +251,8 @@ const ProjectDetailsPage = () => {
                 }}
                 placeholder="Enter Reason"
                 rows={5}
-                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
-                  rejectReasonError ? "border-red-500" : "border-[#D0D5DD]"
-                }`}
+                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${rejectReasonError ? "border-red-500" : "border-[#D0D5DD]"
+                  }`}
               />
 
               {rejectReasonError && (
@@ -279,30 +279,17 @@ const ProjectDetailsPage = () => {
         subtitle="Stay updated with your latest activities and alerts"
       />
 
-      <div className="border-b border-gray-300 overflow-x-auto px-2 md:px-0 scrollbar-thin">
-        <div className="flex items-center justify-start md:gap-20 gap-12 min-w-max">
+      <div className="overflow-x-auto bg-white p-3 rounded-xl  scrollbar-thin">
+        <div className="flex items-center justify-start gap-8 min-w-max">
           {tabs.map((tab) => (
-            <button
+            <Button
               key={tab}
-              onClick={() => {
-                if (tab === "Project Tracking") {
-                  setIsTrackLifecycleOpen(true);
-                } else {
-                  setActiveTab(tab);
-                }
-              }}
-              className={cn(
-                "pb-3 text-sm font-medium transition-all relative",
-                activeTab === tab
-                  ? "text-[#2563EB]"
-                  : "text-gray-500 hover:text-gray-700",
-              )}
+              variant={tab === activeTab ? "default" : "outline"}
+              onClick={() => setActiveTab(tab)}
+              className="md:min-w-30 border "
             >
               {tab}
-              {activeTab === tab && (
-                <div className="absolute bottom-0 left-0 w-full h-0.5 bg-[#2563EB] rounded-t-full" />
-              )}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -331,6 +318,8 @@ const ProjectDetailsPage = () => {
           <ProjectFollowUps leadId={id} />
         ) : activeTab === "Payments" ? (
           <ProjectPayments invoices={data?.invoices} leadId={data?.lead?.projectId || id} />
+        ) : activeTab === "Project Tracking" ? (
+          <ProjectTracking data={data} />
         ) : (
           <>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -344,7 +333,7 @@ const ProjectDetailsPage = () => {
         isOpen={isTrackLifecycleOpen}
         onClose={() => setIsTrackLifecycleOpen(false)}
       />
-    </div>
+    </div >
   );
 };
 
