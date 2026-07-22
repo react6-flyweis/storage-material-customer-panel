@@ -8,11 +8,14 @@ import { adminRoutes } from "./routes";
 import { Suspense } from "react";
 import "./App.css";
 import { RequireAuth, RedirectIfAuthenticated, RootRedirect } from "./components/route-auth";
+import LoadingScreen from "./components/LoadingScreen";
+import { RouterErrorFallback } from "./pages/ErrorPage";
 
 const router = createBrowserRouter([
-  { path: "/", element: <RootRedirect /> },
+  { path: "/", element: <RootRedirect />, errorElement: <RouterErrorFallback /> },
   {
     element: <RedirectIfAuthenticated />,
+    errorElement: <RouterErrorFallback />,
     children: [
       { path: "/login", element: <Login /> },
       { path: "/forgot-password", element: <ForgotPassword /> },
@@ -20,13 +23,14 @@ const router = createBrowserRouter([
   },
   {
     element: <RequireAuth />,
+    errorElement: <RouterErrorFallback />,
     children: adminRoutes,
   },
 ]);
 
 function App() {
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<LoadingScreen />}>
       <RouterProvider router={router} />
     </Suspense>
   );
