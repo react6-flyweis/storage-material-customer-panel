@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "../common_components/Sidebar";
 import Header from "../common_components/Header";
 import SidePanel from "../common_components/SidePanel";
-import { NAV_ITEMS } from "@/config/navigation.config";
+import { NAV_ITEMS } from "@/config/navigation";
 
 export function MainLayout() {
   const navigate = useNavigate();
