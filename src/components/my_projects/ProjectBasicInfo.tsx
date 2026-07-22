@@ -2,43 +2,22 @@ import ReactECharts from "echarts-for-react";
 import ProgressSteps from "./ProgressSteps";
 import ProjectActivityLog from "./ProjectActivityLog";
 import ProjectNotes from "./ProjectNotes";
+import ProjectOrdersList from "./ProjectOrdersList";
+import ProjectUpcomingDelivery from "./ProjectUpcomingDelivery";
 import {
   Building2,
-  Landmark,
   CalendarDays,
   MapPin,
   CircleDollarSign,
 } from "lucide-react";
 
 
-const LIFECYCLE_STEPS = [
-  { key: "initial_contact", title: "Initial Contact" },
-  { key: "requirements_gathered", title: "Requirements Gathered" },
-  { key: "proposal_received", title: "Proposal Received" },
-  { key: "negotiation", title: "Negotiation" },
-  { key: "deal_closed", title: "Deal Closed" },
-  { key: "paid", title: "Payment Done" },
-  { key: "delivered", title: "Delivered" },
-  { key: "building_done", title: "Building Done" },
-];
-
-const STATUS_MAP: Record<string, number> = {
-  initial_contact: 0,
-  requirements_gathered: 1,
-  proposal_received: 2,
-  proposal_sent: 2,
-  quotation_sent: 2,
-  negotiation: 3,
-  deal_closed: 4,
-  paid: 5,
-  payment_done: 5,
-  delivered: 6,
-  building_done: 7,
-  completed: 7,
-  complete: 7,
-};
-
 import type { ProjectDetailsResponseData } from "@/redux/api/projectsApi";
+import {
+  getStatusBadgeConfig,
+  LIFECYCLE_STEPS,
+  STATUS_MAP,
+} from "@/utils/projectStatusUtils";
 
 interface ProjectBasicInfoProps {
   data?: ProjectDetailsResponseData;
@@ -54,37 +33,57 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
 
   const dynamicSteps = LIFECYCLE_STEPS.map((step, index) => {
     let status = "pending";
+    let subtitle = "Pending";
+
+    const formattedDate = lead?.createdAt
+      ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      })
+      : "12 May 2025";
+
     if (index < currentStepIndex) {
       status = "completed";
+      subtitle = `Completed on\n${formattedDate}`;
     } else if (index === currentStepIndex) {
       status = "current";
+      subtitle = `Started on\n${formattedDate}`;
     }
-
-    const date = lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : undefined;
 
     return {
       id: index + 1,
       title: step.title,
-      date: index <= currentStepIndex ? date : undefined,
+      date: index <= currentStepIndex ? formattedDate : undefined,
+      subtitle,
       status,
     };
   });
 
+  const formatDate = (dateStr?: string) => {
+    if (!dateStr) return "-";
+    const date = new Date(dateStr);
+    if (isNaN(date.getTime())) return dateStr;
+    return date.toISOString().split("T")[0];
+  };
+
+  const leadExt = lead as (typeof lead & { totalBuildings?: number; buildingCount?: number; image?: string; projectImage?: string; projectName?: string }) | undefined;
+
   const projectDetails = [
     {
       icon: Building2,
-      title: "Building Type",
-      value: lead?.buildingType || "-",
+      title: "Total Buildings",
+      value: leadExt?.totalBuildings ?? leadExt?.buildingCount ?? "-",
     },
     {
       icon: CircleDollarSign,
       title: "Quote Value",
-      value: lead?.quoteValue !== undefined ? `$${lead.quoteValue.toLocaleString()}` : "-",
+      value: lead?.quoteValue !== undefined && lead?.quoteValue !== null ? `$${lead.quoteValue.toLocaleString()}` : "-",
     },
     {
       icon: CalendarDays,
       title: "Created On",
-      value: lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : "-",
+      value: formatDate(lead?.createdAt),
     },
     {
       icon: MapPin,
@@ -122,68 +121,72 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     ],
   };
 
-  const getStatusLabelAndColor = (status?: string) => {
-    if (!status) return { label: "-", className: "bg-gray-100 text-gray-800" };
-
-    // Format status: replace underscores with spaces and capitalize words
-    const label = status
-      .split("_")
-      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(" ");
-
-    if (status === "deal_closed" || status === "quotation_sent" || status === "paid") {
-      return { label, className: "bg-[#DDF5E5] text-[#34A853]" };
-    }
-    return { label, className: "bg-[#EEF4FF] text-[#2563EB]" };
-  };
-
-  const statusInfo = getStatusLabelAndColor(lead?.lifecycleStatus);
+  const statusInfo = getStatusBadgeConfig(lead?.lifecycleStatus);
 
   return (
     <div className="space-y-5">
-      <div className="overflow-hidden rounded-lg border border-[#00000057] bg-white">
-        <div className="flex flex-col gap-4 p-5 md:flex-row md:items-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-lg bg-[#EEF4FF]">
-            <Landmark className="h-10 w-10 text-[#4A67C2]" />
-          </div>
+      <div className="overflow-hidden rounded-2xl border border-[#EAECF0] bg-white p-5 md:p-6 shadow-xs">
+        <div className="flex flex-col gap-5 sm:gap-6 md:flex-row md:items-stretch">
+          <img
+            src={
+              leadExt?.image ||
+              leadExt?.projectImage ||
+              "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80"
+            }
+            alt={lead?.buildingType || "Project Building"}
+            className="h-44 w-full rounded-xl object-cover shrink-0 md:h-auto md:w-56 lg:w-64"
+          />
 
-          <div className="flex-1">
-            <div className="flex flex-wrap items-center gap-4">
-              <h2 className="text-[20px] font-bold text-[#101828]">
-                {lead?.buildingType ? `${lead.buildingType} (${lead.location})` : "Project Details"}
+          <div className="flex flex-1 flex-col justify-between pt-1">
+            <div>
+              <div>
+                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-semibold ${statusInfo.className}`}>
+                  <span className={`h-2 w-2 rounded-full shrink-0 ${statusInfo.dotColor}`} />
+                  {statusInfo.label}
+                </span>
+              </div>
+
+              <h2 className="mt-2.5 text-xl font-bold text-[#101828] md:text-2xl">
+                {leadExt?.projectName || lead?.buildingType || "Project Details"}
               </h2>
 
-              <span className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-sm font-medium ${statusInfo.className}`}>
-                🟢 {statusInfo.label}
-              </span>
+              <p className="mt-1 text-xs sm:text-sm font-medium text-[#475467]">
+                {lead?.jobId || lead?.projectId || "-"}
+              </p>
             </div>
 
-            <p className="mt-1 text-[14px] text-[#101828]">
-              {lead?.jobId || lead?.projectId || "-"}
-            </p>
+            <div className="my-4 border-t border-[#EAECF0]" />
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 md:gap-0 md:divide-x divide-[#EAECF0]">
+              {projectDetails.map((item, index) => {
+                const Icon = item.icon;
+
+                return (
+                  <div
+                    key={item.title}
+                    className={`flex items-start gap-3 ${index === 0
+                        ? "md:pr-4"
+                        : index === projectDetails.length - 1
+                          ? "md:pl-4"
+                          : "md:px-4"
+                      }`}
+                  >
+                    <Icon className="mt-0.5 h-5 w-5 text-[#344054] shrink-0" />
+
+                    <div>
+                      <p className="text-xs sm:text-sm font-semibold text-[#101828]">
+                        {item.title}
+                      </p>
+
+                      <p className="mt-0.5 text-xs sm:text-sm text-[#667085]">
+                        {item.value}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-
-        <div className="border-t border-[#98A2B3]" />
-
-        <div className="grid gap-3 p-5 md:grid-cols-2 xl:grid-cols-4">
-          {projectDetails.map((item) => {
-            const Icon = item.icon;
-
-            return (
-              <div key={item.title} className="flex gap-4">
-                <Icon className="mt-1 h-7 w-7 text-[#101828]" />
-
-                <div>
-                  <p className="text-[16px] font-medium text-[#101828]">
-                    {item.title}
-                  </p>
-
-                  <p className="text-[14px] text-[#667085]">{item.value}</p>
-                </div>
-              </div>
-            );
-          })}
         </div>
       </div>
 
@@ -193,6 +196,8 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         totalSteps={totalSteps}
         assignedSales={lead?.assignedSales}
       />
+      <ProjectOrdersList />
+
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <div className="rounded-lg border border-[#98A2B3] bg-white p-5">
@@ -255,6 +260,8 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
 
         <ProjectNotes leadId={lead?._id || ""} />
       </div>
+
+      <ProjectUpcomingDelivery />
     </div>
   );
 };
