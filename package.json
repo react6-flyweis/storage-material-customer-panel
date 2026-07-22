@@ -13,6 +13,8 @@
     "@hookform/resolvers": "^5.4.0",
     "@radix-ui/react-slot": "^1.2.4",
     "@reduxjs/toolkit": "^2.11.2",
+    "@sentry/react": "^10.67.0",
+    "@sentry/vite-plugin": "^5.4.0",
     "@tailwindcss/vite": "^4.1.18",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
