@@ -1,7 +1,7 @@
 import { ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
+// import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 import ViewDrawingModal from "@/components/drawings_and_documents/ViewDrawingModal";
 
 const defaultBuildingImage =
@@ -14,15 +14,17 @@ const ProjectBuildingDrawingsPage = () => {
   const [selectedDrawing, setSelectedDrawing] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const { data: projectData, isLoading } = useGetProjectDetailsQuery(id || "", {
-    skip: !id,
-  });
+  // const { data: projectData, isLoading } = useGetProjectDetailsQuery(id || "", {
+  //   skip: !id,
+  // });
 
-  const lead = projectData?.projectDetails?.lead;
+  const isLoading = false
 
-  const projectTitle = lead?.projectName || "ABC Logistic Warehouse";
-  const projectCode = lead?.jobId || "PEB-1021";
-  const projectLocation = lead?.location || "Pune, Maharashtra";
+  // const lead = projectData?.projectDetails?.lead;
+
+  const projectTitle = "ABC Logistic Warehouse";
+  const projectCode = "PEB-1021";
+  const projectLocation = "Pune, Maharashtra";
 
   const handleOpenDrawing = (drawingItem: {
     name: string;
@@ -369,7 +371,7 @@ const ProjectBuildingDrawingsPage = () => {
           uploadedBy: "Rahul Sharma",
           lastUpdate: "25-April-2025",
         }}
-        onSendMessage={() => {}}
+        onSendMessage={() => { }}
       />
     </div>
   );

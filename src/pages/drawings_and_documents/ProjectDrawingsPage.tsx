@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import buildingIcon from "@/assets/icon/building.svg";
 import drawingIcon from "@/assets/icon/drawing.svg";
 import PurpleCalendarIcon from "@/assets/icon/PurpleCalendarIcon.svg";
-import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
+// import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 
 const defaultBuildingImage =
   "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80";
@@ -12,18 +12,20 @@ const ProjectDrawingsPage = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
 
-  const { data: projectData, isLoading } = useGetProjectDetailsQuery(id || "", {
-    skip: !id,
-  });
+  const isLoading = false
 
-  const lead = projectData?.projectDetails?.lead;
+  // const { data: projectData, isLoading } = useGetProjectDetailsQuery(id || "", {
+  //   skip: !id,
+  // });
 
-  const projectTitle = lead?.projectName || "ABC Logistic Warehouse";
-  const projectCode = lead?.jobId || "PEB-1021";
-  const projectLocation = lead?.location || "Pune, Maharashtra";
+  // const lead = projectData?.projectDetails?.lead;
+
+  const projectTitle = "ABC Logistic Warehouse";
+  const projectCode = "PEB-1021";
+  const projectLocation = "Pune, Maharashtra";
   const buildingsCount = 4;
   const totalDrawingsCount = 25;
-  const projectStatus = lead?.status || "Active";
+  const projectStatus = "Active";
 
   const buildings = [
     {
