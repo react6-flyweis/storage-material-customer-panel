@@ -4,6 +4,7 @@ import {
   type FetchArgs,
   type FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
+import * as Sentry from "@sentry/react";
 import type { ApiResponse } from "./apiResponse";
 import type { RootState } from "../store";
 import { logout, updateTokens } from "../slices/authSlice";
@@ -37,6 +38,18 @@ export const baseQueryWithReauth: BaseQueryFn<
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
   let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error) {
+    if (result.error.status !== 401) {
+      Sentry.captureException(result.error, {
+        extra: {
+          args,
+          status: result.error.status,
+          data: result.error.data,
+        },
+      });
+    }
+  }
 
   if (result.error?.status !== 401) {
     return result;
@@ -95,3 +108,4 @@ export const baseQueryWithReauth: BaseQueryFn<
 
   return result;
 };
+
