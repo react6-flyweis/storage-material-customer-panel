@@ -1,4 +1,4 @@
-import { NAV_ITEMS } from "@/config/navigation.config";
+import { NAV_ITEMS } from "@/config/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/redux/hooks";
 
