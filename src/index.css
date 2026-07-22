@@ -16,20 +16,19 @@
   --text-color-primary-blue: #1D51A4;
   --text-color-green: #3AB449;
   --text-color-gold: #EAB308;
-  --text-color-salmon: #FD8D5B
-  --text-color-gray: #949CA9;
+  --text-color-salmon: #FD8D5B --text-color-gray: #949CA9;
   --text-color-gray-two: #3E4857;
   --text-color-gray-2: #4B5563;
   --text-color-black: #111827;
   --button-bg-primary-color: #2563EB;
-  --radius: 0.625rem;
+  --radius: 0.5rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
+  --primary: #2563EB;
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
@@ -57,12 +56,12 @@
 }
 
 body {
-    margin: 0;
-    line-height: inherit;
-    background-color: #E5ECFF;
+  margin: 0;
+  line-height: inherit;
+  background-color: #E5ECFF;
 }
 
-button{
+button {
   cursor: pointer;
 }
 
@@ -145,6 +144,7 @@ button{
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
