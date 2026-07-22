@@ -272,6 +272,10 @@ const Dashboard = () => {
 
       <DashboardWidgets />
 
+      <h3 className="text-[#212B36] text-[18px] font-semibold mb-3">
+        Shipment Breakdown
+      </h3>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {shipmentBreakdown.map((item) => {
           const Icon = item.icon;
