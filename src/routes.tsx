@@ -9,11 +9,19 @@ import ProfileView from "./components/profile/ProfileView";
 import InvoicePreview from "./pages/InvoicePreview";
 import ScannedPage from "./components/delivery-schedule/ScannedPage";
 import ProjectDrawingPage from "./pages/ProjectDrawingPage";
+import { RouterErrorFallback } from "./pages/ErrorPage";
+
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const MyProjectsPage = lazy(() => import("@/pages/MyProjectsPage"));
 const ProjectDetailsPage = lazy(() => import("@/pages/ProjectDetailsPage"));
+const AllDrawingsPage = lazy(
+  () => import("@/pages/drawings_and_documents/AllDrawingsPage")
+);
 const ProjectDrawingsPage = lazy(
   () => import("@/pages/drawings_and_documents/ProjectDrawingsPage")
+);
+const ProjectBuildingDrawingsPage = lazy(
+  () => import("@/pages/drawings_and_documents/ProjectBuildingDrawingsPage")
 );
 const ProjectDocumentsPage = lazy(
   () => import("@/pages/drawings_and_documents/ProjectDocumentsPage")
@@ -33,6 +41,17 @@ const TaxReportsPage = lazy(
 const DocumentPreviewPage = lazy(
   () => import("@/pages/drawings_and_documents/DocumentPreviewPage")
 );
+const MaterialOrdersPage = lazy(
+  () => import("@/pages/MaterialOrdersPage")
+);
+const ProjectOrdersPage = lazy(
+  () => import("@/pages/ProjectOrdersPage")
+);
+const OrderDetailsPage = lazy(
+  () => import("@/pages/OrderDetailsPage")
+);
+
+import ProjectDeliverySchedule from "./components/delivery-schedule/ProjectDeliverySchedule";
 
 export const adminRoutes: RouteObject[] = [
   {
@@ -44,9 +63,16 @@ export const adminRoutes: RouteObject[] = [
         element: <Dashboard />,
       },
       { path: "/my_projects", element: <MyProjectsPage /> },
+      { path: "/material-orders", element: <MaterialOrdersPage /> },
+      { path: "/project-orders", element: <ProjectOrdersPage /> },
+      { path: "/project-orders/:id", element: <ProjectOrdersPage /> },
+      { path: "/order-details", element: <OrderDetailsPage /> },
+      { path: "/order-details/:orderId", element: <OrderDetailsPage /> },
       { path: "/my_projects/:id", element: <ProjectDetailsPage /> },
       { path: "/project-drawings/:id", element: <ProjectDrawingPage /> },
-      { path: "/drawings", element: <ProjectDrawingsPage /> },
+      { path: "/project-buildings/:id", element: <ProjectDrawingsPage /> },
+      { path: "/project-building-drawings/:id", element: <ProjectBuildingDrawingsPage /> },
+      { path: "/drawings", element: <AllDrawingsPage /> },
       { path: "/documents", element: <ProjectDocumentsPage /> },
       { path: "/payments", element: <PaymentsPage /> },
       { path: "/invoices", element: <InvoicesPage /> },
@@ -62,6 +88,8 @@ export const adminRoutes: RouteObject[] = [
 
       { path: "/notification", element: <NotificationsView /> },
       { path: "/delivery-schedule", element: <DeliverySchedule /> },
+      { path: "/project-delivery-schedule", element: <ProjectDeliverySchedule /> },
+      { path: "/project-delivery-schedule/:id", element: <ProjectDeliverySchedule /> },
       { path: "/scanned-page", element: <ScannedPage /> },
       {
         path: "settings",
@@ -75,5 +103,5 @@ export const adminRoutes: RouteObject[] = [
       { path: "*", element: <NotFound /> },
     ],
   },
-  { path: "*", element: <NotFound /> },
+  { path: "*", element: <NotFound />, errorElement: <RouterErrorFallback /> },
 ];
