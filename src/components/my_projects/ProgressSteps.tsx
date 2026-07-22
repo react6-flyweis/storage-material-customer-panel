@@ -1,10 +1,11 @@
-import { CalendarDays } from "lucide-react";
+import React from "react";
 
 export interface ProgressStep {
   id: number;
   title: string;
   date?: string;
-  status: string;
+  status: "completed" | "current" | "pending" | string;
+  subtitle?: string;
 }
 
 export interface ProgressStepsProps {
@@ -16,164 +17,88 @@ export interface ProgressStepsProps {
   priority?: string;
 }
 
-const ProgressSteps = ({
-  title = "Progress Step",
+const ProgressSteps: React.FC<ProgressStepsProps> = ({
+  title = "Project Steps",
   steps,
   currentStep,
   totalSteps,
-  assignedSales = "-",
-  priority = "Medium",
-}: ProgressStepsProps) => {
-  const currentStepItem = steps.find((s) => s.status === "current");
-  const currentStepName = currentStepItem?.title || (steps[currentStep - 1]?.title) || "-";
-  const currentStepDate = currentStepItem?.date || (steps[currentStep - 1]?.date) || "-";
-  
-  const initialStep = steps[0];
-  const initialStepName = initialStep?.title || "Lead Generated";
-  const initialStepDate = initialStep?.date || "-";
-
-  const salesName = assignedSales
-    ? typeof assignedSales === "object"
-      ? assignedSales.name || "-"
-      : assignedSales
-    : "-";
+}) => {
+  const percentage = Math.min(100, Math.max(0, Math.round((currentStep / totalSteps) * 100)));
 
   return (
-    <div className="rounded-lg border border-[#98A2B3] bg-white p-5">
-      <h2 className="mb-8 text-[20px] font-bold text-[#101828]">
-        {title}
-      </h2>
+    <div className="rounded-xl border border-[#EAECF0] bg-white p-6 shadow-xs">
+      <h2 className="text-lg font-bold text-[#101828] mb-6">{title}</h2>
 
-      <div className="mb-8 overflow-x-auto">
-        <div className="min-w-[900px]">
-          <div className="relative flex justify-between">
-            {steps.map((step, index) => (
-              <div
-                key={step.id}
-                className="relative flex flex-1 flex-col items-center"
-              >
-                {index < steps.length - 1 && (
-                  <div
-                    className={`absolute left-1/2 top-[12px] h-[4px] w-full
-                    ${
-                      index < currentStep - 1
-                        ? "bg-[#1D4ED8]"
-                        : "bg-[#E4E7EC]"
-                    }`}
-                  />
-                )}
+      {/* Stepper horizontal line and nodes */}
+      <div className="overflow-x-auto pb-4">
+        <div className="min-w-[700px] px-4">
+          <div className="relative flex items-center justify-between">
+            {/* Steps loop */}
+            {steps.map((step, index) => {
+              const isCompleted = step.status === "completed";
+              const isCurrent = step.status === "current";
 
-                <div
-                  className={`relative z-10 flex h-7 w-7 items-center justify-center rounded-full text-sm font-semibold
-                  ${
-                    step.status === "completed"
-                      ? "bg-[#3AB449] text-white"
-                      : step.status === "current"
-                      ? "bg-[#2563EB] text-white"
-                      : "border border-[#D0D5DD] bg-white text-[#101828]"
-                  }`}
-                >
-                  {step.id}
-                </div>
+              // Line color to next step
+              let connectorBg = "bg-[#D0D5DD]"; // Gray default
+              if (index < currentStep - 1) {
+                connectorBg = "bg-[#16A34A]"; // Green for completed segments
+              } else if (index === currentStep - 1) {
+                connectorBg = "bg-[#2563EB]"; // Blue connector leading into active step if needed, or blue segment
+              }
 
-                <div className="mt-2 text-center">
-                  <p className="text-[12px] font-semibold leading-6 text-[#667085]">
-                    {step.title}
-                  </p>
+              // Circle node styling
+              let circleStyle = "bg-[#94A3B8] text-white"; // Gray 5
+              if (isCompleted) {
+                circleStyle = "bg-[#16A34A] text-white"; // Green
+              } else if (isCurrent) {
+                circleStyle = "bg-[#2563EB] text-white"; // Blue
+              }
 
-                  <p className="text-[12px] text-[#98A2B3]">
-                    {step.date || "-"}
-                  </p>
-
-                  {step.status === "current" && (
-                    <p className="text-[12px] text-[#98A2B3]">
-                      Current Step
-                    </p>
+              return (
+                <div key={step.id} className="relative flex flex-1 flex-col items-center">
+                  {/* Connecting Line between circles */}
+                  {index < steps.length - 1 && (
+                    <div
+                      className={`absolute left-[50%] top-5 -translate-y-1/2 h-[3px] w-full ${connectorBg}`}
+                      style={{ zIndex: 0 }}
+                    />
                   )}
+
+                  {/* Circle Step Number */}
+                  <div
+                    className={`relative z-10 flex h-10 w-10 items-center justify-center rounded-full text-base font-bold transition-colors ${circleStyle}`}
+                  >
+                    {step.id}
+                  </div>
+
+                  {/* Step Label & Subtitle */}
+                  <div className="mt-3 text-center max-w-[130px]">
+                    <p className="text-sm font-bold text-[#101828]">{step.title}</p>
+                    <p className="mt-0.5 text-xs text-[#667085] leading-tight">
+                      {step.subtitle || (step.date ? `Completed on ${step.date}` : "Pending")}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </div>
 
-      <div className="rounded-lg bg-[#F9FAFB] p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          <div>
-            <h3 className="text-[14px] font-bold text-[#101828]">
-              Progress ({currentStep} of {totalSteps})
-            </h3>
-
-            <p className="mt-3 text-[14px] text-[#667085]">
-              Current step: {currentStepName}
-            </p>
+      {/* Progress Bar Container */}
+      <div className="mt-4 rounded-xl bg-[#F8F9FA] p-4 flex flex-col gap-2">
+        <span className="text-xs font-semibold text-[#667085]">Overall Progress</span>
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-bold text-[#101828] whitespace-nowrap">
+            Step {currentStep} of {totalSteps}
+          </span>
+          <div className="relative h-3 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
+            <div
+              className="h-full rounded-full bg-[#16A34A] transition-all duration-300"
+              style={{ width: `${percentage}%` }}
+            />
           </div>
-
-          <div className="border-l border-[#D0D5DD] pl-6">
-            <div className="mb-5 flex gap-3">
-              <CalendarDays
-                size={24}
-                className="text-[#101828]"
-              />
-
-              <div>
-                <p className="text-[14px] font-medium text-[#101828]">
-                  {initialStepName}
-                </p>
-
-                <p className="text-[14px] text-[#667085]">
-                  {initialStepDate}
-                </p>
-              </div>
-            </div>
-
-            <div className="flex gap-3">
-              <CalendarDays
-                size={24}
-                className="text-[#101828]"
-              />
-
-              <div>
-                <p className="text-[14px] font-medium text-[#101828]">
-                  {currentStepName}
-                </p>
-
-                <p className="text-[14px] text-[#667085]">
-                  {currentStepDate}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border-l border-[#D0D5DD] pl-6">
-            <h3 className="mb-3 text-[14px] font-bold text-[#101828]">
-              Assigned Sales
-            </h3>
-
-            <p className="text-[14px] text-[#667085]">
-              {salesName}
-            </p>
-
-            <h3 className="mt-5 text-[14px] font-bold text-[#101828]">
-              Priority
-            </h3>
-
-            <span className="mt-2 inline-flex rounded-full bg-[#FEF3D7] px-2 py-1 text-xs text-[#D4A72C]">
-              {priority}
-            </span>
-          </div>
-
-          <div className="border-l border-[#D0D5DD] pl-6">
-            <h3 className="mb-3 text-[14px] font-bold text-[#101828]">
-              Next Step
-            </h3>
-
-            <p className="text-[14px] leading-6 text-[#667085]">
-              {currentStep < totalSteps
-                ? `After completing the "${currentStepName}" phase, the project will transition to the "${steps[currentStep]?.title || ""}" phase.`
-                : "The project has successfully reached the final step of its lifecycle."}
-            </p>
-          </div>
+          <span className="text-xs font-bold text-[#4B5563]">{percentage}%</span>
         </div>
       </div>
     </div>
