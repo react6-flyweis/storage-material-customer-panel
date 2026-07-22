@@ -39,7 +39,7 @@ export const NAV_ITEMS: NavItem[] = [
     icon: MenuIcon3,
     items: [
       { label: "Drawings", path: "/drawings" },
-      { label: "Documents", path: "/documents" },
+      // { label: "Documents", path: "/documents" },
     ],
   },
   {
@@ -70,5 +70,11 @@ export const NAV_ITEMS: NavItem[] = [
     color: "bg-[#2B7FFF]",
     icon: MenuIcon7,
     path: "/delivery-schedule",
+  },
+  {
+    title: "Material Orders",
+    color: "bg-[#CE222B]",
+    icon: MenuIcon7,
+    path: "/material-orders",
   },
 ];
