@@ -4,13 +4,16 @@ import GreenCallIcon from "../assets/icon/GreenCallIcon.svg";
 import GrayFileIcon from "../assets/icon/GrayFileIcon.svg";
 
 export const activeProjectData = {
-  projectName: "Warehouse Building, Pune",
-  projectCode: "#W-98765432",
+  projectName: "ABC Logistics Warehouse",
+  projectCode: "PR-0987",
   siteLocation: "Baner, Pune",
-  progressPercentage: "Fabrication: 78% Completed",
+  progressPercentage: "78% Completed",
   currentStatus: "Under Fabrication",
   nextMilestoneDate: "12 April 2026",
-  assignedProjectManager: "Riya Sharma | +0987654321",
+  assignedProjectManager: "Riya Sharma",
+  pmPhone: "+91-0987654321",
+  projectImage: "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=400&q=80",
+  pmAvatar: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
 };
 
 // export const drawingApprovalsData = [
@@ -40,29 +43,29 @@ export const activeProjectData = {
 //   },
 // ];
 
-export const drawingApprovalsByFilter = {
+export const drawingApprovalsByFilter: Record<string, Array<{ label: string; count: string; subtext: string; color: string }>> = {
   today: [
     {
       label: "Drawings Pending Review",
-      count: "6 pending",
-      subtext: "Shop, Structural, Erection",
-      color: "blue",
+      count: "6 Pending",
+      subtext: "Shop Structural Erection",
+      color: "cyan",
     },
     {
       label: "Approved Drawings",
-      count: "32 approved",
+      count: "32 Approved",
       subtext: "",
       color: "yellow",
     },
     {
-      label: "Drawing Revisions Received",
-      count: "4 new revisions",
+      label: "Drawing Revision Reseived",
+      count: "4 New",
       subtext: "",
       color: "purple",
     },
     {
       label: "Items Needing Clarification",
-      count: "2 RFIs raised by engineering team",
+      count: "2 RFIs raised",
       subtext: "",
       color: "green",
     },
@@ -71,25 +74,25 @@ export const drawingApprovalsByFilter = {
   week: [
     {
       label: "Drawings Pending Review",
-      count: "14 pending",
-      subtext: "Shop, Structural, Erection, MEP",
-      color: "blue",
+      count: "14 Pending",
+      subtext: "Shop Structural Erection",
+      color: "cyan",
     },
     {
       label: "Approved Drawings",
-      count: "96 approved",
+      count: "96 Approved",
       subtext: "",
       color: "yellow",
     },
     {
-      label: "Drawing Revisions Received",
-      count: "18 new revisions",
+      label: "Drawing Revision Reseived",
+      count: "18 New",
       subtext: "",
       color: "purple",
     },
     {
       label: "Items Needing Clarification",
-      count: "9 RFIs raised by engineering team",
+      count: "9 RFIs raised",
       subtext: "",
       color: "green",
     },
@@ -98,30 +101,30 @@ export const drawingApprovalsByFilter = {
   month: [
     {
       label: "Drawings Pending Review",
-      count: "38 pending",
-      subtext: "All disciplines",
-      color: "blue",
+      count: "38 Pending",
+      subtext: "Shop Structural Erection",
+      color: "cyan",
     },
     {
       label: "Approved Drawings",
-      count: "310 approved",
+      count: "240 Approved",
       subtext: "",
       color: "yellow",
     },
     {
-      label: "Drawing Revisions Received",
-      count: "52 new revisions",
+      label: "Drawing Revision Reseived",
+      count: "42 New",
       subtext: "",
       color: "purple",
     },
     {
       label: "Items Needing Clarification",
-      count: "21 RFIs raised by engineering team",
+      count: "15 RFIs raised",
       subtext: "",
       color: "green",
     },
   ],
-} as any;
+};
 
 
 export const mockLeadsData = {
