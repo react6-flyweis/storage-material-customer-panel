@@ -1,6 +1,6 @@
 import React from "react";
 import iconBg from "../../assets/sideBarIconBg.svg";
-import { NAV_ITEMS } from "@/config/navigation.config";
+import { NAV_ITEMS } from "@/config/navigation";
 
 interface SidebarProps {
   isOpen: boolean;
