@@ -1,29 +1,73 @@
-import { useGetProjectsQuery } from "@/redux/api/projectsApi";
-import { QrCode, Truck } from "lucide-react";
+import React from "react";
+import {
+  useGetDeliveriesSummaryQuery,
+  type DeliverySummaryProject,
+} from "@/redux/api/deliveriesApi";
+import { QrCode, Truck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-// import warehouseImg1 from "@/assets/";
 
-export interface ProjectScheduleCardData {
-  id: string;
-  title: string;
-  code: string;
-  location: string;
-  image: string;
-  upcomingCount: number;
-  pastCount: number;
-  rescheduleCount: number;
-}
 
-const placeholderImages = [
-  "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b3?auto=format&fit=crop&w=600&q=80",
-];
 
-const DeliverySchedule = () => {
+const SkeletonDeliveryCard: React.FC = () => {
+  return (
+    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-xs animate-pulse">
+      {/* Image & Project Basic Info Skeleton */}
+      <div className="flex items-center gap-5 min-w-[280px]">
+        <div className="h-24 w-36 rounded-xl bg-slate-200 shrink-0 flex items-center justify-center">
+          <Building2 className="w-7 h-7 text-slate-300" />
+        </div>
+        <div className="space-y-2.5 flex-1">
+          <div className="h-5 bg-slate-200 rounded-md w-40" />
+          <div className="h-4 bg-slate-200 rounded-md w-24" />
+          <div className="h-4 bg-slate-200 rounded-md w-32" />
+        </div>
+      </div>
+
+      {/* Vertical Divider */}
+      <div className="hidden lg:block w-[1px] h-16 bg-[#E4E7EC]" />
+
+      {/* Delivery Status Counters Skeleton */}
+      <div className="grid grid-cols-3 gap-6 lg:gap-12 flex-1 max-w-xl">
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-full bg-slate-200 shrink-0" />
+          <div className="space-y-1.5">
+            <div className="h-5 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3 w-16 bg-slate-200 rounded-md" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-full bg-slate-200 shrink-0" />
+          <div className="space-y-1.5">
+            <div className="h-5 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3 w-12 bg-slate-200 rounded-md" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3">
+          <div className="h-11 w-11 rounded-full bg-slate-200 shrink-0" />
+          <div className="space-y-1.5">
+            <div className="h-5 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3 w-20 bg-slate-200 rounded-md" />
+          </div>
+        </div>
+      </div>
+
+      {/* Vertical Divider */}
+      <div className="hidden lg:block w-[1px] h-16 bg-[#E4E7EC]" />
+
+      {/* Action Button Skeleton */}
+      <div>
+        <div className="w-full lg:w-[84px] h-10 rounded-lg bg-slate-200" />
+      </div>
+    </div>
+  );
+};
+
+const DeliverySchedule: React.FC = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useGetProjectsQuery({ page: 1, limit: 100 });
-  const projectsList = data?.projects || [];
+  const { data, isLoading } = useGetDeliveriesSummaryQuery();
+  const projectsList: DeliverySummaryProject[] = data?.projects || [];
 
   const handleViewProject = (projectId: string) => {
     navigate(`/project-delivery-schedule/${projectId}`);
@@ -40,7 +84,7 @@ const DeliverySchedule = () => {
         </div>
 
         <div className="flex items-center gap-4">
-          <button className="flex bg-white items-center gap-3 px-4 py-2 shadow-sm border border-[#E4E7EC] rounded-xl hover:bg-gray-50 transition-colors text-sm min-w-[200px]">
+          <button className="flex bg-white items-center gap-3 px-4 py-2 shadow-xs border border-[#E4E7EC] rounded-xl hover:bg-gray-50 transition-colors text-sm min-w-[200px]">
             <div className="bg-[#1E40AF] text-white rounded-full w-9 h-9 flex items-center justify-center font-bold text-sm">
               AM
             </div>
@@ -62,40 +106,40 @@ const DeliverySchedule = () => {
       </div>
 
       {isLoading ? (
-        <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#1E40AF] border-t-transparent"></div>
+        <div className="space-y-4">
+          <SkeletonDeliveryCard />
+          <SkeletonDeliveryCard />
+          <SkeletonDeliveryCard />
         </div>
       ) : projectsList.length === 0 ? (
         <div className="flex h-48 flex-col items-center justify-center text-center p-6 border border-dashed border-gray-200 rounded-xl bg-white">
-          <p className="text-gray-500 font-medium text-lg">No projects found</p>
-          <p className="text-gray-400 text-sm mt-1">There are no active projects to display delivery schedules for.</p>
+          <p className="text-gray-500 font-medium text-lg">No delivery schedules found</p>
+          <p className="text-gray-400 text-sm mt-1">
+            There are no active projects to display delivery schedules for.
+          </p>
         </div>
       ) : (
         <div className="space-y-4">
-          {projectsList.map((project, index) => {
-            const projectImage = placeholderImages[index % placeholderImages.length] || ""
-
+          {projectsList.map((project) => {
             return (
               <div
-                key={project._id || project.projectId}
-                className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-sm transition-shadow hover:shadow-md"
+                key={project.leadId}
+                className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-xs transition-shadow hover:shadow-md"
               >
                 {/* Project Left Info */}
                 <div className="flex items-center gap-5 min-w-[280px]">
-                  <img
-                    src={projectImage}
-                    alt={project.projectName}
-                    className="h-24 w-36 rounded-xl object-cover"
-                  />
+                  <div className="h-24 w-36 rounded-xl bg-[#F2F4F7] border border-[#E4E7EC] shrink-0 flex items-center justify-center text-[#667085]">
+                    <Building2 className="w-8 h-8" />
+                  </div>
                   <div>
                     <h3 className="text-lg font-bold text-[#101828]">
-                      {project.projectName || "ABC Logistics Warehouse"}
+                      {project.projectName}
                     </h3>
                     <p className="text-sm text-[#667085] font-medium mt-0.5">
-                      {project.jobId || project.projectId || "PEB-1021"}
+                      {project.jobId}
                     </p>
                     <p className="text-sm text-[#667085] mt-2">
-                      {project.location || "Pune, Maharashtra"}
+                      {project.location}
                     </p>
                   </div>
                 </div>
@@ -111,7 +155,9 @@ const DeliverySchedule = () => {
                       <Truck className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold text-[#101828]">3</p>
+                      <p className="text-xl font-bold text-[#101828]">
+                        {project.upcoming}
+                      </p>
                       <p className="text-sm font-medium text-[#4A5565]">Upcoming</p>
                     </div>
                   </div>
@@ -122,7 +168,9 @@ const DeliverySchedule = () => {
                       <Truck className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold text-[#101828]">1</p>
+                      <p className="text-xl font-bold text-[#101828]">
+                        {project.past}
+                      </p>
                       <p className="text-sm font-medium text-[#4A5565]">Past</p>
                     </div>
                   </div>
@@ -133,8 +181,12 @@ const DeliverySchedule = () => {
                       <Truck className="w-5 h-5" />
                     </div>
                     <div>
-                      <p className="text-xl font-bold text-[#101828]">1</p>
-                      <p className="text-sm font-medium text-[#4A5565]">Reschedule</p>
+                      <p className="text-xl font-bold text-[#101828]">
+                        {project.rescheduled}
+                      </p>
+                      <p className="text-sm font-medium text-[#4A5565]">
+                        Reschedule
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -145,8 +197,8 @@ const DeliverySchedule = () => {
                 {/* Action Button */}
                 <div>
                   <button
-                    onClick={() => handleViewProject(project._id || project.projectId)}
-                    className="w-full lg:w-auto px-7 py-2.5 rounded-lg bg-[#1E40AF] text-white font-semibold text-sm hover:bg-[#1d3999] transition-colors"
+                    onClick={() => handleViewProject(project.leadId)}
+                    className="w-full lg:w-auto px-7 py-2.5 rounded-lg bg-[#1E40AF] text-white font-semibold text-sm hover:bg-[#1d3999] transition-colors cursor-pointer"
                   >
                     View
                   </button>
