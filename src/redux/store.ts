@@ -16,6 +16,10 @@ import { projectsApi } from "./api/projectsApi";
 import { paymentsApi } from "./api/paymentsApi";
 import { dashboardApi } from "./api/dashboardApi";
 import { deliveriesApi } from "./api/deliveriesApi";
+import { quotationsApi } from "./api/quotationsApi";
+import { materialOrdersApi } from "./api/materialOrdersApi";
+import { drawingsApi } from "./api/drawingsApi";
+import { notificationsApi } from "./api/notificationsApi";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -24,6 +28,10 @@ const rootReducer = combineReducers({
   [paymentsApi.reducerPath]: paymentsApi.reducer,
   [dashboardApi.reducerPath]: dashboardApi.reducer,
   [deliveriesApi.reducerPath]: deliveriesApi.reducer,
+  [quotationsApi.reducerPath]: quotationsApi.reducer,
+  [materialOrdersApi.reducerPath]: materialOrdersApi.reducer,
+  [drawingsApi.reducerPath]: drawingsApi.reducer,
+  [notificationsApi.reducerPath]: notificationsApi.reducer,
 });
 
 const persistConfig = {
@@ -46,7 +54,11 @@ export const store = configureStore({
       projectsApi.middleware,
       paymentsApi.middleware,
       dashboardApi.middleware,
-      deliveriesApi.middleware
+      deliveriesApi.middleware,
+      quotationsApi.middleware,
+      materialOrdersApi.middleware,
+      drawingsApi.middleware,
+      notificationsApi.middleware
     ),
 });
 
