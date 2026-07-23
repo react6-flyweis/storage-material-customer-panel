@@ -87,9 +87,9 @@ export const deliveriesApi = createApi({
   endpoints: (builder) => ({
     getDeliveries: builder.query<GetDeliveriesResponseData, { tab: string; project?: string }>({
       query: ({ tab, project }) => ({
-        url: "/api/customer/deliveries",
+        url: project ? `/api/customer/deliveries/${project}` : "/api/customer/deliveries",
         method: "GET",
-        params: { tab, project },
+        params: { tab },
       }),
       transformResponse: (response: GetDeliveriesApiResponse) =>
         response.data as GetDeliveriesResponseData,
@@ -180,8 +180,52 @@ export const deliveriesApi = createApi({
         responseHandler: (response) => response.blob(),
       }),
     }),
+    getDeliveriesSummary: builder.query<GetDeliveriesSummaryResponseData, void>({
+      query: () => ({
+        url: "/api/customer/deliveries/summary",
+        method: "GET",
+      }),
+      transformResponse: (response: GetDeliveriesSummaryApiResponse) =>
+        response.data as GetDeliveriesSummaryResponseData,
+    }),
+    confirmSiteReady: builder.mutation<
+      ApiResponse<{ deliveryId: string; siteReadyConfirmation: unknown }>,
+      { deliveryId: string; checklist?: Record<string, boolean> }
+    >({
+      query: ({ deliveryId, checklist }) => ({
+        url: `/api/customer/deliveries/${deliveryId}/confirm-site-ready`,
+        method: "POST",
+        body: checklist ? { checklist } : {},
+      }),
+    }),
+    confirmEquipment: builder.mutation<
+      ApiResponse<{ deliveryId: string; equipmentConfirmation: unknown }>,
+      { deliveryId: string; checklist?: Record<string, boolean> }
+    >({
+      query: ({ deliveryId, checklist }) => ({
+        url: `/api/customer/deliveries/${deliveryId}/confirm-equipment`,
+        method: "POST",
+        body: checklist ? { checklist } : {},
+      }),
+    }),
   }),
 });
+
+export interface DeliverySummaryProject {
+  leadId: string;
+  projectName: string;
+  jobId: string;
+  location: string;
+  upcoming: number;
+  past: number;
+  rescheduled: number;
+}
+
+export interface GetDeliveriesSummaryResponseData {
+  projects: DeliverySummaryProject[];
+}
+
+export type GetDeliveriesSummaryApiResponse = ApiResponse<GetDeliveriesSummaryResponseData>;
 
 export const {
   useGetDeliveriesQuery,
@@ -193,5 +237,8 @@ export const {
   useLazyDownloadDeliveryDetailsQuery,
   useLazyDownloadPackingListQuery,
   useLazyDownloadInstructionsQuery,
+  useGetDeliveriesSummaryQuery,
+  useConfirmSiteReadyMutation,
+  useConfirmEquipmentMutation,
 } = deliveriesApi;
 
