@@ -6,6 +6,7 @@ import { Search } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/slices/authSlice";
 import UserIcon from "../../assets/icon/UserIcon";
+import { useGetNotificationsQuery } from "@/redux/api/notificationsApi";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -14,6 +15,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import { Button } from "../ui/button";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -25,6 +27,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const email = useAppSelector((state) => state.auth.user?.email);
+
+  const { data: notificationsData } = useGetNotificationsQuery(
+    { filter: "all" },
+    { pollingInterval: 30000 }
+  );
+
+  const unreadCount = notificationsData?.data?.stats?.unread ?? 0;
 
   const handleSignOut = () => {
     dispatch(logout());
@@ -68,44 +77,33 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
 
       <div className="flex items-center gap-4 lg:gap-6">
         <div className="relative">
-          <button
+          <Button
+            variant="ghost"
             onClick={() => navigate("/notification")}
-            className="text-gray-500 hover:text-gray-700 relative p-1 rounded-full hover:bg-gray-50 transition-colors"
+            size="icon"
+            className="rounded-full"
           >
-            <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center border-2 border-white">
-              3
-            </span>
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 h-5 min-w-[20px] px-1 bg-red-500 rounded-full text-[10px] font-bold text-white flex items-center justify-center border-2 border-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
             <img
               src={bellIcon}
               alt="notifications"
               className="w-8 h-6 object-contain"
             />
-          </button>
+          </Button>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <button className="text-gray-500 hover:text-gray-700 focus:outline-none bg-[#3A57E8] hover:bg-[#2e47c0] rounded-full p-2.5 transition-colors cursor-pointer flex items-center justify-center">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="w-4 h-4 text-white"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4.5 20.25a7.5 7.5 0 0 1 15 0"
-                />
-              </svg>
-            </button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="rounded-full">
+              <UserIcon />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56 mt-2">
             <DropdownMenuLabel className="font-normal py-3 px-4">
