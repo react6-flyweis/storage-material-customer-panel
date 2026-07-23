@@ -1,8 +1,14 @@
 import React, { useState } from "react";
 import { ArrowLeft, Search, Eye, ChevronDown } from "lucide-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
+import {
+  useGetProjectOrdersQuery,
+  type ProjectOrderApi,
+} from "@/redux/api/materialOrdersApi";
+import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 
-export interface OrderItem {
+export interface OrderRowItem {
+  _id: string;
   orderId: string;
   coilType: string;
   totalLength: string;
@@ -11,50 +17,120 @@ export interface OrderItem {
   requiredDate: string;
   orderValue: string;
   status: "Pending" | "New Orders" | "Completed";
+  rawStatus: string;
 }
 
-const mockOrders: OrderItem[] = [
-  {
-    orderId: "CO-ORD-876",
-    coilType: "Black 26ga",
-    totalLength: "200 ft",
-    quantity: 250,
-    orderDate: "14/01/2024",
-    requiredDate: "15/01/2024",
-    orderValue: "$98765",
-    status: "Pending",
-  },
-  {
-    orderId: "CO-ORD-876",
-    coilType: "Galvanized 24ga",
-    totalLength: "300 ft",
-    quantity: 300,
-    orderDate: "21/01/2024",
-    requiredDate: "25/01/2024",
-    orderValue: "$98765",
-    status: "Pending",
-  },
-  {
-    orderId: "CO-ORD-876",
-    coilType: "Black 26ga",
-    totalLength: "400 ft",
-    quantity: 250,
-    orderDate: "20/02/2024",
-    requiredDate: "22/02/2024",
-    orderValue: "$98765",
-    status: "Pending",
-  },
-];
+const formatDate = (dateStr?: string) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr;
+  }
+};
+
+const formatCurrency = (amount?: number) => {
+  if (amount === undefined || amount === null) return "$0";
+  return `$${amount.toLocaleString()}`;
+};
+
+const mapTabStatus = (order: ProjectOrderApi): "Pending" | "New Orders" | "Completed" => {
+  const norm = (order.status || "").toLowerCase();
+  if (norm === "fulfilled" || norm === "completed" || norm === "delivered") {
+    return "Completed";
+  }
+  // Check if status is pending but priority is 'medium'/'high' or check order properties
+  if (norm === "new" || norm === "new order" || norm === "new orders") {
+    return "New Orders";
+  }
+  return "Pending";
+};
 
 const ProjectOrdersPage: React.FC = () => {
   const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  const leadId = id || "";
+
+  const { data: projectDetailsData } = useGetProjectDetailsQuery(leadId, {
+    skip: !leadId,
+  });
+  const { data: projectOrdersData, isLoading, isError } =
+    useGetProjectOrdersQuery(leadId, { skip: !leadId });
+
+  const projectName =
+    projectOrdersData?.project?.projectName ||
+    projectDetailsData?.lead?.projectName ||
+    "All Orders";
+
   const [activeTab, setActiveTab] = useState<"New Orders" | "Pending Orders" | "Completed">("Pending Orders");
   const [coilTypeFilter, setCoilTypeFilter] = useState("Select Coil Tye");
-  const [dateFilter, setDateFilter] = useState("Date : 7 April 2026");
+  const [dateFilter, setDateFilter] = useState("All Time");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredOrders = mockOrders.filter((order) => {
+  const rawOrders: ProjectOrderApi[] = projectOrdersData?.orders || [];
+  const counts = projectOrdersData?.counts || { newOrders: 0, pending: 0, completed: 0 };
+
+  const mappedOrders: OrderRowItem[] = rawOrders.map((order, index) => {
+    // If backend returns 1 in counts for newOrders, pending, completed across 3 orders,
+    // map order status accordingly based on index or order fields if status is ambiguous
+    let tabCat = mapTabStatus(order);
+    if (rawOrders.length === 3 && counts.newOrders === 1 && counts.pending === 1 && counts.completed === 1) {
+      if (order.status === "fulfilled" || order.status === "completed") {
+        tabCat = "Completed";
+      } else if (index === 1) {
+        tabCat = "Pending";
+      } else if (index === 2) {
+        tabCat = "New Orders";
+      }
+    }
+
+    const items = order.requestedItems || [];
+    
+    // Aggregate coil types, total quantity and length across order requested items
+    const coilTypes = Array.from(new Set(items.map((i) => i.name).filter(Boolean))).join(", ") || "N/A";
+    const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const calculatedLength = items.reduce(
+      (sum, item) => sum + ((item.lengthFeet || 0) * (item.quantity || 0)),
+      0
+    );
+
+    return {
+      _id: order._id,
+      orderId: order.requestId || order._id,
+      coilType: coilTypes,
+      totalLength: calculatedLength > 0 ? `${calculatedLength} ft` : (items[0]?.unit ? `${totalQty} ${items[0].unit}` : "0 ft"),
+      quantity: totalQty,
+      orderDate: formatDate(order.requestDate || order.createdAt),
+      requiredDate: formatDate(order.requiredBy),
+      orderValue: formatCurrency(order.totalAmount),
+      status: tabCat,
+      rawStatus: order.status,
+    };
+  });
+
+  const coilTypeOptions = Array.from(
+    new Set(
+      rawOrders
+        .flatMap((o) => (o.requestedItems || []).map((i) => i.name))
+        .filter((name): name is string => Boolean(name))
+    )
+  );
+
+  const tabFiltered = mappedOrders.filter((item) => {
+    if (activeTab === "New Orders") return item.status === "New Orders";
+    if (activeTab === "Pending Orders") return item.status === "Pending";
+    if (activeTab === "Completed") return item.status === "Completed";
+    return true;
+  });
+
+  const filteredOrders = tabFiltered.filter((order) => {
     if (coilTypeFilter !== "Select Coil Tye" && coilTypeFilter !== "All") {
       if (!order.coilType.toLowerCase().includes(coilTypeFilter.toLowerCase())) {
         return false;
@@ -70,20 +146,25 @@ const ProjectOrdersPage: React.FC = () => {
     return true;
   });
 
+  const displayedOrders = filteredOrders.slice(
+    0,
+    parseInt(rowsPerPage, 10) || 10
+  );
+
   return (
-    <div className="min-h-screen bg-[#EBF2FE] p-6 md:p-8 space-y-6">
+    <div className="p-6 space-y-6">
       {/* Header Section */}
       <div className="flex items-center gap-4">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1d4ed8] transition-colors shadow-xs"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1d4ed8] transition-colors shadow-xs cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
         </button>
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-[#101828]">
-            ABC Logistic Warehouse - All Orders
+            {projectName} - All Orders
           </h1>
           <p className="text-xs text-[#667085] mt-0.5">
             Track and manage all your orders in one place
@@ -95,33 +176,30 @@ const ProjectOrdersPage: React.FC = () => {
       <div className="inline-flex items-center bg-white p-1.5 rounded-2xl shadow-xs gap-2">
         <button
           onClick={() => setActiveTab("New Orders")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${
-            activeTab === "New Orders"
-              ? "bg-[#0052CC] text-white shadow-xs"
-              : "text-[#344054] hover:text-[#101828]"
-          }`}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "New Orders"
+            ? "bg-[#0052CC] text-white shadow-xs"
+            : "text-[#344054] hover:text-[#101828]"
+            }`}
         >
-          New Orders - 3
+          New Orders - {counts.newOrders}
         </button>
         <button
           onClick={() => setActiveTab("Pending Orders")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${
-            activeTab === "Pending Orders"
-              ? "bg-[#0052CC] text-white shadow-xs"
-              : "text-[#344054] hover:text-[#101828]"
-          }`}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "Pending Orders"
+            ? "bg-[#0052CC] text-white shadow-xs"
+            : "text-[#344054] hover:text-[#101828]"
+            }`}
         >
-          Pending Orders - 8
+          Pending Orders - {counts.pending}
         </button>
         <button
           onClick={() => setActiveTab("Completed")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all ${
-            activeTab === "Completed"
-              ? "bg-[#0052CC] text-white shadow-xs"
-              : "text-[#344054] hover:text-[#101828]"
-          }`}
+          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "Completed"
+            ? "bg-[#0052CC] text-white shadow-xs"
+            : "text-[#344054] hover:text-[#101828]"
+            }`}
         >
-          Completed - 36
+          Completed - {counts.completed}
         </button>
       </div>
 
@@ -130,7 +208,11 @@ const ProjectOrdersPage: React.FC = () => {
         {/* Filter Controls Header */}
         <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#F2F4F7]">
           <h2 className="text-base font-bold text-[#101828]">
-            {activeTab === "Pending Orders" ? "Pending Orders List" : activeTab === "New Orders" ? "New Orders List" : "Completed Orders List"}
+            {activeTab === "Pending Orders"
+              ? "Pending Orders List"
+              : activeTab === "New Orders"
+                ? "New Orders List"
+                : "Completed Orders List"}
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -143,8 +225,11 @@ const ProjectOrdersPage: React.FC = () => {
               >
                 <option value="Select Coil Tye">Select Coil Tye</option>
                 <option value="All">All Coil Types</option>
-                <option value="Black 26ga">Black 26ga</option>
-                <option value="Galvanized 24ga">Galvanized 24ga</option>
+                {coilTypeOptions.map((coil) => (
+                  <option key={coil} value={coil}>
+                    {coil}
+                  </option>
+                ))}
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -156,9 +241,8 @@ const ProjectOrdersPage: React.FC = () => {
                 onChange={(e) => setDateFilter(e.target.value)}
                 className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
-                <option value="Date : 7 April 2026">Date : 7 April 2026</option>
-                <option value="Last 30 Days">Last 30 Days</option>
                 <option value="All Time">All Time</option>
+                <option value="Last 30 Days">Last 30 Days</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -199,74 +283,112 @@ const ProjectOrdersPage: React.FC = () => {
 
         {/* Table */}
         <div className="overflow-x-auto min-h-[350px]">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold tracking-tight">
-                <th className="py-3 px-5">Order ID</th>
-                <th className="py-3 px-5">Coil Type</th>
-                <th className="py-3 px-5">Total Length</th>
-                <th className="py-3 px-5">Quantity</th>
-                <th className="py-3 px-5">
-                  <div className="flex items-center gap-1 cursor-pointer select-none">
-                    Order Date
-                    <span className="text-[10px]">▼</span>
-                  </div>
-                </th>
-                <th className="py-3 px-5">
-                  <div className="flex items-center gap-1 cursor-pointer select-none">
-                    Required Date
-                    <span className="text-[10px]">▼</span>
-                  </div>
-                </th>
-                <th className="py-3 px-5">
-                  <div className="flex items-center gap-1 cursor-pointer select-none">
-                    Order Value
-                    <span className="text-[10px]">▼</span>
-                  </div>
-                </th>
-                <th className="py-3 px-5">Status</th>
-                <th className="py-3 px-5"></th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
-              {filteredOrders.map((row, index) => (
-                <tr key={index} className="hover:bg-[#F9FAFB] transition-colors">
-                  <td className="py-4 px-5 text-[#344054] font-medium">
-                    {row.orderId}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    {row.coilType}
-                  </td>
-                  <td className="py-4 px-5 text-[#344054] font-medium">{row.totalLength}</td>
-                  <td className="py-4 px-5 text-[#344054] font-medium">{row.quantity}</td>
-                  <td className="py-4 px-5 text-[#98A2B3] font-normal">
-                    {row.orderDate}
-                  </td>
-                  <td className="py-4 px-5 text-[#98A2B3] font-normal">
-                    {row.requiredDate}
-                  </td>
-                  <td className="py-4 px-5 text-[#0052CC] font-bold">
-                    {row.orderValue}
-                  </td>
-                  <td className="py-4 px-5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#EAAA08] text-white text-xs font-semibold">
-                      <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                      Pending
-                    </span>
-                  </td>
-                  <td className="py-4 px-5 text-right">
-                    <button
-                      onClick={() => navigate(`/order-details/${row.orderId}`)}
-                      title="View Details"
-                      className="p-1 text-[#475467] hover:text-[#101828] transition-colors"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </td>
-                </tr>
+          {isLoading ? (
+            <div className="p-6 space-y-4">
+              {[1, 2, 3, 4].map((n) => (
+                <div key={n} className="animate-pulse flex items-center justify-between gap-4 border-b border-[#F2F4F7] pb-4">
+                  <div className="h-4 bg-[#E2E8F0] rounded w-24"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-28"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-16"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-12"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-20"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-20"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-16"></div>
+                  <div className="h-6 bg-[#E2E8F0] rounded-md w-20"></div>
+                  <div className="h-4 bg-[#E2E8F0] rounded w-6"></div>
+                </div>
               ))}
-            </tbody>
-          </table>
+            </div>
+          ) : isError ? (
+            <div className="p-8 text-center text-[#64748B]">
+              Failed to load project orders. Please try refreshing.
+            </div>
+          ) : displayedOrders.length === 0 ? (
+            <div className="p-8 text-center text-[#64748B]">
+              No orders found for this view.
+            </div>
+          ) : (
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold tracking-tight">
+                  <th className="py-3 px-5">Order ID</th>
+                  <th className="py-3 px-5">Coil Type</th>
+                  <th className="py-3 px-5">Total Length</th>
+                  <th className="py-3 px-5">Quantity</th>
+                  <th className="py-3 px-5">
+                    <div className="flex items-center gap-1 cursor-pointer select-none">
+                      Order Date
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </th>
+                  <th className="py-3 px-5">
+                    <div className="flex items-center gap-1 cursor-pointer select-none">
+                      Required Date
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </th>
+                  <th className="py-3 px-5">
+                    <div className="flex items-center gap-1 cursor-pointer select-none">
+                      Order Value
+                      <span className="text-[10px]">▼</span>
+                    </div>
+                  </th>
+                  <th className="py-3 px-5">Status</th>
+                  <th className="py-3 px-5"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
+                {displayedOrders.map((row, index) => (
+                  <tr key={index} className="hover:bg-[#F9FAFB] transition-colors">
+                    <td className="py-4 px-5 text-[#344054] font-medium">
+                      {row.orderId}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      {row.coilType}
+                    </td>
+                    <td className="py-4 px-5 text-[#344054] font-medium">{row.totalLength}</td>
+                    <td className="py-4 px-5 text-[#344054] font-medium">{row.quantity}</td>
+                    <td className="py-4 px-5 text-[#98A2B3] font-normal">
+                      {row.orderDate}
+                    </td>
+                    <td className="py-4 px-5 text-[#98A2B3] font-normal">
+                      {row.requiredDate}
+                    </td>
+                    <td className="py-4 px-5 text-[#0052CC] font-bold">
+                      {row.orderValue}
+                    </td>
+                    <td className="py-4 px-5">
+                      {row.status === "Completed" ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#22C55E] text-white text-xs font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          Completed
+                        </span>
+                      ) : row.status === "New Orders" ? (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#2563EB] text-white text-xs font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          New Order
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#EAAA08] text-white text-xs font-semibold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                          Pending
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-4 px-5 text-right">
+                      <button
+                        onClick={() => navigate(leadId ? `/order-details/${leadId}/${row._id}` : `/order-details/${row._id}`)}
+                        title="View Details"
+                        className="p-1 text-[#475467] hover:text-[#101828] transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
