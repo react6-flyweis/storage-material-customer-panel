@@ -6,7 +6,6 @@ import NextDeliveryCard, { type DeliveryCardData } from "../dashbord/NextDeliver
 import ScanQrModal from "./ScanQrModal";
 import CustomSelect from "../common_components/CustomSelect";
 import { useGetDeliveriesQuery } from "@/redux/api/deliveriesApi";
-import { useGetProjectsQuery } from "@/redux/api/projectsApi";
 
 const ProjectDeliverySchedule = () => {
   const { id: paramProjectId } = useParams();
@@ -14,33 +13,11 @@ const ProjectDeliverySchedule = () => {
   const [bundleId, setBundleId] = useState("BND-001");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [statusFilter, setStatusFilter] = useState("All Status");
-  const [selectedProject, setSelectedProject] = useState(paramProjectId || "");
 
-  const { data: projectsData, isLoading: isProjectsLoading } = useGetProjectsQuery({ page: 1, limit: 100 });
-  const projectsList = projectsData?.projects || [];
-
-  const { data, isLoading } = useGetDeliveriesQuery({
+  const { data, isLoading, isFetching } = useGetDeliveriesQuery({
     tab: activeTab,
-    project: selectedProject ? selectedProject : undefined,
+    project: paramProjectId,
   });
-
-  const projectOptions = [
-    { label: "All Projects", value: "" },
-    ...projectsList.map((p) => ({
-      label: p.projectName || p.jobId || p.projectId,
-      value: p._id || p.projectId,
-    })),
-  ];
-
-  const projectDisplayOptions = projectOptions.map((p) => p.label);
-
-  const handleProjectChange = (label: string) => {
-    const found = projectOptions.find((p) => p.label === label);
-    setSelectedProject(found ? found.value : "");
-  };
-
-  const currentProjectLabel =
-    projectOptions.find((p) => p.value === selectedProject)?.label || "All Projects";
 
   const tabs = [
     {
@@ -185,15 +162,7 @@ const ProjectDeliverySchedule = () => {
             );
           })}
 
-          <div className="min-w-55 ml-auto flex items-center gap-3">
-            <div className="w-55">
-              <CustomSelect
-                placeholder="Select Project"
-                value={currentProjectLabel}
-                onChange={handleProjectChange}
-                options={projectDisplayOptions}
-              />
-            </div>
+          <div className="min-w-44 ml-auto flex items-center gap-3">
             <div className="w-44">
               <CustomSelect
                 placeholder="All Status"
@@ -206,7 +175,7 @@ const ProjectDeliverySchedule = () => {
         </div>
       </div>
 
-      {isLoading || isProjectsLoading ? (
+      {isLoading || isFetching ? (
         <div className="flex h-[50vh] items-center justify-center">
           <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
         </div>
