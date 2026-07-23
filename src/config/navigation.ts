@@ -5,6 +5,7 @@ import MenuIcon4 from "@/assets/sidebar_icons/CommunicationIcon.svg";
 import MenuIcon5 from "@/assets/sidebar_icons/RecieptIcon.svg";
 import MenuIcon6 from "@/assets/sidebar_icons/NotificationIcon.svg";
 import MenuIcon7 from "@/assets/sidebar_icons/truck.svg";
+import StackIcon from "@/assets/sidebar_icons/StackIcon.svg"
 
 export type SubNavItem = {
   label: string;
@@ -74,7 +75,12 @@ export const NAV_ITEMS: NavItem[] = [
   {
     title: "Material Orders",
     color: "bg-[#CE222B]",
-    icon: MenuIcon7,
-    path: "/material-orders",
-  },
+    icon: StackIcon,
+    items: [
+      {
+        label: "Material Orders", path: "/material-orders"
+      },
+      { label: "Order Quotations", path: "/order-quotations" },
+    ]
+  }
 ];
