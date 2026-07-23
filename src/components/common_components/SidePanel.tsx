@@ -70,7 +70,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
         {/* Title */}
         {currentNav?.title && (
           <button
-            className={`w-full text-sm text-white rounded-lg md:py-3 py-2 font-medium shadow-sm ${currentNav.color}`}
+            className={`w-full text-sm text-white rounded-lg md:py-3 py-2 font-medium shadow-sm mb-2 ${currentNav.color}`}
           >
             {currentNav.title}
           </button>
