@@ -12,7 +12,9 @@ import DashboardWidgets from "@/components/dashbord/DashboardWidgets";
 import Ship1 from "../assets/new-images/ship-1.svg";
 import Ship2 from "../assets/new-images/ship-2.svg";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useGetDashboardQuery } from "@/redux/api/dashboardApi";
+import ProjectOrdersList, { type OrderItem } from "@/components/my_projects/ProjectOrdersList";
 
 import {
   Truck,
@@ -33,6 +35,7 @@ import NextDeliveryCard, { type DeliveryCardData } from "@/components/dashbord/N
 type TabType = "today" | "week" | "month";
 
 const Dashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("today");
   console.log("activeTab:", setActiveTab);
 
@@ -45,6 +48,60 @@ const Dashboard = () => {
       </div>
     );
   }
+
+  const formatDate = (dateStr?: string | null) => {
+    if (!dateStr) return "-";
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      return d.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      });
+    } catch {
+      return dateStr || "-";
+    }
+  };
+
+  const ordersList: OrderItem[] = (dashboardData?.ordersList || []).map((order) => {
+    const items = order.requestedItems || [];
+    const coilType = items.map((i) => i.name).filter(Boolean).join(", ") || "-";
+    const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+    const calculatedLength = items.reduce(
+      (sum, item) => sum + ((item.lengthFeet || 0) * (item.quantity || 0)),
+      0
+    );
+
+    const totalLength = calculatedLength > 0
+      ? `${calculatedLength} ft`
+      : items[0]?.unit && totalQty > 0
+      ? `${totalQty} ${items[0].unit}`
+      : "-";
+
+    let mappedStatus = order.status || "Pending";
+    const normStatus = mappedStatus.toLowerCase();
+    if (normStatus === "fulfilled" || normStatus === "completed") {
+      mappedStatus = "Completed";
+    } else if (normStatus === "pending") {
+      mappedStatus = "Pending";
+    } else if (normStatus === "approved" || normStatus === "new") {
+      mappedStatus = "New Order";
+    }
+
+    return {
+      id: order._id,
+      orderId: order.requestId || order._id,
+      building: order.buildingLabel || "-",
+      coilType,
+      totalLength,
+      quantity: totalQty,
+      orderDate: formatDate(order.requestDate || order.createdAt),
+      requiredDate: formatDate(order.requiredBy),
+      status: mappedStatus,
+      leadId: order.leadId,
+    };
+  });
 
   const dashboardStats = [
     {
@@ -270,7 +327,19 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <DashboardWidgets />
+      <DashboardWidgets data={dashboardData} />
+
+      <ProjectOrdersList
+        orders={ordersList}
+        onViewAll={() => navigate("/material-orders")}
+        onViewOrderDetails={(order) => {
+          if (order.leadId && order.id) {
+            navigate(`/order-details/${order.leadId}/${order.id}`);
+          } else {
+            navigate("/material-orders");
+          }
+        }}
+      />
 
       <h3 className="text-[#212B36] text-[18px] font-semibold mb-3">
         Shipment Breakdown
