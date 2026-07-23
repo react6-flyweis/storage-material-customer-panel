@@ -3,19 +3,29 @@ import {
   CalendarDays,
   X,
 } from "lucide-react";
+import type { DeliveryCardData } from "./NextDeliveryCard";
 
 interface AcknowledgeRescheduleModalProps {
   open: boolean;
   onClose: () => void;
   onAcknowledge?: () => void;
+  deliveryData?: DeliveryCardData;
 }
 
 export default function AcknowledgeRescheduleModal({
   open,
   onClose,
   onAcknowledge,
+  deliveryData,
 }: AcknowledgeRescheduleModalProps) {
   if (!open) return null;
+
+  const title = deliveryData?.title || "-";
+  const deliveryId = deliveryData?.deliveryId || "-";
+  const prevDate = deliveryData?.rescheduleInfo?.previousDate || "-";
+  const newDate = deliveryData?.rescheduleInfo?.newDate || deliveryData?.deliveryInfo?.date || "-";
+  const reason = deliveryData?.rescheduleInfo?.reason || "-";
+  const timeWindow = deliveryData?.deliveryInfo?.timeWindow || "-";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
@@ -56,11 +66,11 @@ export default function AcknowledgeRescheduleModal({
           </p>
 
           <h3 className="mt-2 text-[16px] font-bold text-[#101828]">
-            Insulation Materials
+            {title}
           </h3>
 
           <p className="mt-2 text-[16px] text-[#1D4ED8]">
-            DEL - 1007
+            {deliveryId}
           </p>
         </div>
 
@@ -71,8 +81,8 @@ export default function AcknowledgeRescheduleModal({
           </h3>
 
           <p className="mt-2 text-[14px] text-[#1E40AF]">
-            Delivery date moved from March 28 to March 29
-            due to weather
+            Delivery date moved from {prevDate} to {newDate}
+            {reason !== "-" ? ` due to ${reason}` : ""}
           </p>
         </div>
 
@@ -84,7 +94,7 @@ export default function AcknowledgeRescheduleModal({
             </span>
 
             <span className="text-[16px] font-bold text-[#101828]">
-              Sunday, March 29, 2026
+              {newDate}
             </span>
           </div>
 
@@ -94,7 +104,7 @@ export default function AcknowledgeRescheduleModal({
             </span>
 
             <span className="text-[16px] font-bold text-[#101828]">
-              08:00 - 12:00
+              {timeWindow}
             </span>
           </div>
         </div>
