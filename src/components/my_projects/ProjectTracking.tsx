@@ -1,88 +1,103 @@
 import React from "react";
-import { Download, Eye, FolderPlus, FileText } from "lucide-react";
-import type { ProjectDetailsResponseData } from "@/redux/api/projectsApi";
-import { STATUS_MAP } from "@/utils/projectStatusUtils";
+import { useParams } from "react-router-dom";
+import { Download, Eye, FolderPlus, FileText, Loader2 } from "lucide-react";
+import {
+  useGetProjectTrackingQuery,
+  type ProjectDetailsResponseData,
+  type ProjectStep,
+} from "@/redux/api/projectsApi";
 import { Card, CardContent, CardHeader } from "../ui/card";
 
 interface ProjectTrackingProps {
   data?: ProjectDetailsResponseData;
+  leadId?: string;
 }
 
-const LIFECYCLE_STEPS_DATA = [
-  {
-    id: 1,
-    title: "Design",
-    completedDate: "12 May 2025",
-    completedBy: "Sarah Lee",
-  },
-  {
-    id: 2,
-    title: "Fabrication",
-    completedDate: "12 May 2025",
-    completedBy: "Michael Smith",
-  },
-  {
-    id: 3,
-    title: "Dispatch",
-    completedDate: "12 May 2025",
-    completedBy: "David Brown",
-  },
-  {
-    id: 4,
-    title: "Install",
-    startedDate: "12 May 2025",
-    startedBy: "Installation Team",
-    currentStage: "Wall Panel Installation",
-    completionPercentage: 80,
-    expectedCompletion: "08 Jun 2025",
-    notes: "Installation is proceeding as per schedule.",
-  },
-  {
-    id: 5,
-    title: "Complete",
-  },
-];
-
-const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
-  const lead = data?.lead;
-
-  const currentStatusKey = lead?.lifecycleStatus?.toLowerCase() || "";
-  const currentStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 3; // Default to step 4 (index 3) if not set
-  const currentStep = currentStepIndex + 1;
-  const totalSteps = LIFECYCLE_STEPS_DATA.length;
-
-  const formattedCreatedDate = lead?.createdAt
-    ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
+const formatDate = (dateString?: string | null) => {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return date.toLocaleDateString("en-GB", {
       day: "2-digit",
       month: "short",
       year: "numeric",
-    })
-    : "12 May 2025";
+    });
+  } catch {
+    return dateString;
+  }
+};
+
+const formatDateTime = (dateString?: string | null) => {
+  if (!dateString) return null;
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return (
+      date.toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }) +
+      ", " +
+      date.toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: true,
+      })
+    );
+  } catch {
+    return dateString;
+  }
+};
+
+const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data, leadId: propLeadId }) => {
+  const { id: paramLeadId } = useParams<{ id: string }>();
+  const activeLeadId = propLeadId || paramLeadId || data?.lead?._id || data?.lead?.projectId || "";
+
+  const { data: trackingData, isLoading, error } = useGetProjectTrackingQuery(activeLeadId, {
+    skip: !activeLeadId,
+  });
+
+  const lead = data?.lead;
+  const project = trackingData?.project;
+  const projectSteps = trackingData?.projectSteps;
 
   const rawSales = lead?.assignedSales as unknown;
   const customerName =
     typeof rawSales === "string" && rawSales.trim() !== ""
       ? rawSales
       : typeof rawSales === "object" && rawSales !== null && "name" in rawSales
-        ? String((rawSales as { name?: string }).name || "John Doe")
-        : "John Doe";
-  const projectId = lead?.jobId || lead?.projectId || "Q-2025-1047";
+        ? String((rawSales as { name?: string }).name || "Customer")
+        : project?.projectName || "Customer";
 
-  const activeStepData = LIFECYCLE_STEPS_DATA[currentStepIndex] || LIFECYCLE_STEPS_DATA[3];
-  const activePercentage = Math.round((currentStep / totalSteps) * 100);
+  const projectId = project?.jobId || lead?.jobId || lead?.projectId || "Q-2025-1047";
 
-  // Documents from lead or fallback mockup matching design
-  const docsList = lead?.documents && lead.documents.length > 0
-    ? lead.documents.map((doc) => ({
-      id: doc._id,
-      name: doc.name || "Document.pdf",
-      size: "15.2 MB",
-      url: doc.url,
-    }))
-    : [
-      { id: "1", name: "Installation.pdf", size: "15.2 MB", url: "#" },
-      { id: "2", name: "Safety.pdf", size: "15.2 MB", url: "#" },
-    ];
+  const steps: ProjectStep[] = projectSteps?.steps || [];
+  const currentStepNum = projectSteps?.currentStepNumber || 1;
+  const currentStepIndex = Math.max(0, currentStepNum - 1);
+  const totalSteps = projectSteps?.totalSteps || (steps.length > 0 ? steps.length : 5);
+  const activePercentage = projectSteps?.overallProgressPct ?? Math.round((currentStepNum / totalSteps) * 100);
+
+  const activeStep: ProjectStep | undefined = steps[currentStepIndex] || steps.find((s) => s.status === "in_progress") || steps[0];
+
+  const attachments = activeStep?.attachments || [];
+
+  if (isLoading) {
+    return (
+      <Card className="min-h-[400px] flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-[#2563EB]" />
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="min-h-[400px] flex items-center justify-center p-6 text-red-500">
+        Failed to load project tracking data. Please try again later.
+      </Card>
+    );
+  }
 
   return (
     <Card className="">
@@ -102,11 +117,11 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
             <h2 className="text-lg font-bold text-[#101828]">Progress Steps</h2>
 
             <div className="relative mt-6">
-              {LIFECYCLE_STEPS_DATA.map((step, index) => {
+              {steps.map((step, index) => {
                 const stepNum = index + 1;
-                const isCompleted = index < currentStepIndex;
-                const isCurrent = index === currentStepIndex;
-                const isPending = index > currentStepIndex;
+                const isCompleted = step.status === "completed";
+                const isCurrent = step.status === "in_progress";
+                const isPending = step.status === "pending";
 
                 let circleClass = "bg-[#9CA3AF] text-white"; // default pending
                 if (isCompleted) {
@@ -116,9 +131,9 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
                 }
 
                 return (
-                  <div key={step.id} className="relative">
+                  <div key={step.key || index} className="relative">
                     {/* Vertical Connector Line */}
-                    {index < LIFECYCLE_STEPS_DATA.length - 1 && (
+                    {index < steps.length - 1 && (
                       <div
                         className="absolute left-5 top-10 -ml-px h-full w-0.5 bg-[#E5E7EB]"
                         style={{ zIndex: 0 }}
@@ -136,19 +151,19 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
 
                         <div className="pt-0.5">
                           <h3 className="text-base font-bold text-[#101828]">
-                            {step.title}
+                            {step.label}
                           </h3>
                           <div className="mt-1 text-xs text-[#667085] leading-relaxed">
                             {isCompleted && (
                               <>
-                                <p>Completed on {step.completedDate || formattedCreatedDate},</p>
+                                <p>Completed on {formatDate(step.completedAt || step.date) || "-"},</p>
                                 <p>By {step.completedBy || "Team"}</p>
                               </>
                             )}
                             {isCurrent && (
                               <>
-                                <p>Started on {step.startedDate || formattedCreatedDate},</p>
-                                <p>By {step.startedBy || customerName}</p>
+                                <p>Started on {formatDate(step.startedAt || step.date) || "-"},</p>
+                                <p>By {step.startedBy || "Team"}</p>
                               </>
                             )}
                             {isPending && <p>Pending</p>}
@@ -178,7 +193,7 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
                     </div>
 
                     {/* Divider line between steps */}
-                    {index < LIFECYCLE_STEPS_DATA.length - 1 && (
+                    {index < steps.length - 1 && (
                       <div className="ml-14 border-b border-[#F2F4F7]" />
                     )}
                   </div>
@@ -194,7 +209,7 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
             </span>
             <div className="mt-2 flex items-center justify-between gap-4">
               <span className="text-xs font-bold text-[#101828] whitespace-nowrap">
-                Step {currentStep} of {totalSteps}
+                Step {currentStepNum} of {totalSteps}
               </span>
 
               <div className="relative h-3 w-full overflow-hidden rounded-full bg-[#E5E7EB]">
@@ -217,64 +232,70 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
           <div className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
             <h2 className="text-lg font-bold text-[#101828]">Current Step Details</h2>
 
-            <div className="mt-5 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2563EB] text-base font-bold text-white">
-                  {currentStep}
+            {activeStep ? (
+              <>
+                <div className="mt-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#2563EB] text-base font-bold text-white">
+                      {currentStepNum}
+                    </div>
+                    <h3 className="text-lg font-bold text-[#101828]">
+                      {activeStep.label}
+                    </h3>
+                  </div>
+
+                  <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-3.5 py-1 text-xs font-semibold text-[#2563EB] capitalize">
+                    {activeStep.status === "in_progress" ? "In Progress" : activeStep.status}
+                  </span>
                 </div>
-                <h3 className="text-lg font-bold text-[#101828]">
-                  {activeStepData.title}
-                </h3>
-              </div>
 
-              <span className="inline-flex items-center rounded-full bg-[#EFF6FF] px-3.5 py-1 text-xs font-semibold text-[#2563EB]">
-                In Progress
-              </span>
-            </div>
+                <div className="mt-6 space-y-3.5 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#667085]">Started on:</span>
+                    <span className="font-bold text-[#101828]">
+                      {formatDateTime(activeStep.startedAt) || formatDate(activeStep.date) || "-"}
+                    </span>
+                  </div>
 
-            <div className="mt-6 space-y-3.5 text-sm">
-              <div className="flex items-center justify-between">
-                <span className="text-[#667085]">Started on:</span>
-                <span className="font-bold text-[#101828]">
-                  {activeStepData.startedDate || "28 May 2025, 10:30 AM"}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#667085]">Started by:</span>
+                    <span className="font-bold text-[#101828]">
+                      {activeStep.startedBy || "-"}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#667085]">Started by:</span>
-                <span className="font-bold text-[#101828]">
-                  {activeStepData.startedBy || "Installation Team"}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#667085]">Current Stage:</span>
+                    <span className="font-bold text-[#101828]">
+                      {activeStep.currentStage || "-"}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#667085]">Current Stage:</span>
-                <span className="font-bold text-[#101828]">
-                  {activeStepData.currentStage || "Wall Panel Installation"}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#667085]">Completion :</span>
+                    <span className="font-bold text-[#101828]">
+                      {activeStep.completionPct}%
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#667085]">Completion :</span>
-                <span className="font-bold text-[#101828]">
-                  {activeStepData.completionPercentage ?? 80}%
-                </span>
-              </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-[#667085]">Expected Completion:</span>
+                    <span className="font-bold text-[#101828]">
+                      {formatDate(activeStep.expectedCompletion) || "-"}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between">
-                <span className="text-[#667085]">Expected Completion:</span>
-                <span className="font-bold text-[#101828]">
-                  {activeStepData.expectedCompletion || "08 Jun 2025"}
-                </span>
-              </div>
-
-              <div className="flex items-start justify-between gap-4 pt-1">
-                <span className="text-[#667085] shrink-0">Notes:</span>
-                <span className="text-right font-bold text-[#101828]">
-                  {activeStepData.notes || "Installation is proceeding as per schedule."}
-                </span>
-              </div>
-            </div>
+                  <div className="flex items-start justify-between gap-4 pt-1">
+                    <span className="text-[#667085] shrink-0">Notes:</span>
+                    <span className="text-right font-bold text-[#101828]">
+                      {activeStep.notes || "-"}
+                    </span>
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="mt-4 text-sm text-[#667085]">No active step details available.</p>
+            )}
           </div>
 
           {/* Attachments & Documents Card */}
@@ -289,49 +310,56 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
             </div>
 
             <div className="mt-5 space-y-3">
-              {docsList.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="flex items-center justify-between rounded-xl border border-[#F2F4F7] bg-[#FAFAFA] p-3.5"
+              {attachments.length > 0 ? (
+                attachments.map((doc, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between rounded-xl border border-[#F2F4F7] bg-[#FAFAFA] p-3.5"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FEF2F2] text-[#EF4444]">
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-[#101828] truncate max-w-[180px]" title={doc.name}>
+                          {doc.name}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => doc.url && window.open(doc.url, "_blank")}
+                        className="text-[#475467] hover:text-[#101828] transition-colors"
+                        title="Download"
+                      >
+                        <Download className="h-4 w-4" />
+                      </button>
+                      <button
+                        onClick={() => doc.url && window.open(doc.url, "_blank")}
+                        className="text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
+                        title="View"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-[#667085] py-2">No attachments available for this step.</p>
+              )}
+            </div>
+
+            {attachments.length > 0 && (
+              <div className="mt-5 flex justify-center">
+                <button
+                  onClick={() => { }}
+                  className="w-full rounded-lg bg-[#1D4ED8] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1E40AF]"
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#FEF2F2] text-[#EF4444]">
-                      <FileText className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-bold text-[#101828]">{doc.name}</p>
-                      <p className="text-xs text-[#667085]">{doc.size}</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={() => doc.url && doc.url !== "#" && window.open(doc.url, "_blank")}
-                      className="text-[#475467] hover:text-[#101828] transition-colors"
-                      title="Download"
-                    >
-                      <Download className="h-4 w-4" />
-                    </button>
-                    <button
-                      onClick={() => doc.url && doc.url !== "#" && window.open(doc.url, "_blank")}
-                      className="text-[#2563EB] hover:text-[#1D4ED8] transition-colors"
-                      title="View"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="mt-5 flex justify-center">
-              <button
-                onClick={() => { }}
-                className="w-full rounded-lg bg-[#1D4ED8] py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[#1E40AF]"
-              >
-                View All
-              </button>
-            </div>
+                  View All
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </CardContent>
@@ -340,3 +368,4 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data }) => {
 };
 
 export default ProjectTracking;
+
