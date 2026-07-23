@@ -50,6 +50,15 @@ const ProjectOrdersPage = lazy(
 const OrderDetailsPage = lazy(
   () => import("@/pages/OrderDetailsPage")
 );
+const OrderQuotationDetailsPage = lazy(
+  () => import("@/pages/OrderQuotationDetailsPage")
+);
+const OrderQuotationsPage = lazy(
+  () => import("@/pages/OrderQuotationsPage")
+);
+const ProjectOrderQuotationsPage = lazy(
+  () => import("@/pages/ProjectOrderQuotationsPage")
+);
 
 import ProjectDeliverySchedule from "./components/delivery-schedule/ProjectDeliverySchedule";
 
@@ -66,8 +75,12 @@ export const adminRoutes: RouteObject[] = [
       { path: "/material-orders", element: <MaterialOrdersPage /> },
       { path: "/project-orders", element: <ProjectOrdersPage /> },
       { path: "/project-orders/:id", element: <ProjectOrdersPage /> },
-      { path: "/order-details", element: <OrderDetailsPage /> },
-      { path: "/order-details/:orderId", element: <OrderDetailsPage /> },
+
+      { path: "/order-details/:leadId/:orderId", element: <OrderDetailsPage /> },
+      { path: "/order-quotations", element: <OrderQuotationsPage /> },
+      { path: "/project-order-quotations", element: <ProjectOrderQuotationsPage /> },
+      { path: "/project-order-quotations/:id", element: <ProjectOrderQuotationsPage /> },
+      { path: "/order-quotation-details/:id", element: <OrderQuotationDetailsPage /> },
       { path: "/my_projects/:id", element: <ProjectDetailsPage /> },
       { path: "/project-drawings/:id", element: <ProjectDrawingPage /> },
       { path: "/project-buildings/:id", element: <ProjectDrawingsPage /> },
