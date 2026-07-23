@@ -26,39 +26,76 @@ interface ProjectBasicInfoProps {
 const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
   const lead = data?.lead;
 
+  const projectStepsData = data?.projectSteps;
+
   const currentStatusKey = lead?.lifecycleStatus?.toLowerCase() || "";
-  const currentStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
-  const currentStep = currentStepIndex + 1;
-  const totalSteps = LIFECYCLE_STEPS.length;
+  const fallbackStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
 
-  const dynamicSteps = LIFECYCLE_STEPS.map((step, index) => {
-    let status = "pending";
-    let subtitle = "Pending";
+  const currentStep = projectStepsData?.currentStepNumber ?? (fallbackStepIndex + 1);
+  const totalSteps = projectStepsData?.totalSteps ?? LIFECYCLE_STEPS.length;
+  const overallProgressPct = projectStepsData?.overallProgressPct ?? Math.round((currentStep / totalSteps) * 100);
 
-    const formattedDate = lead?.createdAt
-      ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-      : "12 May 2025";
+  const dynamicSteps = projectStepsData?.steps?.length
+    ? projectStepsData.steps.map((step, index) => {
+      let subtitle = "Pending";
+      if (step.status === "completed") {
+        const dateStr = step.completedAt || step.date;
+        const formatted = dateStr
+          ? new Date(dateStr).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          : "";
+        subtitle = formatted ? `Completed on\n${formatted}` : "Completed";
+      } else if (step.status === "in_progress") {
+        const dateStr = step.startedAt || step.date;
+        const formatted = dateStr
+          ? new Date(dateStr).toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          : "";
+        subtitle = formatted ? `Started on\n${formatted}` : "In Progress";
+      }
 
-    if (index < currentStepIndex) {
-      status = "completed";
-      subtitle = `Completed on\n${formattedDate}`;
-    } else if (index === currentStepIndex) {
-      status = "current";
-      subtitle = `Started on\n${formattedDate}`;
-    }
+      return {
+        id: index + 1,
+        title: step.label || step.key,
+        date: step.date ? new Date(step.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : undefined,
+        subtitle,
+        status: step.status === "in_progress" ? "current" : step.status,
+      };
+    })
+    : LIFECYCLE_STEPS.map((step, index) => {
+      let status = "pending";
+      let subtitle = "Pending";
 
-    return {
-      id: index + 1,
-      title: step.title,
-      date: index <= currentStepIndex ? formattedDate : undefined,
-      subtitle,
-      status,
-    };
-  });
+      const formattedDate = lead?.createdAt
+        ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        })
+        : "12 May 2025";
+
+      if (index < fallbackStepIndex) {
+        status = "completed";
+        subtitle = `Completed on\n${formattedDate}`;
+      } else if (index === fallbackStepIndex) {
+        status = "current";
+        subtitle = `Started on\n${formattedDate}`;
+      }
+
+      return {
+        id: index + 1,
+        title: step.title,
+        date: index <= fallbackStepIndex ? formattedDate : undefined,
+        subtitle,
+        status,
+      };
+    });
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "-";
@@ -92,7 +129,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     },
   ];
 
-  const percentage = (currentStep / totalSteps) * 100;
+  const currentStepTitle = projectStepsData?.currentStepLabel || dynamicSteps[currentStep - 1]?.title || LIFECYCLE_STEPS[fallbackStepIndex]?.title || "-";
 
   const chartOption = {
     series: [
@@ -105,13 +142,13 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         },
         data: [
           {
-            value: percentage,
+            value: overallProgressPct,
             itemStyle: {
               color: "#1D4ED8",
             },
           },
           {
-            value: 100 - percentage,
+            value: 100 - overallProgressPct,
             itemStyle: {
               color: "#D9D9D9",
             },
@@ -165,10 +202,10 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
                   <div
                     key={item.title}
                     className={`flex items-start gap-3 ${index === 0
-                        ? "md:pr-4"
-                        : index === projectDetails.length - 1
-                          ? "md:pl-4"
-                          : "md:px-4"
+                      ? "md:pr-4"
+                      : index === projectDetails.length - 1
+                        ? "md:pl-4"
+                        : "md:px-4"
                       }`}
                   >
                     <Icon className="mt-0.5 h-5 w-5 text-[#344054] shrink-0" />
@@ -196,7 +233,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         totalSteps={totalSteps}
         assignedSales={lead?.assignedSales}
       />
-      <ProjectOrdersList />
+      <ProjectOrdersList leadId={lead?._id || ""} />
 
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
@@ -229,7 +266,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
             <p className="text-[14px] text-[#667085]">Current step</p>
 
             <p className="text-[14px] font-medium text-[#1D4ED8]">
-              {LIFECYCLE_STEPS[currentStepIndex]?.title || "-"}
+              {currentStepTitle}
             </p>
           </div>
 
@@ -261,7 +298,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         <ProjectNotes leadId={lead?._id || ""} />
       </div>
 
-      <ProjectUpcomingDelivery />
+      <ProjectUpcomingDelivery leadId={lead?._id || ""} />
     </div>
   );
 };
