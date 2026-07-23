@@ -170,9 +170,9 @@ export const projectsApi = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.projects.map(({ lead }) => ({ type: "Drawings" as const, id: lead._id })),
-              "Drawings",
-            ]
+            ...result.projects.map(({ lead }) => ({ type: "Drawings" as const, id: lead._id })),
+            "Drawings",
+          ]
           : ["Drawings"],
       transformResponse: (response: GetCustomerDocumentsApiResponse) =>
         response.data as GetCustomerDocumentsResponseData,
@@ -260,6 +260,14 @@ export const projectsApi = createApi({
           senderName?: string;
         }[];
       },
+    }),
+    getProjectTracking: builder.query<ProjectTrackingResponseData, string>({
+      query: (leadId) => ({
+        url: `/api/customer/projects/${leadId}/tracking`,
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<ProjectTrackingResponseData>) =>
+        response.data as ProjectTrackingResponseData,
     }),
   }),
 });
@@ -494,8 +502,10 @@ export interface ProjectDetailsResponseData {
     documents: ProjectDocument[];
     jobId: string;
     projectId: string;
+    projectName?: string;
     createdAt?: string;
   };
+  projectSteps?: ProjectStepsInfo;
   quotation: unknown;
   quoteSummary: unknown;
   invoices: ProjectInvoice[];
@@ -637,6 +647,72 @@ export interface GetProjectQuotationResponseData {
 
 export type GetProjectQuotationApiResponse = ApiResponse<GetProjectQuotationResponseData>;
 
+
+export interface ProjectStepAttachment {
+  name: string;
+  url: string;
+}
+
+export interface ProjectStep {
+  key: string;
+  label: string;
+  status: "completed" | "in_progress" | "pending" | string;
+  date: string | null;
+  startedBy: string;
+  startedAt: string | null;
+  completedBy: string;
+  completedAt: string | null;
+  currentStage: string;
+  completionPct: number;
+  expectedCompletion: string | null;
+  notes: string;
+  attachments: ProjectStepAttachment[];
+}
+
+export interface ProjectStepsInfo {
+  steps: ProjectStep[];
+  currentStepNumber: number;
+  totalSteps: number;
+  currentStepLabel: string;
+  overallProgressPct: number;
+}
+
+export interface TaskProgressInfo {
+  completed: number;
+  inProgress: number;
+  pending: number;
+  total: number;
+  completedFraction: string;
+  completedPct: number;
+}
+
+export interface TimelineInfo {
+  plannedCompletion: string | null;
+  status: string;
+}
+
+export interface MilestoneItem {
+  milestoneId: string;
+  title: string;
+  status: "completed" | "in_progress" | "pending" | string;
+  targetDate: string | null;
+  completedAt: string | null;
+}
+
+export interface ProjectTrackingResponseData {
+  project: {
+    leadId: string;
+    projectName: string;
+    jobId: string;
+  };
+  projectSteps: ProjectStepsInfo;
+  taskProgress: TaskProgressInfo;
+  timeline: TimelineInfo;
+  milestones: MilestoneItem[];
+}
+
+export type GetProjectTrackingApiResponse = ApiResponse<ProjectTrackingResponseData>;
+
 export const {
   useGetProjectsQuery,
   useGetProjectDetailsQuery,
@@ -656,6 +732,8 @@ export const {
   useApproveQuotationMutation,
   useRejectQuotationMutation,
   useGetChatHistoryQuery,
+  useGetProjectTrackingQuery,
 } = projectsApi;
+
 
 
