@@ -25,6 +25,21 @@ export interface NextDelivery {
   status: string;
   deliveryDate: string;
   estimatedWeight: number;
+  pickupDate?: string | null;
+  specialNotes?: string;
+  reschedule?: {
+    acknowledged?: boolean;
+    acknowledgedAt?: string | null;
+    previousDate?: string;
+    newDate?: string;
+    reason?: string;
+  } | null;
+  siteReadiness?: {
+    siteReady: boolean;
+    equipmentReady: boolean;
+  } | null;
+  confirmationEmailSent?: boolean;
+  confirmationEmailSentAt?: string | null;
 }
 
 export interface DashboardRequestedItem {
