@@ -6,6 +6,7 @@ import NextDeliveryCard, { type DeliveryCardData } from "../dashbord/NextDeliver
 import ScanQrModal from "./ScanQrModal";
 import CustomSelect from "../common_components/CustomSelect";
 import { useGetDeliveriesQuery } from "@/redux/api/deliveriesApi";
+import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 
 const ProjectDeliverySchedule = () => {
   const { id: paramProjectId } = useParams();
@@ -18,6 +19,24 @@ const ProjectDeliverySchedule = () => {
     tab: activeTab,
     project: paramProjectId,
   });
+
+  const { data: projectDetails } = useGetProjectDetailsQuery(paramProjectId || "", {
+    skip: !paramProjectId,
+  });
+
+  const deliveryProject = data?.deliveries?.[0]?.project;
+  const projectLead = projectDetails?.lead;
+
+  const projectName = deliveryProject?.projectName || projectLead?.projectName || "Project";
+  const projectLocation = deliveryProject?.location || projectLead?.location || "Location N/A";
+
+  const initials = projectName
+    .split(" ")
+    .map((word) => word[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase() || "PR";
 
   const tabs = [
     {
@@ -85,6 +104,7 @@ const ProjectDeliverySchedule = () => {
           previousDate: delivery.pickupDate ? new Date(delivery.pickupDate).toLocaleDateString() : "-",
           newDate: delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString() : "-",
           reason: delivery.specialNotes || "Rescheduled",
+          acknowledged: delivery.reschedule?.acknowledged ?? false,
         } : undefined,
         loadSummary: delivery.loadAndBundle ? {
           loadId: delivery.loadAndBundle.loadId,
@@ -92,6 +112,12 @@ const ProjectDeliverySchedule = () => {
           truckNumber: delivery.loadAndBundle.truckNumber,
           totalWeight: delivery.loadAndBundle.totalWeight
         } : undefined,
+        siteStatus: {
+          siteReady: delivery.siteReadiness?.siteReady ?? false,
+          equipmentReady: delivery.siteReadiness?.equipmentReady ?? false,
+        },
+        confirmationEmailSent: delivery.confirmationEmailSent ?? false,
+        confirmationEmailSentAt: delivery.confirmationEmailSentAt ?? null,
       };
     });
 
@@ -117,15 +143,15 @@ const ProjectDeliverySchedule = () => {
             onClose={() => setScanModal(false)}
           />
           <button className="flex bg-white items-center gap-2 md:px-4 ml-auto lg:mt-2 mt-4 py-2.5 shadow border border-(--button-bg-primary-color) rounded-lg hover:opacity-90 transition-opacity text-sm font-normal min-w-[128px] w-fit">
-            <div className="bg-(--button-bg-primary-color) text-white rounded-full w-10 h-10 flex items-center justify-center">
-              AM
+            <div className="bg-(--button-bg-primary-color) text-white rounded-full w-10 h-10 flex items-center justify-center font-semibold">
+              {initials}
             </div>
             <div>
               <p className="text-start text-base font-semibold">
-                Austin McClume
+                {projectName}
               </p>
               <p className="text-start text-[#4A5565]">
-                ABC Logistics Warehouse
+                {projectLocation}
               </p>
             </div>
           </button>
