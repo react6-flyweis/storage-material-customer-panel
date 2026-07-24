@@ -96,6 +96,7 @@ export interface DeliveryCardData {
     previousDate: string;
     newDate: string;
     reason: string;
+    acknowledged?: boolean;
   };
   loadSummary?: {
     loadId: string;
@@ -106,7 +107,10 @@ export interface DeliveryCardData {
   isSite?: boolean;
   siteStatus?: {
     siteReady: boolean;
+    equipmentReady?: boolean;
   };
+  confirmationEmailSent?: boolean;
+  confirmationEmailSentAt?: string | null;
 }
 
 type NextDeliveryCardProps = {
@@ -134,6 +138,9 @@ export default function NextDeliveryCard({
     type: "driver",
   });
 
+  const [isAcknowledgedLocal, setIsAcknowledgedLocal] = useState(false);
+  const isAcknowledged = data.rescheduleInfo?.acknowledged || isAcknowledgedLocal;
+
   const statusKey = (data.status in statusConfig
     ? data.status
     : "scheduled") as keyof typeof statusConfig;
@@ -150,7 +157,7 @@ export default function NextDeliveryCard({
         </button>
       )}
 
-      {data.status === "rescheduled" && (
+      {data.status === "rescheduled" && !isAcknowledged && (
         <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4 sm:p-5 mb-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
@@ -487,31 +494,37 @@ export default function NextDeliveryCard({
 
               <div className="flex items-center gap-2 text-[#4F46E5]">
                 <div
-                  className={`h-3.5 w-3.5 rounded-full ${data.siteStatus?.siteReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
+                  className={`h-3.5 w-3.5 rounded-full ${data.siteStatus?.equipmentReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
                     }`}
                 />
                 <span>
                   Equipment Ready:{" "}
-                  {data.siteStatus?.siteReady ? "Confirmed" : "Not Confirmed"}
+                  {data.siteStatus?.equipmentReady ? "Confirmed" : "Not Confirmed"}
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => setSiteConfirmedModal(true)}
-                className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
-              >
-                Confirm Site Ready
-              </button>
+            {(!data.siteStatus?.siteReady || !data.siteStatus?.equipmentReady) && (
+              <div className="flex flex-wrap items-center gap-3">
+                {!data.siteStatus?.siteReady && (
+                  <button
+                    onClick={() => setSiteConfirmedModal(true)}
+                    className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
+                  >
+                    Confirm Site Ready
+                  </button>
+                )}
 
-              <button
-                onClick={() => setConfirmEquipmentModal(true)}
-                className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
-              >
-                Confirm Equipment
-              </button>
-            </div>
+                {!data.siteStatus?.equipmentReady && (
+                  <button
+                    onClick={() => setConfirmEquipmentModal(true)}
+                    className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
+                  >
+                    Confirm Equipment
+                  </button>
+                )}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -548,11 +561,17 @@ export default function NextDeliveryCard({
           </button>
 
           <button
-            onClick={() => setIsEmailModalOpen(true)}
-            className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#101828]"
+            onClick={() => !data.confirmationEmailSent && setIsEmailModalOpen(true)}
+            disabled={data.confirmationEmailSent}
+            className={cn(
+              "flex items-center justify-center gap-2 rounded-lg border py-2 text-sm px-2 font-semibold transition-colors",
+              data.confirmationEmailSent
+                ? "bg-[#F0FDF4] border-[#BBF7D0] text-[#166534] cursor-default"
+                : "bg-white text-[#101828]"
+            )}
           >
             <Mail size={20} />
-            Email Confirmation
+            {data.confirmationEmailSent ? "Confirmation Email Sent" : "Email Confirmation"}
           </button>
 
           <button
@@ -646,7 +665,7 @@ export default function NextDeliveryCard({
         deliveryData={data}
         onClose={() => setOpenAcknowledgeModal(false)}
         onAcknowledge={() => {
-          console.log("Acknowledged");
+          setIsAcknowledgedLocal(true);
           setOpenAcknowledgeModal(false);
         }}
       />
