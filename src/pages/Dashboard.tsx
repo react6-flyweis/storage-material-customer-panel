@@ -271,6 +271,18 @@ const Dashboard = () => {
       phone: "-",
       communications: [],
     },
+    rescheduleInfo: nextDelivery.status === "rescheduled" ? {
+      previousDate: nextDelivery.pickupDate ? new Date(nextDelivery.pickupDate).toLocaleDateString() : "-",
+      newDate: nextDelivery.deliveryDate ? new Date(nextDelivery.deliveryDate).toLocaleDateString() : "-",
+      reason: nextDelivery.specialNotes || "Rescheduled",
+      acknowledged: nextDelivery.reschedule?.acknowledged ?? false,
+    } : undefined,
+    siteStatus: nextDelivery.siteReadiness ? {
+      siteReady: nextDelivery.siteReadiness.siteReady ?? false,
+      equipmentReady: nextDelivery.siteReadiness.equipmentReady ?? false,
+    } : undefined,
+    confirmationEmailSent: nextDelivery.confirmationEmailSent ?? false,
+    confirmationEmailSentAt: nextDelivery.confirmationEmailSentAt ?? null,
   } : null;
 
   return (
