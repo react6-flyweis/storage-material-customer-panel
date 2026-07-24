@@ -3,7 +3,7 @@ import {
   useGetDeliveriesSummaryQuery,
   type DeliverySummaryProject,
 } from "@/redux/api/deliveriesApi";
-import { QrCode, Truck, Building2 } from "lucide-react";
+import { Truck, Building2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 
@@ -83,7 +83,7 @@ const DeliverySchedule: React.FC = () => {
           </p>
         </div>
 
-        <div className="flex items-center gap-4">
+        {/* <div className="flex items-center gap-4">
           <button className="flex bg-white items-center gap-3 px-4 py-2 shadow-xs border border-[#E4E7EC] rounded-xl hover:bg-gray-50 transition-colors text-sm min-w-[200px]">
             <div className="bg-[#1E40AF] text-white rounded-full w-9 h-9 flex items-center justify-center font-bold text-sm">
               AM
@@ -102,7 +102,7 @@ const DeliverySchedule: React.FC = () => {
             <QrCode className="w-4 h-4" />
             Scan QR
           </button>
-        </div>
+        </div> */}
       </div>
 
       {isLoading ? (
