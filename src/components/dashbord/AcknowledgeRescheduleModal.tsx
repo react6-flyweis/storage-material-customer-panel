@@ -3,6 +3,7 @@ import {
   CalendarDays,
   X,
 } from "lucide-react";
+import { useAcknowledgeRescheduleMutation } from "@/redux/api/deliveriesApi";
 import type { DeliveryCardData } from "./NextDeliveryCard";
 
 interface AcknowledgeRescheduleModalProps {
@@ -18,7 +19,21 @@ export default function AcknowledgeRescheduleModal({
   onAcknowledge,
   deliveryData,
 }: AcknowledgeRescheduleModalProps) {
+  const [acknowledgeReschedule, { isLoading }] = useAcknowledgeRescheduleMutation();
+
   if (!open) return null;
+
+  const handleAcknowledge = async () => {
+    try {
+      if (deliveryData?.deliveryId) {
+        await acknowledgeReschedule(deliveryData.deliveryId).unwrap();
+      }
+      onAcknowledge?.();
+      onClose();
+    } catch (error) {
+      console.error("Failed to acknowledge reschedule:", error);
+    }
+  };
 
   const title = deliveryData?.title || "-";
   const deliveryId = deliveryData?.deliveryId || "-";
@@ -128,10 +143,11 @@ export default function AcknowledgeRescheduleModal({
           </button>
 
           <button
-            onClick={onAcknowledge}
-            className="h-[52px] rounded-lg bg-[#FF6B00] text-[16px] font-medium text-white hover:bg-[#EA580C]"
+            onClick={handleAcknowledge}
+            disabled={isLoading}
+            className="h-[52px] rounded-lg bg-[#FF6B00] text-[16px] font-medium text-white hover:bg-[#EA580C] disabled:opacity-50 transition-opacity"
           >
-            Acknowledge
+            {isLoading ? "Acknowledging..." : "Acknowledge"}
           </button>
         </div>
       </div>
