@@ -32,6 +32,8 @@ export interface Project {
   leadId: string;
   projectId: string;
   projectName: string;
+  jobId?: string;
+  location?: string;
 }
 
 export interface LoadAndBundle {
@@ -67,6 +69,19 @@ export interface Delivery {
   project: Project;
   loadAndBundle?: LoadAndBundle | null;
   packingListSummary?: PackingListSummary | null;
+  siteReadiness?: {
+    siteReady: boolean;
+    equipmentReady: boolean;
+  } | null;
+  confirmationEmailSent?: boolean;
+  confirmationEmailSentAt?: string | null;
+  reschedule?: {
+    acknowledged?: boolean;
+    acknowledgedAt?: string | null;
+    previousDate?: string;
+    newDate?: string;
+    reason?: string;
+  } | null;
 }
 
 export interface GetDeliveriesResponseData {
@@ -208,6 +223,63 @@ export const deliveriesApi = createApi({
         body: checklist ? { checklist } : {},
       }),
     }),
+    acknowledgeReschedule: builder.mutation<ApiResponse<unknown>, string>({
+      query: (deliveryId) => ({
+        url: `/api/customer/deliveries/${deliveryId}/acknowledge-reschedule`,
+        method: "POST",
+      }),
+    }),
+    scanBundle: builder.mutation<ScanBundleResponseData, { bundleId: string }>({
+      query: (body) => ({
+        url: "/api/customer/bundles/scan",
+        method: "POST",
+        body,
+      }),
+      transformResponse: (response: ApiResponse<ScanBundleResponseData>) =>
+        response.data as ScanBundleResponseData,
+    }),
+    getBundleDetails: builder.query<ScanBundleResponseData, string>({
+      query: (bundleId) => ({
+        url: `/api/customer/bundles/${bundleId}`,
+        method: "GET",
+      }),
+      transformResponse: (response: ApiResponse<ScanBundleResponseData>) =>
+        response.data as ScanBundleResponseData,
+    }),
+    reportBundleIssue: builder.mutation<
+      ApiResponse<{ issue: string }>,
+      { bundleId: string; issue: string }
+    >({
+      query: ({ bundleId, issue }) => ({
+        url: `/api/customer/bundles/${bundleId}/report-issue`,
+        method: "POST",
+        body: { issue },
+      }),
+    }),
+    contactBundleSupport: builder.mutation<
+      ApiResponse<{ message: string }>,
+      { bundleId: string; message: string }
+    >({
+      query: ({ bundleId, message }) => ({
+        url: `/api/customer/bundles/${bundleId}/contact-support`,
+        method: "POST",
+        body: { message },
+      }),
+    }),
+    downloadBundleDetails: builder.query<Blob, string>({
+      query: (bundleId) => ({
+        url: `/api/customer/bundles/${bundleId}/download`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
+    downloadBundlePackingList: builder.query<Blob, string>({
+      query: (bundleId) => ({
+        url: `/api/customer/bundles/${bundleId}/download/packing-list`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
@@ -219,6 +291,32 @@ export interface DeliverySummaryProject {
   upcoming: number;
   past: number;
   rescheduled: number;
+}
+
+export interface ScanBundlePart {
+  id?: number | string;
+  part: string;
+  qty: number;
+  length: string;
+  weight: string;
+}
+
+export interface ScanBundleResponseData {
+  bundleId?: string;
+  loadId?: string;
+  truck?: string;
+  project?: string;
+  deliveryId?: string;
+  destination?: string;
+  status?: string;
+  materialDetails?: {
+    partNumbers?: string[];
+    totalQuantity?: number;
+    totalWeight?: string;
+    length?: string;
+  };
+  parts?: ScanBundlePart[];
+  [key: string]: unknown;
 }
 
 export interface GetDeliveriesSummaryResponseData {
@@ -240,5 +338,13 @@ export const {
   useGetDeliveriesSummaryQuery,
   useConfirmSiteReadyMutation,
   useConfirmEquipmentMutation,
+  useAcknowledgeRescheduleMutation,
+  useScanBundleMutation,
+  useGetBundleDetailsQuery,
+  useLazyGetBundleDetailsQuery,
+  useReportBundleIssueMutation,
+  useContactBundleSupportMutation,
+  useLazyDownloadBundleDetailsQuery,
+  useLazyDownloadBundlePackingListQuery,
 } = deliveriesApi;
 
