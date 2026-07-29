@@ -76,7 +76,7 @@ const ProjectsList = () => {
                 >
                   {/* Project Name */}
                   <div className="col-span-1">
-                    <h3 className="font-semibold text-black leading-tight truncate">
+                    <h3 className="font-semibold text-black leading-tight">
                       {project.projectName || project.buildingType || "Untitled Project"}
                     </h3>
                     <p className="text-xs text-(--text-color-gray-2) mt-1">
@@ -92,19 +92,45 @@ const ProjectsList = () => {
                   {/* Start Date */}
                   <div className="col-span-1">
                     <p className="text-xs text-gray-400">Date</p>
-                    <p className="text-sm font-medium text-black">-</p>
+                    <p className="text-sm font-medium text-black">
+                      {project.startDate
+                        ? new Date(project.startDate).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                        : "-"}
+                    </p>
                   </div>
 
                   {/* End Date */}
                   <div className="col-span-1">
                     <p className="text-xs text-gray-400">Date</p>
-                    <p className="text-sm font-medium text-black">-</p>
+                    <p className="text-sm font-medium text-black">
+                      {project.endDate
+                        ? new Date(project.endDate).toLocaleDateString("en-GB", {
+                          day: "2-digit",
+                          month: "short",
+                          year: "numeric",
+                        })
+                        : "-"}
+                    </p>
                   </div>
 
                   {/* Manager */}
                   <div className="col-span-1">
-                    <p className="text-xs text-gray-400">-</p>
-                    <p className="text-sm font-medium text-black">-</p>
+                    {/* <p className="text-xs text-gray-400">
+                      {typeof project.assignedSales === "object" && project.assignedSales?.email
+                        ? project.assignedSales.email
+                        : "-"}
+                    </p> */}
+                    <p className="text-sm font-medium text-black">
+                      {typeof project.assignedSales === "object"
+                        ? project.assignedSales?.name || "-"
+                        : typeof project.assignedSales === "string"
+                          ? project.assignedSales
+                          : "-"}
+                    </p>
                   </div>
 
                   {/* Status */}
