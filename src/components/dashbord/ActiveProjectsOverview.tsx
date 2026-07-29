@@ -4,36 +4,59 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { activeProjectData } from "@/data/mockData";
+import { Building2, User } from "lucide-react";
+import type { ActiveProjectOverview } from "@/redux/api/dashboardApi";
 
 interface ActiveProjectsOverviewProps {
-  data?: {
-    projectName?: string;
-    projectCode?: string;
-    siteLocation?: string;
-    progressPercentage?: string;
-    currentStatus?: string;
-    nextMilestoneDate?: string;
-    assignedProjectManager?: string;
-    pmPhone?: string;
-    projectImage?: string;
-    pmAvatar?: string;
-  };
+  data?: ActiveProjectOverview | null;
 }
 
+const formatDate = (dateStr?: string | null) => {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  } catch {
+    return dateStr || "-";
+  }
+};
+
 const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
-  const project = {
-    projectName: data?.projectName || activeProjectData.projectName || "ABC Logistics Warehouse",
-    projectCode: data?.projectCode || activeProjectData.projectCode || "PR-0987",
-    siteLocation: data?.siteLocation || activeProjectData.siteLocation || "Baner, Pune",
-    progressPercentage: data?.progressPercentage || activeProjectData.progressPercentage || "78% Completed",
-    currentStatus: data?.currentStatus || activeProjectData.currentStatus || "Under Fabrication",
-    nextMilestoneDate: data?.nextMilestoneDate || activeProjectData.nextMilestoneDate || "12 April 2026",
-    assignedProjectManager: data?.assignedProjectManager || activeProjectData.assignedProjectManager || "Riya Sharma",
-    pmPhone: data?.pmPhone || activeProjectData.pmPhone || "+91-0987654321",
-    projectImage: data?.projectImage || activeProjectData.projectImage || "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=400&q=80",
-    pmAvatar: data?.pmAvatar || activeProjectData.pmAvatar || "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=150&q=80",
-  };
+  if (!data) {
+    return (
+      <Card className="w-full bg-white border border-slate-100/80 shadow-sm rounded-2xl p-5 md:p-6 gap-0">
+        <CardHeader className="p-0 mb-5">
+          <CardTitle className="text-lg md:text-xl font-bold text-slate-900">
+            Active Project Overview
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <p className="text-sm text-slate-500">No active project overview available.</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  const projectName = data.projectName || "-";
+  const projectCode = data.projectCode || "-";
+  const siteLocation = data.siteLocation || "-";
+  const progressPercentage = data.progressPct !== undefined && data.progressPct !== null
+    ? `${data.progressPct}% Completed`
+    : "-";
+  const currentStatus = data.currentStage || "-";
+  const nextMilestoneDate = data.nextMilestone?.targetDate
+    ? `${data.nextMilestone.title ? data.nextMilestone.title + " - " : ""}${formatDate(data.nextMilestone.targetDate)}`
+    : data.nextMilestone?.title || "-";
+  
+  const pmName = data.projectManager?.name || "Not assigned";
+  const pmPhone = data.projectManager?.phone || "";
+  const pmAvatar = data.projectManager?.avatar || "";
+  const projectImage = data.image || null;
 
   return (
     <Card className="w-full bg-white border border-slate-100/80 shadow-sm rounded-2xl p-5 md:p-6 gap-0">
@@ -45,20 +68,26 @@ const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
       <CardContent className="p-0 space-y-5">
         {/* Top Info Section: Warehouse image + Title & details */}
         <div className="flex items-start gap-4 sm:gap-5">
-          <img
-            src={project.projectImage}
-            alt={project.projectName}
-            className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover shrink-0 shadow-xs"
-          />
+          {projectImage ? (
+            <img
+              src={projectImage}
+              alt={projectName}
+              className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover shrink-0 shadow-xs"
+            />
+          ) : (
+            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+              <Building2 className="w-10 h-10" />
+            </div>
+          )}
           <div className="flex flex-col justify-center py-1 gap-1">
             <h3 className="text-base sm:text-lg font-bold text-slate-900 leading-snug">
-              {project.projectName}
+              {projectName}
             </h3>
             <p className="text-sm text-slate-600 font-normal">
-              Project Code: {project.projectCode}
+              Project Code: {projectCode}
             </p>
             <p className="text-sm text-slate-500 font-medium">
-              Site Location: {project.siteLocation}
+              Site Location: {siteLocation}
             </p>
           </div>
         </div>
@@ -71,7 +100,7 @@ const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
                 Progress
               </p>
               <p className="text-base sm:text-lg font-bold text-slate-900">
-                {project.progressPercentage}
+                {progressPercentage}
               </p>
             </div>
             <div className="pl-2">
@@ -79,7 +108,7 @@ const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
                 Current Stage
               </p>
               <p className="text-base sm:text-lg font-bold text-slate-900">
-                {project.currentStatus}
+                {currentStatus}
               </p>
             </div>
           </div>
@@ -89,7 +118,7 @@ const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
               Next Milestone
             </p>
             <p className="text-base sm:text-lg font-bold text-slate-900">
-              {project.nextMilestoneDate}
+              {nextMilestoneDate}
             </p>
           </div>
         </div>
@@ -97,23 +126,31 @@ const ActiveProjectsOverview = ({ data }: ActiveProjectsOverviewProps) => {
         {/* Assigned Project Manager Footer Row */}
         <div className="flex items-center justify-between gap-3 pt-1">
           <div className="flex items-center gap-3">
-            <img
-              src={project.pmAvatar}
-              alt={project.assignedProjectManager}
-              className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover shrink-0"
-            />
+            {pmAvatar ? (
+              <img
+                src={pmAvatar}
+                alt={pmName}
+                className="w-10 h-10 sm:w-11 sm:h-11 rounded-full object-cover shrink-0"
+              />
+            ) : (
+              <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                <User className="w-5 h-5" />
+              </div>
+            )}
             <div>
               <p className="text-xs sm:text-sm font-medium text-[#2563EB]">
                 Assigned project manager
               </p>
               <p className="text-sm sm:text-base font-bold text-slate-900">
-                {project.assignedProjectManager}
+                {pmName}
               </p>
             </div>
           </div>
-          <span className="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">
-            {project.pmPhone}
-          </span>
+          {pmPhone ? (
+            <span className="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">
+              {pmPhone}
+            </span>
+          ) : null}
         </div>
       </CardContent>
     </Card>
