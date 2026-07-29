@@ -1,5 +1,6 @@
-import ReactECharts from "echarts-for-react";
+
 import ProgressSteps from "./ProgressSteps";
+import ProjectStatusCard from "./ProjectStatusCard";
 import ProjectActivityLog from "./ProjectActivityLog";
 import ProjectNotes from "./ProjectNotes";
 import ProjectOrdersList from "./ProjectOrdersList";
@@ -104,13 +105,13 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     return date.toISOString().split("T")[0];
   };
 
-  const leadExt = lead as (typeof lead & { totalBuildings?: number; buildingCount?: number; image?: string; projectImage?: string; projectName?: string }) | undefined;
+  const totalBuildingsCount = lead?.buildingsCount ?? lead?.totalBuildings ?? lead?.buildingCount ?? "-";
 
   const projectDetails = [
     {
       icon: Building2,
       title: "Total Buildings",
-      value: leadExt?.totalBuildings ?? leadExt?.buildingCount ?? "-",
+      value: totalBuildingsCount,
     },
     {
       icon: CircleDollarSign,
@@ -164,15 +165,9 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     <div className="space-y-5">
       <div className="overflow-hidden rounded-2xl border border-[#EAECF0] bg-white p-5 md:p-6 shadow-xs">
         <div className="flex flex-col gap-5 sm:gap-6 md:flex-row md:items-stretch">
-          <img
-            src={
-              leadExt?.image ||
-              leadExt?.projectImage ||
-              "https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=600&q=80"
-            }
-            alt={lead?.buildingType || "Project Building"}
-            className="h-44 w-full rounded-xl object-cover shrink-0 md:h-auto md:w-56 lg:w-64"
-          />
+          <div className="flex h-44 w-full items-center justify-center rounded-xl bg-gray-200 shrink-0 md:h-auto md:w-56 lg:w-64">
+            <Building2 className="h-12 w-12 text-gray-400" />
+          </div>
 
           <div className="flex flex-1 flex-col justify-between pt-1">
             <div>
@@ -184,7 +179,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
               </div>
 
               <h2 className="mt-2.5 text-xl font-bold text-[#101828] md:text-2xl">
-                {leadExt?.projectName || lead?.buildingType || "Project Details"}
+                {lead?.projectName || (lead?.buildingType ? lead.buildingType.charAt(0).toUpperCase() + lead.buildingType.slice(1) : "Project Details")}
               </h2>
 
               <p className="mt-1 text-xs sm:text-sm font-medium text-[#475467]">
@@ -237,61 +232,14 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
 
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
-        <div className="rounded-lg border border-[#98A2B3] bg-white p-5">
-          <h2 className="mb-4 text-[20px] font-bold text-[#101828]">
-            Project Status
-          </h2>
-
-          <div className="my-4 border-t" />
-
-          <div className="relative mx-auto h-[260px] w-[260px]">
-            <ReactECharts
-              option={chartOption}
-              style={{
-                height: 260,
-                width: 260,
-              }}
-            />
-
-            <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <p className="text-[14px] text-[#667085]">Step</p>
-
-              <p className="text-[54px] font-semibold leading-none">{currentStep}</p>
-
-              <p className="text-[14px] text-[#667085]">of {totalSteps}</p>
-            </div>
-          </div>
-
-          <div className="mt-3">
-            <p className="text-[14px] text-[#667085]">Current step</p>
-
-            <p className="text-[14px] font-medium text-[#1D4ED8]">
-              {currentStepTitle}
-            </p>
-          </div>
-
-          <div className="mt-3 flex items-center gap-3">
-            <CalendarDays size={22} />
-
-            <div>
-              <p className="text-[14px] font-medium text-[#101828]">
-                Started on
-              </p>
-
-              <p className="text-[14px] text-[#667085]">
-                {lead?.createdAt ? new Date(lead.createdAt).toLocaleDateString() : "-"}
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-3">
-            <p className="text-[14px] font-medium text-[#101828]">
-              Estimate Completion
-            </p>
-
-            <p className="text-[14px] text-[#667085]">-</p>
-          </div>
-        </div>
+        <ProjectStatusCard
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          currentStepTitle={currentStepTitle}
+          chartOption={chartOption}
+          lead={lead}
+          projectStepsData={projectStepsData}
+        />
 
         <ProjectActivityLog leadId={lead?._id || ""} />
 
