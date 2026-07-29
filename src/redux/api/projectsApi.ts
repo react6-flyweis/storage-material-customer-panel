@@ -11,6 +11,12 @@ export interface ProjectDocument {
   uploadedAt: string;
 }
 
+export interface AssignedSales {
+  _id: string;
+  name: string;
+  email: string;
+}
+
 export interface Project {
   _id: string;
   buildingType: string;
@@ -18,12 +24,14 @@ export interface Project {
   source: string;
   jobId: string;
   projectName: string;
-  assignedSales: string | null;
+  assignedSales?: AssignedSales | string | null;
   quoteValue: number;
   lifecycleStatus: string;
   isQuoteReady: boolean;
   documents: ProjectDocument[];
   projectId: string;
+  endDate?: string;
+  startDate?: string;
 }
 
 export interface GetProjectsParams {
@@ -330,6 +338,7 @@ export interface Quotation {
   priorityLevel: string;
   status: string;
   rejectReason?: string;
+  pdfUrl?: string;
   sentAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -490,20 +499,33 @@ export interface ProjectInvoice {
   paymentSchedule: unknown;
 }
 
+export interface LifecycleHistoryItem {
+  stage: string;
+  changedAt: string;
+  changedBy?: string | null;
+  _id: string;
+}
+
 export interface ProjectDetailsResponseData {
   lead: {
     _id: string;
     customerId: string;
     buildingType: string;
     location: string;
-    assignedSales: string | null;
+    assignedSales?: AssignedSales | string | null;
     quoteValue: number;
     lifecycleStatus: string;
     documents: ProjectDocument[];
-    jobId: string;
-    projectId: string;
+    jobId?: string;
+    projectId?: string;
     projectName?: string;
     createdAt?: string;
+    endDate?: string;
+    startDate?: string;
+    buildingsCount?: number;
+    totalBuildings?: number;
+    buildingCount?: number;
+    lifecycleHistory?: LifecycleHistoryItem[];
   };
   projectSteps?: ProjectStepsInfo;
   quotation: unknown;
