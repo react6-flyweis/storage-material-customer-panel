@@ -119,6 +119,11 @@ export interface OrderDetailsOrderApi {
   stage?: string;
   createdByName?: string;
   totalAmount: number;
+  subtotal?: number;
+  tax?: number;
+  freight?: number;
+  totalLength?: number;
+  totalQuantity?: number;
   reviewedBy: string | null;
   reviewedAt: string | null;
   reviewNotes: string;
@@ -147,6 +152,7 @@ export interface OrderDetailsQuotationApi {
   sellerName: string;
   sellerAddress: string;
   sellerEmail: string;
+  customerRemark?: string;
   lineItems: OrderDetailsQuotationLineItemApi[];
   subtotal: number;
   tax: number;
