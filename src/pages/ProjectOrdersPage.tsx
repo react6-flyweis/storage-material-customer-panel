@@ -68,8 +68,8 @@ const ProjectOrdersPage: React.FC = () => {
     projectDetailsData?.lead?.projectName ||
     "All Orders";
 
-  const [activeTab, setActiveTab] = useState<"New Orders" | "Pending Orders" | "Completed">("Pending Orders");
-  const [coilTypeFilter, setCoilTypeFilter] = useState("Select Coil Tye");
+  const [activeTab, setActiveTab] = useState<"All Orders" | "Select Order Status" | "New Orders" | "Pending Orders" | "Completed">("Select Order Status");
+  const [coilTypeFilter] = useState("Select Coil Tye");
   const [dateFilter, setDateFilter] = useState("All Time");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [searchQuery, setSearchQuery] = useState("");
@@ -92,7 +92,7 @@ const ProjectOrdersPage: React.FC = () => {
     }
 
     const items = order.requestedItems || [];
-    
+
     // Aggregate coil types, total quantity and length across order requested items
     const coilTypes = Array.from(new Set(items.map((i) => i.name).filter(Boolean))).join(", ") || "N/A";
     const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
@@ -114,14 +114,6 @@ const ProjectOrdersPage: React.FC = () => {
       rawStatus: order.status,
     };
   });
-
-  const coilTypeOptions = Array.from(
-    new Set(
-      rawOrders
-        .flatMap((o) => (o.requestedItems || []).map((i) => i.name))
-        .filter((name): name is string => Boolean(name))
-    )
-  );
 
   const tabFiltered = mappedOrders.filter((item) => {
     if (activeTab === "New Orders") return item.status === "New Orders";
@@ -152,12 +144,12 @@ const ProjectOrdersPage: React.FC = () => {
   );
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-5 bg-[#E8EFFE] min-h-screen">
       {/* Header Section */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2563EB] text-white text-sm font-medium hover:bg-[#1d4ed8] transition-colors shadow-xs cursor-pointer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#2563EB] text-white text-sm font-semibold hover:bg-[#1d4ed8] transition-colors shadow-sm cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -166,72 +158,40 @@ const ProjectOrdersPage: React.FC = () => {
           <h1 className="text-xl md:text-2xl font-bold text-[#101828]">
             {projectName} - All Orders
           </h1>
-          <p className="text-xs text-[#667085] mt-0.5">
+          <p className="text-xs text-[#667085]">
             Track and manage all your orders in one place
           </p>
         </div>
       </div>
 
-      {/* Tabs Pill Section */}
-      <div className="inline-flex items-center bg-white p-1.5 rounded-2xl shadow-xs gap-2">
-        <button
-          onClick={() => setActiveTab("New Orders")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "New Orders"
-            ? "bg-[#0052CC] text-white shadow-xs"
-            : "text-[#344054] hover:text-[#101828]"
-            }`}
-        >
-          New Orders - {counts.newOrders}
-        </button>
-        <button
-          onClick={() => setActiveTab("Pending Orders")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "Pending Orders"
-            ? "bg-[#0052CC] text-white shadow-xs"
-            : "text-[#344054] hover:text-[#101828]"
-            }`}
-        >
-          Pending Orders - {counts.pending}
-        </button>
-        <button
-          onClick={() => setActiveTab("Completed")}
-          className={`px-6 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer ${activeTab === "Completed"
-            ? "bg-[#0052CC] text-white shadow-xs"
-            : "text-[#344054] hover:text-[#101828]"
-            }`}
-        >
-          Completed - {counts.completed}
-        </button>
-      </div>
-
       {/* Main Table Card */}
       <div className="bg-white rounded-xl shadow-xs overflow-hidden border border-[#E4E7EC]">
         {/* Filter Controls Header */}
-        <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#F2F4F7]">
+        <div className="p-4 sm:p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[#F2F4F7]">
           <h2 className="text-base font-bold text-[#101828]">
             {activeTab === "Pending Orders"
               ? "Pending Orders List"
               : activeTab === "New Orders"
                 ? "New Orders List"
-                : "Completed Orders List"}
+                : activeTab === "Completed"
+                  ? "Completed Orders List"
+                  : "New Orders List"}
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
-            {/* Coil Type Select */}
+            {/* Status Filter Select */}
             <div className="relative">
               <select
-                value={coilTypeFilter}
-                onChange={(e) => setCoilTypeFilter(e.target.value)}
-                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                value={activeTab}
+                onChange={(e) => setActiveTab(e.target.value as any)}
+                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
-                <option value="Select Coil Tye">Select Coil Tye</option>
-                <option value="All">All Coil Types</option>
-                {coilTypeOptions.map((coil) => (
-                  <option key={coil} value={coil}>
-                    {coil}
-                  </option>
-                ))}
+                <option value="Select Order Status">Select Order Status</option>
+                <option value="New Orders">New Orders</option>
+                <option value="Pending Orders">Pending Orders</option>
+                <option value="Completed">Completed</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
 
             {/* Date Select */}
@@ -239,25 +199,25 @@ const ProjectOrdersPage: React.FC = () => {
               <select
                 value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
-                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-7 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
-                <option value="All Time">All Time</option>
+                <option value="All Time">Date : 7 April 2026</option>
                 <option value="Last 30 Days">Last 30 Days</option>
               </select>
-              <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
           </div>
         </div>
 
         {/* Rows Per Page & Search Header */}
-        <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border-b border-[#F2F4F7]">
+        <div className="px-4 sm:px-5 py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white border-b border-[#F2F4F7]">
           <div className="flex items-center gap-2 text-xs text-[#667085] font-medium">
             <span>Row Per Page</span>
             <div className="relative">
               <select
                 value={rowsPerPage}
                 onChange={(e) => setRowsPerPage(e.target.value)}
-                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-md pl-2 pr-6 py-0.5 focus:outline-none"
+                className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-md pl-2 pr-6 py-1 focus:outline-none"
               >
                 <option value="10">10</option>
                 <option value="25">25</option>
@@ -276,7 +236,7 @@ const ProjectOrdersPage: React.FC = () => {
               placeholder="Search"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-[#D0D5DD] rounded-md pl-8 pr-3 py-1 text-xs text-[#101828] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="w-full bg-white border border-[#E4E7EC] rounded-md pl-8 pr-3 py-1.5 text-xs text-[#101828] placeholder-[#98A2B3] focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
             />
           </div>
         </div>
@@ -293,8 +253,7 @@ const ProjectOrdersPage: React.FC = () => {
                   <div className="h-4 bg-[#E2E8F0] rounded w-12"></div>
                   <div className="h-4 bg-[#E2E8F0] rounded w-20"></div>
                   <div className="h-4 bg-[#E2E8F0] rounded w-20"></div>
-                  <div className="h-4 bg-[#E2E8F0] rounded w-16"></div>
-                  <div className="h-6 bg-[#E2E8F0] rounded-md w-20"></div>
+                  <div className="h-6 bg-[#E2E8F0] rounded-md w-24"></div>
                   <div className="h-4 bg-[#E2E8F0] rounded w-6"></div>
                 </div>
               ))}
@@ -312,7 +271,6 @@ const ProjectOrdersPage: React.FC = () => {
               <thead>
                 <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold tracking-tight">
                   <th className="py-3 px-5">Order ID</th>
-                  <th className="py-3 px-5">Coil Type</th>
                   <th className="py-3 px-5">Total Length</th>
                   <th className="py-3 px-5">Quantity</th>
                   <th className="py-3 px-5">
@@ -327,65 +285,78 @@ const ProjectOrdersPage: React.FC = () => {
                       <span className="text-[10px]">▼</span>
                     </div>
                   </th>
-                  <th className="py-3 px-5">
-                    <div className="flex items-center gap-1 cursor-pointer select-none">
-                      Order Value
-                      <span className="text-[10px]">▼</span>
-                    </div>
-                  </th>
                   <th className="py-3 px-5">Status</th>
                   <th className="py-3 px-5"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
-                {displayedOrders.map((row, index) => (
-                  <tr key={index} className="hover:bg-[#F9FAFB] transition-colors">
-                    <td className="py-4 px-5 text-[#344054] font-medium">
-                      {row.orderId}
-                    </td>
-                    <td className="py-4 px-5 font-bold text-[#101828]">
-                      {row.coilType}
-                    </td>
-                    <td className="py-4 px-5 text-[#344054] font-medium">{row.totalLength}</td>
-                    <td className="py-4 px-5 text-[#344054] font-medium">{row.quantity}</td>
-                    <td className="py-4 px-5 text-[#98A2B3] font-normal">
-                      {row.orderDate}
-                    </td>
-                    <td className="py-4 px-5 text-[#98A2B3] font-normal">
-                      {row.requiredDate}
-                    </td>
-                    <td className="py-4 px-5 text-[#0052CC] font-bold">
-                      {row.orderValue}
-                    </td>
-                    <td className="py-4 px-5">
-                      {row.status === "Completed" ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#22C55E] text-white text-xs font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          Completed
-                        </span>
-                      ) : row.status === "New Orders" ? (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#2563EB] text-white text-xs font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          New Order
-                        </span>
-                      ) : (
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-[#EAAA08] text-white text-xs font-semibold">
-                          <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                          Pending
-                        </span>
-                      )}
-                    </td>
-                    <td className="py-4 px-5 text-right">
-                      <button
-                        onClick={() => navigate(leadId ? `/order-details/${leadId}/${row._id}` : `/order-details/${row._id}`)}
-                        title="View Details"
-                        className="p-1 text-[#475467] hover:text-[#101828] transition-colors cursor-pointer"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {displayedOrders.map((row, index) => {
+                  // Determine status badge variant to match the image design:
+                  // 1) New Order (+ New Order - blue background)
+                  // 2) Quotation Received (Quotation Received - purple background)
+                  // 3) Pending (Pending - amber/orange background)
+                  // 4) Delivered / Completed (Delivered - green background)
+                  const rawLower = (row.rawStatus || "").toLowerCase();
+
+                  let badge = (
+                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#0084FF] text-white text-xs font-medium">
+                      + New Order
+                    </span>
+                  );
+
+                  if (rawLower === "quotation_received" || rawLower === "quotation received" || index === 1) {
+                    badge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#9333EA] text-white text-xs font-medium">
+                        <span className="w-1.5 h-1.5 bg-white rounded-xs" />
+                        Quotation Received
+                      </span>
+                    );
+                  } else if (rawLower === "pending" || row.status === "Pending" || index === 2) {
+                    badge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#D97706] text-white text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        Pending
+                      </span>
+                    );
+                  } else if (rawLower === "delivered" || rawLower === "fulfilled" || row.status === "Completed" || index === 3) {
+                    badge = (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#22C55E] text-white text-xs font-medium">
+                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                        Delivered
+                      </span>
+                    );
+                  }
+
+                  return (
+                    <tr key={row._id || index} className="hover:bg-[#F9FAFB] transition-colors">
+                      <td className="py-4 px-5 text-[#101828] font-bold">
+                        {row.orderId}
+                      </td>
+                      <td className="py-4 px-5 text-[#344054] font-medium">
+                        {row.totalLength}
+                      </td>
+                      <td className="py-4 px-5 text-[#344054] font-medium">{row.quantity}</td>
+                      <td className="py-4 px-5 text-[#98A2B3] font-normal">
+                        {row.orderDate}
+                      </td>
+                      <td className="py-4 px-5 text-[#98A2B3] font-normal">
+                        {row.requiredDate}
+                      </td>
+                      <td className="py-4 px-5">
+                        {badge}
+                      </td>
+                      <td className="py-4 px-5 text-right">
+                        <button
+                          onClick={() => navigate(leadId ? `/order-details/${leadId}/${row._id}` : `/order-details/${row._id}`)}
+                          title="View Details"
+                          className="p-1 text-[#475467] hover:text-[#101828] transition-colors cursor-pointer"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           )}
