@@ -39,14 +39,14 @@ const mapApiDeliveryToItem = (item: Delivery): DeliveryItem => {
     deliveryId: item.deliveryNumber || item.deliveryId,
     material: item.packingListSummary?.material || item.description || "N/A",
     truckNo: item.loadAndBundle?.truckNumber || "N/A",
-    bundle: item.loadAndBundle?.bundleCount ?? "-",
+    bundle: item.loadAndBundle?.bundleCount ?? "N/A",
     deliveryCompany: item.deliveryCompany?.name || item.deliveryTeam?.company || "N/A",
     deliveryDate: item.deliveryDate
       ? new Date(item.deliveryDate).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
       : "N/A",
     status: item.status === "in_transit" ? "In Transit" : item.status === "scheduled" ? "Scheduled" : item.status || "N/A",
   };
