@@ -2,7 +2,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { useGetProjectRFQQuery } from "@/redux/api/projectsApi";
-import PDF_URL from "../../assets/dummy-pdf_2.pdf";
 
 const ProjectRFQ = () => {
   const navigate = useNavigate();
@@ -57,11 +56,13 @@ const ProjectRFQ = () => {
     ? `${rfq.width}' × ${rfq.length}'`
     : "";
 
+  const roofStyle = quotation?.roofStyle || rfq.roofStyle;
+
   return (
     <div className="rounded-lg bg-white p-5">
       <div className="mb-8 flex items-center gap-1">
         <span className="text-[16px] text-[#101828]">Lead ID -</span>
-        <span className="text-[16px] font-bold text-[#101828]">{rfq.jobId || id}</span>
+        <span className="text-[16px] font-bold text-[#101828]">{rfq.jobId || id || "-"}</span>
       </div>
 
       <div className="space-y-8">
@@ -71,20 +72,20 @@ const ProjectRFQ = () => {
           </h2>
 
           <h3 className="mb-4 text-[18px] font-bold text-[#101828]">
-            {rfq.projectName || "Your Custom Steel Building Quote"}
+            {rfq.projectName || "-"}
           </h3>
 
           <ul className="list-disc space-y-3 pl-8 text-[16px] text-[#101828]">
             <li>Building Type: {capitalize(quotation?.buildingType || rfq.buildingType || "") || "-"}</li>
-            {dimensionsText && <li>Dimensions: {dimensionsText}</li>}
-            <li>Roof Style: {capitalize(quotation?.roofStyle || rfq.roofStyle || "") || "-"} Roof</li>
+            {dimensionsText ? <li>Dimensions: {dimensionsText}</li> : <li>Dimensions: -</li>}
+            <li>Roof Style: {roofStyle ? `${capitalize(roofStyle)} Roof` : "-"}</li>
             <li>
               Location: {quotation?.location || rfq.location || "-"}
               {quotation && (quotation.windLoad || quotation.snowLoad) ? (
-                ` (designed for ${quotation.windLoad || "N/A"} wind load, ${quotation.snowLoad || "N/A"} snow load)`
+                ` (designed for ${quotation.windLoad || "-"} wind load, ${quotation.snowLoad || "-"} snow load)`
               ) : ""}
             </li>
-            <li>Estimated Delivery: {quotation?.estimatedDelivery || "—"}</li>
+            <li>Estimated Delivery: {quotation?.estimatedDelivery || "-"}</li>
           </ul>
         </section>
 
@@ -98,7 +99,7 @@ const ProjectRFQ = () => {
               ? `${formatCurrency(quotation.basePrice, quotation.currency)} – ${formatCurrency(quotation.maxPrice, quotation.currency)}`
               : rfq.quoteValue
               ? formatCurrency(rfq.quoteValue)
-              : "—"}
+              : "-"}
           </p>
 
           <p className="max-w-[850px] text-[14px] leading-7 text-[#4A5565]">
@@ -123,7 +124,7 @@ const ProjectRFQ = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-[16px] text-gray-500 pl-8">—</p>
+            <p className="text-[16px] text-gray-500 pl-8">-</p>
           )}
         </section>
 
@@ -143,7 +144,7 @@ const ProjectRFQ = () => {
               ))}
             </ul>
           ) : (
-            <p className="text-[16px] text-gray-500 pl-8">—</p>
+            <p className="text-[16px] text-gray-500 pl-8">-</p>
           )}
         </section>
 
@@ -156,14 +157,16 @@ const ProjectRFQ = () => {
             Back
           </Button>
 
-          <Button
-            asChild
-            className="h-14 w-[280px] rounded-lg bg-[#1668E8] text-[16px] font-medium text-white hover:bg-[#1668E8]"
-          >
-            <a href={PDF_URL} download>
-              Downloadable PDF Quote
-            </a>
-          </Button>
+          {quotation?.pdfUrl && (
+            <Button
+              asChild
+              className="h-14 w-[280px] rounded-lg bg-[#1668E8] text-[16px] font-medium text-white hover:bg-[#1668E8]"
+            >
+              <a href={quotation.pdfUrl} target="_blank" rel="noopener noreferrer" download>
+                Downloadable PDF Quote
+              </a>
+            </Button>
+          )}
         </div>
       </div>
     </div>
