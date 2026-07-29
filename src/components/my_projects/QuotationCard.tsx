@@ -9,7 +9,7 @@ interface QuotationCardProps {
     customerId: string;
     buildingType: string;
     location: string;
-    assignedSales: string | null;
+    assignedSales?: any;
     quoteValue: number;
     lifecycleStatus: string;
     documents?: any[];
