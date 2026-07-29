@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from "../ui/card";
-import { drawingApprovalsByFilter } from "@/data/mockData";
+import type { DrawingsApprovalsBreakdown } from "@/redux/api/dashboardApi";
 
 export type DrawingColor = "cyan" | "blue" | "yellow" | "purple" | "green";
 
@@ -25,27 +25,56 @@ const colorStyles: Record<string, { bg: string; text: string }> = {
   green: { bg: "bg-[#E6F9EE]", text: "text-[#22C55E]" },
 };
 
-const DrawingsAndApprovals = ({
-  activeFilter = "today",
-}: {
+interface DrawingsAndApprovalsProps {
   activeFilter?: string;
-}) => {
+  data?: DrawingsApprovalsBreakdown;
+  totalDrawingsAndApprovals?: number;
+}
+
+const DrawingsAndApprovals = ({
+  data,
+  totalDrawingsAndApprovals,
+}: DrawingsAndApprovalsProps) => {
   const navigate = useNavigate();
-  const items: DrawingApprovalItem[] =
-    (drawingApprovalsByFilter as Record<string, DrawingApprovalItem[]>)[
-      activeFilter
-    ] ||
-    (drawingApprovalsByFilter as Record<string, DrawingApprovalItem[]>)[
-      "today"
-    ] ||
-    [];
+
+  const items: DrawingApprovalItem[] = [
+    {
+      label: "Drawings Pending Review",
+      count: `${data?.pendingReview ?? 0} Pending`,
+      subtext: data?.pendingReviewSubtitle || "",
+      color: "cyan",
+    },
+    {
+      label: "Approved Drawings",
+      count: `${data?.approved ?? 0} Approved`,
+      subtext: "",
+      color: "yellow",
+    },
+    {
+      label: "Drawing Revisions Received",
+      count: `${data?.revisionReceived ?? 0} New`,
+      subtext: "",
+      color: "purple",
+    },
+    {
+      label: "Items Needing Clarification",
+      count: `${data?.itemsNeedingClarification ?? 0} RFIs raised`,
+      subtext: "",
+      color: "green",
+    },
+  ];
 
   return (
     <Card className="w-full h-full bg-white border border-slate-100/80 shadow-sm rounded-2xl p-5 md:p-6 gap-0">
-      <CardHeader className="p-0 mb-5">
+      <CardHeader className="p-0 mb-5 flex flex-row items-center justify-between">
         <CardTitle className="text-lg md:text-xl font-bold text-slate-900">
           Drawings & Approvals
         </CardTitle>
+        {totalDrawingsAndApprovals !== undefined && (
+          <span className="text-sm font-semibold text-slate-500">
+            Total: {totalDrawingsAndApprovals}
+          </span>
+        )}
       </CardHeader>
       <CardContent className="p-0 space-y-3.5">
         {items.map((item: DrawingApprovalItem, index: number) => {
