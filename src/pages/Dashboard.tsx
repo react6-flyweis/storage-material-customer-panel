@@ -11,7 +11,6 @@ import SalmonGrowthIcon from "../assets/icon/SalmonGrowthIcon.svg";
 import DashboardWidgets from "@/components/dashbord/DashboardWidgets";
 import Ship1 from "../assets/new-images/ship-1.svg";
 import Ship2 from "../assets/new-images/ship-2.svg";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGetDashboardQuery } from "@/redux/api/dashboardApi";
 import ProjectOrdersList, { type OrderItem } from "@/components/my_projects/ProjectOrdersList";
@@ -32,12 +31,8 @@ import {
 import DashStatCard from "@/components/ui/dash-stat-card";
 import NextDeliveryCard, { type DeliveryCardData } from "@/components/dashbord/NextDeliveryCard";
 
-type TabType = "today" | "week" | "month";
-
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabType>("today");
-  console.log("activeTab:", setActiveTab);
 
   const { data: dashboardData, isLoading } = useGetDashboardQuery();
 
@@ -242,7 +237,7 @@ const Dashboard = () => {
 
   const nextDelivery = dashboardData?.nextDelivery;
   const nextDeliveryData: DeliveryCardData | null = nextDelivery ? {
-    title: nextDelivery.deliveryNumber || "Delivery",
+    title: nextDelivery.description || nextDelivery.deliveryNumber || "Delivery",
     description: nextDelivery.description || "",
     deliveryId: nextDelivery.deliveryId || "",
     status: nextDelivery.status === "in_transit" ? "inTransit" : (nextDelivery.status || "scheduled"),
@@ -252,23 +247,23 @@ const Dashboard = () => {
       }) : "-",
       trackingStatus: nextDelivery.status === "in_transit" ? "Out for Delivery" : "-",
       eta: "-",
-      timeWindow: "-",
-      company: "-",
-      driver: "-",
-      driverPhone: "-",
+      timeWindow: nextDelivery.timings || "-",
+      company: nextDelivery.deliveryCompany?.name || "-",
+      driver: nextDelivery.deliveryCompany?.driver || "-",
+      driverPhone: nextDelivery.deliveryCompany?.phone || "-",
       estimatedWeight: nextDelivery.estimatedWeight ? `${nextDelivery.estimatedWeight.toLocaleString()} lbs` : "-",
-      equipment: [],
+      equipment: nextDelivery.loadingEquipment || [],
     },
     siteContact: {
-      name: "-",
-      phone: "-",
-      instructions: "-",
-      specialNotes: "-",
+      name: nextDelivery.siteContact?.name || "-",
+      phone: nextDelivery.siteContact?.phone || "-",
+      instructions: nextDelivery.siteInstructions || "-",
+      specialNotes: nextDelivery.specialNotes || "-",
     },
     logistics: {
-      company: "-",
-      driver: "-",
-      phone: "-",
+      company: nextDelivery.deliveryCompany?.name || "-",
+      driver: nextDelivery.deliveryCompany?.driver || "-",
+      phone: nextDelivery.deliveryCompany?.phone || "-",
       communications: [],
     },
     rescheduleInfo: nextDelivery.status === "rescheduled" ? {
@@ -277,10 +272,16 @@ const Dashboard = () => {
       reason: nextDelivery.specialNotes || "Rescheduled",
       acknowledged: nextDelivery.reschedule?.acknowledged ?? false,
     } : undefined,
-    siteStatus: nextDelivery.siteReadiness ? {
-      siteReady: nextDelivery.siteReadiness.siteReady ?? false,
-      equipmentReady: nextDelivery.siteReadiness.equipmentReady ?? false,
+    loadSummary: nextDelivery.loadAndBundle ? {
+      loadId: nextDelivery.loadAndBundle.loadId,
+      bundleCount: nextDelivery.loadAndBundle.bundleCount,
+      truckNumber: nextDelivery.loadAndBundle.truckNumber,
+      totalWeight: nextDelivery.loadAndBundle.totalWeight
     } : undefined,
+    siteStatus: {
+      siteReady: nextDelivery.siteReadiness?.siteReady ?? false,
+      equipmentReady: nextDelivery.siteReadiness?.equipmentReady ?? false,
+    },
     confirmationEmailSent: nextDelivery.confirmationEmailSent ?? false,
     confirmationEmailSentAt: nextDelivery.confirmationEmailSentAt ?? null,
   } : null;
@@ -332,10 +333,13 @@ const Dashboard = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <div className="">
-          <ActiveProjectsOverview />
+          <ActiveProjectsOverview data={dashboardData?.activeProjectOverview} />
         </div>
         <div className="">
-          <DrawingsAndApprovals activeFilter={activeTab} />
+          <DrawingsAndApprovals
+            data={dashboardData?.drawingsApprovalsBreakdown}
+            totalDrawingsAndApprovals={dashboardData?.drawingsAndApprovals}
+          />
         </div>
       </div>
 
