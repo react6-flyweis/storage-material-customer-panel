@@ -1,6 +1,7 @@
 import { createApi } from "@/redux/utils/createApi";
 import type { ApiResponse } from "./apiResponse";
 import { baseQueryWithReauth } from "./baseQueryWithReauth";
+import type { Delivery } from "./deliveriesApi";
 
 export interface DeliveryTracking {
   inTransit: number;
@@ -18,29 +19,7 @@ export interface ShipmentBreakdown {
   totalBundles: number | null;
 }
 
-export interface NextDelivery {
-  deliveryId: string;
-  deliveryNumber: string;
-  description: string;
-  status: string;
-  deliveryDate: string;
-  estimatedWeight: number;
-  pickupDate?: string | null;
-  specialNotes?: string;
-  reschedule?: {
-    acknowledged?: boolean;
-    acknowledgedAt?: string | null;
-    previousDate?: string;
-    newDate?: string;
-    reason?: string;
-  } | null;
-  siteReadiness?: {
-    siteReady: boolean;
-    equipmentReady: boolean;
-  } | null;
-  confirmationEmailSent?: boolean;
-  confirmationEmailSentAt?: string | null;
-}
+export type NextDelivery = Delivery;
 
 export interface DashboardRequestedItem {
   _id?: string;
@@ -112,10 +91,44 @@ export interface DashboardRecentMessage {
   updatedAt?: string;
 }
 
+export interface NextMilestone {
+  title?: string;
+  targetDate?: string;
+}
+
+export interface ProjectManager {
+  name?: string;
+  phone?: string;
+  email?: string;
+  avatar?: string;
+}
+
+export interface ActiveProjectOverview {
+  leadId?: string;
+  projectName?: string;
+  projectCode?: string;
+  siteLocation?: string;
+  image?: string | null;
+  progressPct?: number;
+  currentStage?: string;
+  nextMilestone?: NextMilestone | null;
+  projectManager?: ProjectManager | null;
+}
+
+export interface DrawingsApprovalsBreakdown {
+  pendingReview?: number;
+  pendingReviewSubtitle?: string;
+  approved?: number;
+  revisionReceived?: number;
+  itemsNeedingClarification?: number;
+}
+
 export interface DashboardResponseData {
   activeProjects: number;
   closedProjects: number;
   drawingsAndApprovals: number;
+  drawingsApprovalsBreakdown?: DrawingsApprovalsBreakdown;
+  activeProjectOverview?: ActiveProjectOverview | null;
   projectTimeline: number | string | null;
   totalProjectValue: number;
   totalPaid: number;
