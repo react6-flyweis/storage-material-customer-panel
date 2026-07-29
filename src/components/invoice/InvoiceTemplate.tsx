@@ -1,4 +1,4 @@
-import logo from "@/assets/logo.svg";
+import logo from "@/assets/logo.png";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("en-US", {
@@ -202,7 +202,7 @@ export default function InvoiceTemplate({
                         <img
                           src={
                             photo.startsWith("blob:") ||
-                            photo.startsWith("http")
+                              photo.startsWith("http")
                               ? photo
                               : FALLBACK_IMAGE
                           }
