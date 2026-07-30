@@ -13,8 +13,17 @@ import {
   Clock,
 } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { useGetProjectOrderDetailsQuery } from "@/redux/api/materialOrdersApi";
+import {
+  useGetProjectOrderDetailsQuery,
+  type OrderDetailsRequestedItemApi,
+  type OrderDetailsQuotationApi,
+} from "@/redux/api/materialOrdersApi";
 import NoQuotationModal from "@/components/modals/NoQuotationModal";
+import {
+  deriveOrderStage,
+  getOrderStageBadgeConfig,
+  getOrderStepperSteps,
+} from "@/utils/orderStatusUtils";
 
 export interface DeliveryTableItem {
   coilType: string;
@@ -79,8 +88,9 @@ const OrderDetailsPage: React.FC = () => {
     { skip: !leadId || !orderId }
   );
 
-  const [activeTab, setActiveTab] = useState<"Delivered" | "Pending">("Pending");
+  const [activeTab, setActiveTab] = useState<"Total" | "Delivered" | "Pending">("Total");
   const [showNoQuotationModal, setShowNoQuotationModal] = useState(false);
+  const [showCancelModal, setShowCancelModal] = useState(false);
 
   if (isLoading) {
     return (
@@ -130,6 +140,10 @@ const OrderDetailsPage: React.FC = () => {
   const order = data?.order;
   const quotation = data?.quotation;
 
+  const quotationList: OrderDetailsQuotationApi[] = quotation ? [quotation] : [];
+
+  const hasQuotations = quotationList.length > 0;
+
   const displayOrderId = order?.requestId || order?._id || orderId || "-";
   const buildingLabel = order?.buildingLabel || "-";
   const projectCode = order?.leadId || leadId || "-";
@@ -141,50 +155,40 @@ const OrderDetailsPage: React.FC = () => {
       ? `${order.requestedByCustomer.firstName || ""} ${order.requestedByCustomer.lastName || ""}`.trim()
       : "") ||
     "-";
-  const orderStatus = order?.status || "-";
-  const stage = order?.stage || "requested";
+  const computedStage = deriveOrderStage(
+    order?.status,
+    order?.stage,
+    quotation?.status,
+    !!quotation
+  );
+  const badgeConfig = getOrderStageBadgeConfig(computedStage);
+  const isCompletedStatus = computedStage === "completed";
+  const isQuotationApproved =
+    computedStage === "quotation_approved" ||
+    computedStage === "order_confirmed" ||
+    computedStage === "completed";
 
   const totalQuotationValue = quotation?.totalValue ?? order?.totalAmount ?? 0;
 
-  // Determine stage progression
-  const normStage = (stage || "").toLowerCase();
-  const normStatus = (orderStatus || "").toLowerCase();
+  const stepIcons: Record<string, React.ElementType> = {
+    requested: Folder,
+    quote_receive: FileText,
+    quote_approve: Check,
+    confirmed: ClipboardList,
+    completed: Check,
+  };
 
-  let currentStageIdx = 0;
-  if (normStage === "quote_receive" || normStage === "quotation_received" || normStatus === "quotation received" || normStatus === "quotation_received") {
-    currentStageIdx = 1;
-  } else if (normStage === "quote_approve" || normStatus === "quote_approved") {
-    currentStageIdx = 2;
-  } else if (normStage === "confirmed" || normStatus === "confirmed") {
-    currentStageIdx = 3;
-  } else if (normStage === "completed" || normStatus === "completed" || normStatus === "fulfilled") {
-    currentStageIdx = 4;
-  } else {
-    currentStageIdx = 0;
-  }
-
-  const isQuotationReceived = currentStageIdx === 1 || normStatus === "quotation received" || normStatus === "quotation_received";
-  const isCompletedStatus = normStatus === "completed" || normStatus === "fulfilled" || stage === "completed";
-  const isPendingStatus = !isCompletedStatus && (normStatus === "pending" || normStatus === "order_confirmed" || normStatus === "confirmed" || (currentStageIdx >= 3 && normStatus !== "completed"));
-
-  const steps = [
-    { id: "requested", label: "Requested", icon: Folder },
-    { id: "quote_receive", label: "Quotation Receive", icon: FileText },
-    { id: "quote_approve", label: "Quotation Approve", icon: Check },
-    { id: "confirmed", label: "Order Confirmed", icon: ClipboardList },
-    { id: "completed", label: "Completed", icon: Check },
-  ].map((step, idx) => ({
+  const steps = getOrderStepperSteps(computedStage).map((step) => ({
     ...step,
-    completed: isCompletedStatus ? true : idx < (isPendingStatus ? 4 : currentStageIdx === 0 ? 1 : currentStageIdx),
-    active: isCompletedStatus ? idx === 4 : isPendingStatus ? idx === 3 : idx === currentStageIdx,
+    icon: stepIcons[step.id] || Folder,
   }));
 
   // Build items list
   const rawRequested = order?.requestedItems || [];
-  const rawDelivered = order?.deliveredItems || rawRequested.filter((item: any) => item.deliveryStatus === "delivered");
-  const rawPending = order?.pendingItems || rawRequested.filter((item: any) => item.deliveryStatus !== "delivered");
+  const rawDelivered = order?.deliveredItems || rawRequested.filter((item) => item.deliveryStatus === "delivered");
+  const rawPending = order?.pendingItems || rawRequested.filter((item) => item.deliveryStatus !== "delivered");
 
-  const mapItemToTable = (item: (typeof rawRequested)[0]): DeliveryTableItem => ({
+  const mapItemToTable = (item: OrderDetailsRequestedItemApi): DeliveryTableItem => ({
     coilType: item.name || "-",
     length: item.lengthFeet ? `${item.lengthFeet} ft` : item.quantity && item.unit ? `${item.quantity} ${item.unit}` : "-",
     quantity: item.quantity ?? 0,
@@ -213,7 +217,7 @@ const OrderDetailsPage: React.FC = () => {
   };
 
   return (
-    <div className="p-6 md:p-8 space-y-6 bg-[#EFF4FF]/50 min-h-screen">
+    <div className="p-6 space-y-6">
       {/* Top Bar with Back, Title & View Quotation */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -288,50 +292,57 @@ const OrderDetailsPage: React.FC = () => {
           <div className="space-y-1">
             <p className="text-xs font-semibold text-[#667085]">Order Status</p>
             <span
-              className={`inline-flex items-center gap-1 px-3 py-1 rounded-md text-xs font-semibold ${
-                isCompletedStatus || orderStatus === "Completed"
-                  ? "bg-[#16A34A] text-white"
-                  : orderStatus === "Pending" || normStatus === "pending"
-                  ? "bg-[#F59E0B] text-white"
-                  : isQuotationReceived
-                  ? "bg-[#9333EA] text-white"
-                  : "bg-[#2563EB] text-white"
-              }`}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-semibold ${badgeConfig.badgeClass}`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              {isCompletedStatus ? "Completed" : orderStatus}
+              {badgeConfig.prefix ? (
+                badgeConfig.prefix
+              ) : (
+                <span className={`w-1.5 h-1.5 rounded-full ${badgeConfig.dotClass}`} />
+              )}
+              {badgeConfig.label}
             </span>
           </div>
         </div>
 
-        {/* Right Section: Quotation Value / Order Value */}
-        <div className="pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[#E4E7EC] lg:pl-6 flex items-center justify-end w-full lg:w-auto">
-          <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-2xl p-4 flex items-center gap-3.5 min-w-[240px] justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-lg">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <div>
-                <p className="text-xs font-semibold text-[#2563EB]">
-                  {isCompletedStatus ? "Order Value" : "Quotation Value"}
-                </p>
-                <p className="text-xl font-extrabold text-[#1E40AF]">
-                  {totalQuotationValue ? formatCurrency(totalQuotationValue) : "-"}
-                </p>
-              </div>
-            </div>
-
-            {isCompletedStatus && (
-              <div className="text-right space-y-1">
-                <p className="text-[11px] font-semibold text-[#667085]">Payment Status</p>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#16A34A] text-white">
-                  <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                  Paid
-                </span>
-              </div>
-            )}
+        {/* Right Section: Cancel Order for New Order stage / Quotation Value for other stages */}
+        {computedStage === "new_order" ? (
+          <div className="pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[#E4E7EC] lg:pl-6 flex items-center justify-end w-full lg:w-auto">
+            <button
+              onClick={() => setShowCancelModal(true)}
+              className="px-6 py-2.5 rounded-xl bg-[#EF4444] hover:bg-[#dc2626] text-white text-sm font-semibold transition-colors shadow-xs cursor-pointer"
+            >
+              Cancel Order
+            </button>
           </div>
-        </div>
+        ) : (
+          <div className="pt-4 lg:pt-0 border-t lg:border-t-0 lg:border-l border-[#E4E7EC] lg:pl-6 flex items-center justify-end w-full lg:w-auto">
+            <div className="bg-[#EFF6FF] border border-[#BFDBFE] rounded-2xl p-4 flex items-center gap-3.5 min-w-[240px] justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#2563EB] text-white flex items-center justify-center font-bold text-lg">
+                  <DollarSign className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-[#2563EB]">
+                    {isCompletedStatus ? "Order Value" : "Quotation Value"}
+                  </p>
+                  <p className="text-xl font-extrabold text-[#1E40AF]">
+                    {totalQuotationValue ? formatCurrency(totalQuotationValue) : "-"}
+                  </p>
+                </div>
+              </div>
+
+              {isCompletedStatus && (
+                <div className="text-right space-y-1">
+                  <p className="text-[11px] font-semibold text-[#667085]">Payment Status</p>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-[#16A34A] text-white">
+                    <span className="w-1.5 h-1.5 rounded-full bg-white" />
+                    Paid
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Progress Stepper */}
@@ -342,26 +353,35 @@ const OrderDetailsPage: React.FC = () => {
 
           {steps.map((step) => {
             const IconComponent = step.icon;
+            const isBlueActive =
+              step.active &&
+              (computedStage === "new_order" || computedStage === "quotation_received");
+
+            const circleBg =
+              step.completed && !isBlueActive
+                ? "bg-[#16A34A] text-white shadow-xs"
+                : isBlueActive
+                  ? "bg-[#2563EB] text-white shadow-xs"
+                  : "bg-[#E5E7EB] text-[#6B7280]";
+
+            const textStyle = isBlueActive
+              ? "text-[#2563EB]"
+              : step.completed
+                ? "text-[#4B5563]"
+                : "text-[#6B7280]";
+
             return (
               <div
                 key={step.id}
                 className="relative z-10 flex flex-col items-center text-center"
               >
                 <div
-                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${
-                    step.completed || step.active
-                      ? "bg-[#16A34A] text-white shadow-xs"
-                      : "bg-[#E5E7EB] text-[#6B7280]"
-                  }`}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center transition-all ${circleBg}`}
                 >
                   <IconComponent className="w-5 h-5" />
                 </div>
                 <span
-                  className={`mt-3 text-xs md:text-sm font-bold max-w-[100px] leading-tight ${
-                    step.completed || step.active
-                      ? "text-[#4B5563]"
-                      : "text-[#6B7280]"
-                  }`}
+                  className={`mt-3 text-xs md:text-sm font-bold max-w-[100px] leading-tight ${textStyle}`}
                 >
                   {step.label}
                 </span>
@@ -372,7 +392,58 @@ const OrderDetailsPage: React.FC = () => {
       </div>
 
       {/* Main Order & Delivery Tables Layout */}
-      {isCompletedStatus ? (
+      {!isQuotationApproved ? (
+        /* Item List (Summary) Card for Orders before Quotation Approval */
+        <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs space-y-6">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-[#2563EB] text-white">
+              <Folder className="w-4 h-4 fill-white" />
+            </div>
+            <h3 className="text-base font-bold text-[#101828]">
+              Item List (Summary)
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold">
+                  <th className="py-3.5 px-5 rounded-l-lg">Coil Type</th>
+                  <th className="py-3.5 px-5">Length</th>
+                  <th className="py-3.5 px-5">Quantity</th>
+                  <th className="py-3.5 px-5 rounded-r-lg">Color</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
+                {rawRequested.length > 0 ? (
+                  rawRequested.map((item, idx: number) => (
+                    <tr key={idx} className="hover:bg-gray-50/50 transition-colors">
+                      <td className="py-4 px-5 font-bold text-[#101828]">
+                        {item.name || "-"}
+                      </td>
+                      <td className="py-4 px-5 font-bold text-[#101828]">
+                        {item.lengthFeet ? `${item.lengthFeet} ft` : item.quantity && item.unit ? `${item.quantity} ${item.unit}` : "-"}
+                      </td>
+                      <td className="py-4 px-5 font-bold text-[#101828]">
+                        {item.quantity ?? 0}
+                      </td>
+                      <td className="py-4 px-5 font-bold text-[#101828]">
+                        {item.color || "-"}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={4} className="py-6 text-center text-gray-500 font-medium">
+                      No items found in this order.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : isCompletedStatus ? (
         <div className="space-y-6">
           {/* Total Order Details Card */}
           <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs space-y-6">
@@ -387,7 +458,7 @@ const OrderDetailsPage: React.FC = () => {
               </div>
 
               <button
-                onClick={() => {}}
+                onClick={() => { }}
                 className="px-5 py-2 rounded-xl bg-[#2563EB] text-white text-xs font-semibold hover:bg-[#1d4ed8] transition-colors cursor-pointer shadow-xs"
               >
                 View Delivery Details
@@ -414,7 +485,7 @@ const OrderDetailsPage: React.FC = () => {
                       {order?.totalLength ? `${order.totalLength} ft` : "-"}
                     </td>
                     <td className="py-4 px-5 font-bold text-[#101828]">
-                      {order?.totalQuantity ?? (rawRequested.reduce((acc: number, item: any) => acc + (item.quantity || 0), 0) || "-")}
+                      {order?.totalQuantity ?? (rawRequested.reduce((acc, item) => acc + (item.quantity || 0), 0) || "-")}
                     </td>
                     <td className="py-4 px-5 font-semibold text-[#667085]">
                       {orderDate}
@@ -497,32 +568,29 @@ const OrderDetailsPage: React.FC = () => {
           {/* Tabs: Total, Delivered, Pending */}
           <div className="inline-flex p-1.5 rounded-2xl border border-[#E2E8F0] gap-2">
             <button
-              onClick={() => setActiveTab("Pending")}
-              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                activeTab === "Pending"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-transparent text-[#475467] hover:text-[#101828]"
-              }`}
+              onClick={() => setActiveTab("Total")}
+              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === "Total"
+                ? "bg-[#2563EB] text-white shadow-xs"
+                : "bg-transparent text-[#475467] hover:text-[#101828]"
+                }`}
             >
               Total
             </button>
             <button
               onClick={() => setActiveTab("Delivered")}
-              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                activeTab === "Delivered"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-transparent text-[#475467] hover:text-[#101828]"
-              }`}
+              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === "Delivered"
+                ? "bg-[#2563EB] text-white shadow-xs"
+                : "bg-transparent text-[#475467] hover:text-[#101828]"
+                }`}
             >
               Delivered
             </button>
             <button
               onClick={() => setActiveTab("Pending")}
-              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${
-                activeTab === "Pending"
-                  ? "bg-[#2563EB] text-white shadow-xs"
-                  : "bg-transparent text-[#475467] hover:text-[#101828]"
-              }`}
+              className={`px-8 py-2.5 rounded-xl text-sm font-bold transition-all cursor-pointer ${activeTab === "Pending"
+                ? "bg-[#2563EB] text-white shadow-xs"
+                : "bg-transparent text-[#475467] hover:text-[#101828]"
+                }`}
             >
               Pending
             </button>
@@ -592,74 +660,76 @@ const OrderDetailsPage: React.FC = () => {
         </div>
       )}
 
-      {/* Quotation History Card */}
-      <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs space-y-6">
-        <div className="flex items-center gap-2.5">
-          <div className="p-2 rounded-lg bg-[#2563EB] text-white">
-            <Clock className="w-4 h-4" />
+      {/* Quotation History Card (Rendered if any available) */}
+      {hasQuotations && (
+        <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs space-y-6">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 rounded-lg bg-[#2563EB] text-white">
+              <Clock className="w-4 h-4" />
+            </div>
+            <h3 className="text-base font-bold text-[#101828]">
+              Quotation History
+            </h3>
           </div>
-          <h3 className="text-base font-bold text-[#101828]">
-            Quotation History
-          </h3>
-        </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold">
-                <th className="py-3 px-5 rounded-l-lg">Quote ID</th>
-                <th className="py-3 px-5">Sent By</th>
-                <th className="py-3 px-5">Date & Time</th>
-                <th className="py-3 px-5">Total Amount</th>
-                <th className="py-3 px-5">Status</th>
-                <th className="py-3 px-5">Customer Remark</th>
-                <th className="py-3 px-5 rounded-r-lg">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
-              {quotation ? (
-                <tr className="hover:bg-gray-50/50 transition-colors">
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    {quotation.quotationNumber || quotation._id || "-"}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    {quotation.sellerName || "-"}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    {formatDate(quotation.createdAt || quotation.updatedAt)}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#2563EB]">
-                    {quotation.totalValue ? formatCurrency(quotation.totalValue) : "-"}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#16A34A]">
-                    {quotation.status || "-"}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    {quotation.customerRemark || "-"}
-                  </td>
-                  <td className="py-4 px-5 font-bold text-[#101828]">
-                    <button
-                      onClick={handleViewQuotationClick}
-                      className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer"
-                    >
-                      <Eye className="w-4 h-4" />
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-[#E5E7EB] text-[#374151] text-xs font-bold">
+                  <th className="py-3 px-5 rounded-l-lg">Quote ID</th>
+                  <th className="py-3 px-5">Sent By</th>
+                  <th className="py-3 px-5">Date & Time</th>
+                  <th className="py-3 px-5">Total Amount</th>
+                  <th className="py-3 px-5">Status</th>
+                  <th className="py-3 px-5">Customer Remark</th>
+                  <th className="py-3 px-5 rounded-r-lg">Action</th>
                 </tr>
-              ) : (
-                <tr>
-                  <td colSpan={7} className="py-6 text-center text-gray-500 font-medium">
-                    No quotation history available.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
+                {quotationList.map((quote, idx: number) => (
+                  <tr key={quote._id || idx} className="hover:bg-gray-50/50 transition-colors">
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      {quote.quotationNumber || quote._id || "-"}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      {quote.sellerName || "-"}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      {formatDate(quote.createdAt || quote.updatedAt || quote.sentAt)}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#2563EB]">
+                      {quote.totalValue ? formatCurrency(quote.totalValue) : "-"}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#16A34A]">
+                      {quote.status || "-"}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      {quote.customerRemark || "-"}
+                    </td>
+                    <td className="py-4 px-5 font-bold text-[#101828]">
+                      <button
+                        onClick={() => {
+                          if (quote._id) {
+                            navigate(`/order-quotation-details/${quote._id}`);
+                          } else {
+                            setShowNoQuotationModal(true);
+                          }
+                        }}
+                        className="p-1 text-gray-600 hover:text-black transition-colors cursor-pointer"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Bottom Row: Special Instruction, Attachments & Order Value Summary */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className={`grid grid-cols-1 ${computedStage === "new_order" ? "lg:grid-cols-2" : "lg:grid-cols-3"} gap-6`}>
         {/* Special Instruction */}
         <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs space-y-4">
           <div className="flex items-center gap-2.5">
@@ -686,75 +756,80 @@ const OrderDetailsPage: React.FC = () => {
 
           <div className="space-y-3">
             {order?.attachments && order.attachments.length > 0 ? (
-              order.attachments.map((att: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-[#E4E7EC] bg-white hover:bg-gray-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 font-bold text-[10px] flex items-center justify-center border border-red-100">
-                      PDF
+              order.attachments.map((att, idx: number) => {
+                const attObj = typeof att === "string" ? { name: att, url: att, size: "-" } : att;
+                return (
+                  <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-[#E4E7EC] bg-white hover:bg-gray-50 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-red-50 text-red-500 font-bold text-[10px] flex items-center justify-center border border-red-100">
+                        PDF
+                      </div>
+                      <div>
+                        <p className="text-xs font-bold text-[#101828]">{attObj.name || `Attachment ${idx + 1}`}</p>
+                        <p className="text-[11px] text-[#667085]">{attObj.size || "-"}</p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-xs font-bold text-[#101828]">{att.name || `Attachment ${idx + 1}`}</p>
-                      <p className="text-[11px] text-[#667085]">{att.size || "-"}</p>
+                    <div className="flex items-center gap-2 text-[#667085]">
+                      {attObj.url && (
+                        <a href={attObj.url} target="_blank" rel="noreferrer">
+                          <Eye className="w-4 h-4 cursor-pointer" />
+                        </a>
+                      )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 text-[#667085]">
-                    {att.url && (
-                      <a href={att.url} target="_blank" rel="noreferrer">
-                        <Eye className="w-4 h-4 cursor-pointer" />
-                      </a>
-                    )}
-                  </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <p className="text-xs text-[#667085]">No attachments available.</p>
             )}
           </div>
         </div>
 
-        {/* Order Value Summary */}
-        <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs flex flex-col justify-between space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center gap-2.5">
-              <div className="p-2 rounded-lg bg-[#2563EB] text-white">
-                <Folder className="w-4 h-4 fill-white" />
+        {/* Order Value Summary (Hidden on New Order stage) */}
+        {computedStage !== "new_order" && (
+          <div className="bg-white rounded-2xl border border-[#E4E7EC] p-6 shadow-xs flex flex-col justify-between space-y-6">
+            <div className="space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="p-2 rounded-lg bg-[#2563EB] text-white">
+                  <Folder className="w-4 h-4 fill-white" />
+                </div>
+                <h3 className="text-base font-bold text-[#101828]">
+                  Order Value Summary
+                </h3>
               </div>
-              <h3 className="text-base font-bold text-[#101828]">
-                Order Value Summary
-              </h3>
+
+              <div className="space-y-3.5 pt-2 text-sm font-semibold">
+                <div className="flex items-center justify-between text-[#344054]">
+                  <span>Subtotal</span>
+                  <span className="font-bold text-[#344054]">
+                    {order?.subtotal !== undefined && order?.subtotal !== null ? formatCurrency(order.subtotal) : "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[#344054]">
+                  <span>Tax</span>
+                  <span className="font-bold text-[#344054]">
+                    {order?.tax !== undefined && order?.tax !== null ? formatCurrency(order.tax) : "-"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[#344054]">
+                  <span>Freight</span>
+                  <span className="font-bold text-[#344054]">
+                    {order?.freight !== undefined && order?.freight !== null ? formatCurrency(order.freight) : "-"}
+                  </span>
+                </div>
+              </div>
             </div>
 
-            <div className="space-y-3.5 pt-2 text-sm font-semibold">
-              <div className="flex items-center justify-between text-[#344054]">
-                <span>Subtotal</span>
-                <span className="font-bold text-[#344054]">
-                  {order?.subtotal !== undefined && order?.subtotal !== null ? formatCurrency(order.subtotal) : "-"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[#344054]">
-                <span>Tax</span>
-                <span className="font-bold text-[#344054]">
-                  {order?.tax !== undefined && order?.tax !== null ? formatCurrency(order.tax) : "-"}
-                </span>
-              </div>
-              <div className="flex items-center justify-between text-[#344054]">
-                <span>Freight</span>
-                <span className="font-bold text-[#344054]">
-                  {order?.freight !== undefined && order?.freight !== null ? formatCurrency(order.freight) : "-"}
-                </span>
-              </div>
+            <div className="pt-4 border-t border-[#F1F5F9] flex items-center justify-between">
+              <span className="text-base font-extrabold text-[#1E40AF]">
+                Total Order Value
+              </span>
+              <span className="text-lg font-extrabold text-[#2563EB]">
+                {totalQuotationValue ? formatCurrency(totalQuotationValue) : "-"}
+              </span>
             </div>
           </div>
-
-          <div className="pt-4 border-t border-[#F1F5F9] flex items-center justify-between">
-            <span className="text-base font-extrabold text-[#1E40AF]">
-              Total Order Value
-            </span>
-            <span className="text-lg font-extrabold text-[#2563EB]">
-              {totalQuotationValue ? formatCurrency(totalQuotationValue) : "-"}
-            </span>
-          </div>
-        </div>
+        )}
       </div>
 
       {/* No Quotation Received Modal */}
@@ -762,6 +837,35 @@ const OrderDetailsPage: React.FC = () => {
         isOpen={showNoQuotationModal}
         onClose={() => setShowNoQuotationModal(false)}
       />
+
+      {/* Cancel Order Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-xs p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-xl space-y-4">
+            <h3 className="text-lg font-bold text-[#101828]">Cancel Order</h3>
+            <p className="text-sm text-[#475467]">
+              Are you sure you want to cancel order{" "}
+              <span className="font-bold text-[#101828]">{displayOrderId}</span>? This action cannot be undone.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                onClick={() => setShowCancelModal(false)}
+                className="px-4 py-2 rounded-xl border border-[#D0D5DD] text-sm font-semibold text-[#344054] hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                No, keep order
+              </button>
+              <button
+                onClick={() => {
+                  setShowCancelModal(false);
+                }}
+                className="px-4 py-2 rounded-xl bg-[#EF4444] text-sm font-semibold text-white hover:bg-[#dc2626] transition-colors cursor-pointer"
+              >
+                Yes, Cancel Order
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
