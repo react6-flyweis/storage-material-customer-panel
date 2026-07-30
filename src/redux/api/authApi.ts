@@ -83,6 +83,27 @@ export interface ChangePasswordRequest {
   newPassword: string;
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export type ForgotPasswordApiResponse = ApiResponse<Record<string, unknown>>;
+
+export interface VerifyOtpRequest {
+  email: string;
+  otp: string;
+}
+
+export type VerifyOtpApiResponse = ApiResponse<{
+  resetToken: string;
+}>;
+
+export interface ResetPasswordRequest {
+  resetToken: string;
+  newPassword: string;
+}
+
+export type ResetPasswordApiResponse = ApiResponse<Record<string, unknown>>;
 export type ChangePasswordApiResponse = ApiResponse<null>;
 
 export const authApi = createApi({
@@ -129,6 +150,27 @@ export const authApi = createApi({
         body,
       }),
     }),
+    forgotPassword: builder.mutation<ForgotPasswordApiResponse, ForgotPasswordRequest>({
+      query: (body) => ({
+        url: "/api/auth/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+    verifyOtp: builder.mutation<VerifyOtpApiResponse, VerifyOtpRequest>({
+      query: (body) => ({
+        url: "/api/auth/verify-otp",
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<ResetPasswordApiResponse, ResetPasswordRequest>({
+      query: (body) => ({
+        url: "/api/auth/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -137,6 +179,10 @@ export const {
   useGetProfileQuery,
   useUpdateProfileMutation,
   useChangePasswordMutation,
+  useForgotPasswordMutation,
+  useVerifyOtpMutation,
+  useResetPasswordMutation,
 } = authApi;
+
 
 
