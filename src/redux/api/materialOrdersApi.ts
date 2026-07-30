@@ -48,6 +48,8 @@ export interface ProjectOrderApi {
   specialInstructions: string;
   priority: string;
   status: string;
+  stage?: string;
+  quotationStatus?: string;
   totalAmount: number;
   reviewedBy: string | null;
   reviewedAt: string | null;
