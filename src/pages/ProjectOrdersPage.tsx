@@ -6,6 +6,12 @@ import {
   type ProjectOrderApi,
 } from "@/redux/api/materialOrdersApi";
 import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
+import {
+  deriveOrderStage,
+  getOrderStageBadgeConfig,
+  type OrderStage,
+  type OrderBadgeConfig,
+} from "@/utils/orderStatusUtils";
 
 export interface OrderRowItem {
   _id: string;
@@ -16,8 +22,9 @@ export interface OrderRowItem {
   orderDate: string;
   requiredDate: string;
   orderValue: string;
-  status: "Pending" | "New Orders" | "Completed";
+  stage: OrderStage;
   rawStatus: string;
+  badgeConfig: OrderBadgeConfig;
 }
 
 const formatDate = (dateStr?: string) => {
@@ -40,18 +47,6 @@ const formatCurrency = (amount?: number) => {
   return `$${amount.toLocaleString()}`;
 };
 
-const mapTabStatus = (order: ProjectOrderApi): "Pending" | "New Orders" | "Completed" => {
-  const norm = (order.status || "").toLowerCase();
-  if (norm === "fulfilled" || norm === "completed" || norm === "delivered") {
-    return "Completed";
-  }
-  // Check if status is pending but priority is 'medium'/'high' or check order properties
-  if (norm === "new" || norm === "new order" || norm === "new orders") {
-    return "New Orders";
-  }
-  return "Pending";
-};
-
 const ProjectOrdersPage: React.FC = () => {
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -68,36 +63,41 @@ const ProjectOrdersPage: React.FC = () => {
     projectDetailsData?.lead?.projectName ||
     "All Orders";
 
-  const [activeTab, setActiveTab] = useState<"All Orders" | "Select Order Status" | "New Orders" | "Pending Orders" | "Completed">("Select Order Status");
+  const [activeTab, setActiveTab] = useState<
+    | "All Orders"
+    | "Select Order Status"
+    | "New Orders"
+    | "Quotation Received"
+    | "Pending Orders"
+    | "Completed"
+    | "Cancelled"
+    | "Rejected"
+  >("Select Order Status");
   const [coilTypeFilter] = useState("Select Coil Tye");
   const [dateFilter, setDateFilter] = useState("All Time");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [searchQuery, setSearchQuery] = useState("");
 
   const rawOrders: ProjectOrderApi[] = projectOrdersData?.orders || [];
-  const counts = projectOrdersData?.counts || { newOrders: 0, pending: 0, completed: 0 };
 
-  const mappedOrders: OrderRowItem[] = rawOrders.map((order, index) => {
-    // If backend returns 1 in counts for newOrders, pending, completed across 3 orders,
-    // map order status accordingly based on index or order fields if status is ambiguous
-    let tabCat = mapTabStatus(order);
-    if (rawOrders.length === 3 && counts.newOrders === 1 && counts.pending === 1 && counts.completed === 1) {
-      if (order.status === "fulfilled" || order.status === "completed") {
-        tabCat = "Completed";
-      } else if (index === 1) {
-        tabCat = "Pending";
-      } else if (index === 2) {
-        tabCat = "New Orders";
-      }
-    }
+  const mappedOrders: OrderRowItem[] = rawOrders.map((order) => {
+    const stage = deriveOrderStage(
+      order.status,
+      order.stage,
+      order.quotationStatus,
+      !!(order as unknown as { quotation?: unknown }).quotation
+    );
+    const badgeConfig = getOrderStageBadgeConfig(stage);
 
     const items = order.requestedItems || [];
 
     // Aggregate coil types, total quantity and length across order requested items
-    const coilTypes = Array.from(new Set(items.map((i) => i.name).filter(Boolean))).join(", ") || "N/A";
+    const coilTypes =
+      Array.from(new Set(items.map((i) => i.name).filter(Boolean))).join(", ") ||
+      "N/A";
     const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
     const calculatedLength = items.reduce(
-      (sum, item) => sum + ((item.lengthFeet || 0) * (item.quantity || 0)),
+      (sum, item) => sum + (item.lengthFeet || 0) * (item.quantity || 0),
       0
     );
 
@@ -105,20 +105,30 @@ const ProjectOrdersPage: React.FC = () => {
       _id: order._id,
       orderId: order.requestId || order._id,
       coilType: coilTypes,
-      totalLength: calculatedLength > 0 ? `${calculatedLength} ft` : (items[0]?.unit ? `${totalQty} ${items[0].unit}` : "0 ft"),
+      totalLength:
+        calculatedLength > 0
+          ? `${calculatedLength} ft`
+          : items[0]?.unit
+          ? `${totalQty} ${items[0].unit}`
+          : "0 ft",
       quantity: totalQty,
       orderDate: formatDate(order.requestDate || order.createdAt),
       requiredDate: formatDate(order.requiredBy),
       orderValue: formatCurrency(order.totalAmount),
-      status: tabCat,
+      stage,
       rawStatus: order.status,
+      badgeConfig,
     };
   });
 
   const tabFiltered = mappedOrders.filter((item) => {
-    if (activeTab === "New Orders") return item.status === "New Orders";
-    if (activeTab === "Pending Orders") return item.status === "Pending";
-    if (activeTab === "Completed") return item.status === "Completed";
+    if (activeTab === "New Orders") return item.stage === "new_order";
+    if (activeTab === "Quotation Received") return item.stage === "quotation_received";
+    if (activeTab === "Pending Orders")
+      return item.stage === "order_confirmed" || item.stage === "quotation_approved";
+    if (activeTab === "Completed") return item.stage === "completed";
+    if (activeTab === "Cancelled") return item.stage === "cancelled";
+    if (activeTab === "Rejected") return item.stage === "rejected";
     return true;
   });
 
@@ -173,9 +183,15 @@ const ProjectOrdersPage: React.FC = () => {
               ? "Pending Orders List"
               : activeTab === "New Orders"
                 ? "New Orders List"
-                : activeTab === "Completed"
-                  ? "Completed Orders List"
-                  : "New Orders List"}
+                : activeTab === "Quotation Received"
+                  ? "Quotation Received List"
+                  : activeTab === "Completed"
+                    ? "Completed Orders List"
+                    : activeTab === "Cancelled"
+                      ? "Cancelled Orders List"
+                      : activeTab === "Rejected"
+                        ? "Rejected Orders List"
+                        : "New Orders List"}
           </h2>
 
           <div className="flex flex-wrap items-center gap-3">
@@ -183,13 +199,16 @@ const ProjectOrdersPage: React.FC = () => {
             <div className="relative">
               <select
                 value={activeTab}
-                onChange={(e) => setActiveTab(e.target.value as any)}
+                onChange={(e) => setActiveTab(e.target.value as typeof activeTab)}
                 className="appearance-none bg-white border border-[#D0D5DD] text-[#344054] text-xs font-medium rounded-lg pl-3 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
               >
                 <option value="Select Order Status">Select Order Status</option>
                 <option value="New Orders">New Orders</option>
+                <option value="Quotation Received">Quotation Received</option>
                 <option value="Pending Orders">Pending Orders</option>
                 <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+                <option value="Rejected">Rejected</option>
               </select>
               <ChevronDown className="w-3.5 h-3.5 text-[#667085] absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -291,41 +310,7 @@ const ProjectOrdersPage: React.FC = () => {
               </thead>
               <tbody className="divide-y divide-[#F2F4F7] text-xs text-[#344054]">
                 {displayedOrders.map((row, index) => {
-                  // Determine status badge variant to match the image design:
-                  // 1) New Order (+ New Order - blue background)
-                  // 2) Quotation Received (Quotation Received - purple background)
-                  // 3) Pending (Pending - amber/orange background)
-                  // 4) Delivered / Completed (Delivered - green background)
-                  const rawLower = (row.rawStatus || "").toLowerCase();
-
-                  let badge = (
-                    <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-[#0084FF] text-white text-xs font-medium">
-                      + New Order
-                    </span>
-                  );
-
-                  if (rawLower === "quotation_received" || rawLower === "quotation received" || index === 1) {
-                    badge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#9333EA] text-white text-xs font-medium">
-                        <span className="w-1.5 h-1.5 bg-white rounded-xs" />
-                        Quotation Received
-                      </span>
-                    );
-                  } else if (rawLower === "pending" || row.status === "Pending" || index === 2) {
-                    badge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#D97706] text-white text-xs font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                        Pending
-                      </span>
-                    );
-                  } else if (rawLower === "delivered" || rawLower === "fulfilled" || row.status === "Completed" || index === 3) {
-                    badge = (
-                      <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-[#22C55E] text-white text-xs font-medium">
-                        <span className="w-1.5 h-1.5 rounded-full bg-white" />
-                        Delivered
-                      </span>
-                    );
-                  }
+                  const { badgeClass, dotClass, label, prefix } = row.badgeConfig;
 
                   return (
                     <tr key={row._id || index} className="hover:bg-[#F9FAFB] transition-colors">
@@ -343,7 +328,16 @@ const ProjectOrdersPage: React.FC = () => {
                         {row.requiredDate}
                       </td>
                       <td className="py-4 px-5">
-                        {badge}
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium ${badgeClass}`}
+                        >
+                          {prefix ? (
+                            prefix
+                          ) : (
+                            <span className={`w-1.5 h-1.5 rounded-full ${dotClass}`} />
+                          )}
+                          {label}
+                        </span>
                       </td>
                       <td className="py-4 px-5 text-right">
                         <button
