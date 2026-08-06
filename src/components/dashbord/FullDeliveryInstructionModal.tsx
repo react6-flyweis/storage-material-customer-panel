@@ -32,6 +32,7 @@ export default function FullDeliveryInstructionModal({
     skip: !open || !deliveryId,
   });
 
+
   if (!open) return null;
 
   return (
@@ -246,7 +247,7 @@ export default function FullDeliveryInstructionModal({
                     <div>
                       <p className="text-sm text-[#4A5565]">Bundle Types</p>
                       <p className="text-base font-semibold">
-                        {delivery.packingListSummary?.bundleTypes?.join(", ") || "-"}
+                        {delivery?.packingListSummary?.bundleTypes ?? "-"}
                       </p>
                     </div>
 

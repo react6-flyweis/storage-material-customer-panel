@@ -45,7 +45,7 @@ export interface LoadAndBundle {
 
 export interface PackingListSummary {
   totalParts: number | null;
-  bundleTypes: string[] | null;
+  bundleTypes: number | string | null;
   material: string;
 }
 
