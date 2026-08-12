@@ -222,6 +222,37 @@ export const materialOrdersApi = createApi({
         { type: "OrderDetails", id: orderId },
       ],
     }),
+    createProjectOrder: builder.mutation<
+      ApiResponse<ProjectOrderApi>,
+      {
+        leadId: string;
+        body: {
+          buildingLabel: string;
+          requiredBy: string;
+          preferredDeliveryDate?: string;
+          priority: string;
+          specialInstructions?: string;
+          attachments?: { name: string; url: string }[];
+          items: {
+            name: string;
+            quantity: number;
+            unit?: string;
+            lengthFeet: number;
+            color?: string;
+          }[];
+        };
+      }
+    >({
+      query: ({ leadId, body }) => ({
+        url: `/api/customer/projects/${leadId}/orders`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { leadId }) => [
+        { type: "ProjectOrders", id: leadId },
+        "MaterialOrdersSummary",
+      ],
+    }),
   }),
 });
 
@@ -229,4 +260,5 @@ export const {
   useGetMaterialOrdersSummaryQuery,
   useGetProjectOrdersQuery,
   useGetProjectOrderDetailsQuery,
+  useCreateProjectOrderMutation,
 } = materialOrdersApi;
