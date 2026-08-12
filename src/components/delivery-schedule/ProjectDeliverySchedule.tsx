@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import TitleSubtitle from "../common_components/TitleSubtitle";
-import { QrCode, Loader2 } from "lucide-react";
+import { Loader2, MoveLeft } from "lucide-react";
+import { Button } from "../ui/button";
 import NextDeliveryCard, { type DeliveryCardData } from "../dashbord/NextDeliveryCard";
 import ScanQrModal from "./ScanQrModal";
 import CustomSelect from "../common_components/CustomSelect";
@@ -9,9 +10,10 @@ import { useGetDeliveriesQuery } from "@/redux/api/deliveriesApi";
 import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 
 const ProjectDeliverySchedule = () => {
+  const navigate = useNavigate();
   const { id: paramProjectId } = useParams();
   const [scanModal, setScanModal] = useState(false);
-  const [bundleId, setBundleId] = useState("BND-001");
+  const [bundleId, setBundleId] = useState("");
   const [activeTab, setActiveTab] = useState("upcoming");
   const [statusFilter, setStatusFilter] = useState("All Status");
 
@@ -123,19 +125,28 @@ const ProjectDeliverySchedule = () => {
 
   return (
     <div className="p-5 space-y-6">
+      <div className="flex items-center gap-4">
+        <Button
+          onClick={() => navigate(-1)}
+          className="bg-[#2563EB] hover:bg-blue-700 text-white min-w-25 gap-2 px-6 h-10 rounded-md shadow-sm"
+        >
+          <MoveLeft className="w-4 h-4" />
+          Back
+        </Button>
+      </div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <TitleSubtitle
           title="Project Delivery Schedule"
           subtitle="Track your project deliveries and receive notifications."
         />
         <div className="flex items-center gap-4">
-          <button
+          {/* <button
             onClick={() => setScanModal(true)}
             className="ml-auto flex w-fit min-w-[128px] items-center gap-2 rounded-lg bg-(--button-bg-primary-color) px-4 py-2.5 text-sm font-normal text-white transition-opacity hover:opacity-90 lg:mt-2"
           >
             <QrCode />
             Scan QR
-          </button>
+          </button> */}
           <ScanQrModal
             open={scanModal}
             bundleId={bundleId}
@@ -167,20 +178,18 @@ const ProjectDeliverySchedule = () => {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex h-13 items-center gap-2 rounded-lg text-sm px-6 font-medium transition-all ${
-                  isActive
-                    ? "bg-[#3B66B8] text-white"
-                    : "bg-[#F2F4F7] text-[#344054]"
-                }`}
+                className={`flex h-13 items-center gap-2 rounded-lg text-sm px-6 font-medium transition-all ${isActive
+                  ? "bg-[#3B66B8] text-white"
+                  : "bg-[#F2F4F7] text-[#344054]"
+                  }`}
               >
                 {tab.label}
 
                 <span
-                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold ${
-                    isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-[#3B66B8] text-white"
-                  }`}
+                  className={`flex h-6 min-w-6 items-center justify-center rounded-full px-1 text-xs font-semibold ${isActive
+                    ? "bg-white/20 text-white"
+                    : "bg-[#3B66B8] text-white"
+                    }`}
                 >
                   {tab.count}
                 </span>
@@ -207,8 +216,12 @@ const ProjectDeliverySchedule = () => {
         </div>
       ) : filteredDeliveries.length === 0 ? (
         <div className="flex h-[30vh] flex-col items-center justify-center text-center p-6 border border-dashed border-gray-200 rounded-lg bg-gray-50">
-          <p className="text-gray-500 font-medium text-lg">No deliveries found</p>
-          <p className="text-gray-400 text-sm mt-1">There are no deliveries in this tab at the moment.</p>
+          <p className="text-gray-500 font-medium text-lg">
+            No {activeTab} deliveries found
+          </p>
+          <p className="text-gray-400 text-sm mt-1">
+            There are no {activeTab} deliveries at the moment.
+          </p>
         </div>
       ) : (
         filteredDeliveries.map((delivery) => (
