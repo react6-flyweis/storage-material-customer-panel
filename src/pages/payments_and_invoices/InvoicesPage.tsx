@@ -1,3 +1,4 @@
+import { useState } from "react";
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import PaymentStatGrid from "@/components/payments_and_invoices/PaymentStatGrid";
 import PaymentTable from "@/components/payments_and_invoices/PaymentTable";
@@ -38,6 +39,7 @@ const getProjectName = (project: InvoiceProject) => {
 const InvoicesPage = () => {
   const navigate = useNavigate();
   const { data, isLoading } = useGetInvoicesQuery();
+  const [activeFilter, setActiveFilter] = useState<"paid" | "unpaid">("paid");
 
   const invoices = (data?.projects || []).flatMap((project) => {
     const projectName = getProjectName(project);
@@ -45,6 +47,14 @@ const InvoicesPage = () => {
       ...inv,
       projectName,
     }));
+  });
+
+  const filteredInvoices = invoices.filter((inv) => {
+    const status = inv.status?.toLowerCase();
+    if (activeFilter === "paid") {
+      return status === "paid";
+    }
+    return status !== "paid";
   });
 
   const getStatusStyles = (status: string) => {
@@ -55,7 +65,7 @@ const InvoicesPage = () => {
     if (normalized === "draft") {
       return "bg-gray-100 text-[#6B7280]";
     }
-    return "bg-yellow-100 text-yellow-600";
+    return "bg-[#FEF3C7] text-[#D97706]";
   };
 
   const renderInvoiceRow = (item: InvoiceDetail & { projectName: string }) => {
@@ -82,7 +92,7 @@ const InvoicesPage = () => {
           {formatDate(item.date)}
         </td>
         <td className="py-4 px-4 text-center last:pr-0 w-fit flex justify-center items-center">
-          <span className={cn("px-3 py-1.5 rounded-full text-xs font-normal", getStatusStyles(item.status))}>
+          <span className={cn("px-4 py-1 rounded-full text-xs font-normal", getStatusStyles(item.status))}>
             {item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : "-"}
           </span>
         </td>
@@ -131,7 +141,35 @@ const InvoicesPage = () => {
 
       <PaymentStatGrid />
 
-      {/* Payment History */}
+      {/* Status Filter Tabs */}
+      <div className="flex items-center">
+        <div className="bg-white border border-gray-200 rounded-2xl p-1.5 flex items-center gap-3 shadow-xs">
+          <button
+            onClick={() => setActiveFilter("paid")}
+            className={cn(
+              "px-8 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer",
+              activeFilter === "paid"
+                ? "bg-(--button-bg-primary-color) text-white shadow-xs"
+                : "bg-white text-black border border-gray-200 hover:bg-gray-50"
+            )}
+          >
+            Paid
+          </button>
+          <button
+            onClick={() => setActiveFilter("unpaid")}
+            className={cn(
+              "px-8 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer",
+              activeFilter === "unpaid"
+                ? "bg-(--button-bg-primary-color) text-white shadow-xs"
+                : "bg-white text-black border border-gray-200 hover:bg-gray-50"
+            )}
+          >
+            Unpaid
+          </button>
+        </div>
+      </div>
+
+      {/* Payment History / Invoice list */}
       {isLoading ? (
         <div className="text-center py-10 text-gray-500">Loading invoices...</div>
       ) : (
@@ -144,11 +182,16 @@ const InvoicesPage = () => {
             "Amount",
             "Invoice Date",
             "Status",
-            "Action",
+            "Actions",
           ]}
-          data={invoices}
+          data={filteredInvoices}
           renderRow={renderInvoiceRow}
           headRowClassName="border-b border-[#00000033]"
+          emptyMessage={
+            activeFilter === "paid"
+              ? "No paid invoices available."
+              : "No unpaid invoices available."
+          }
         />
       )}
     </div>
