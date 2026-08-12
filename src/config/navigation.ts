@@ -57,7 +57,7 @@ export const NAV_ITEMS: NavItem[] = [
     items: [
       { label: "Payments", path: "/payments" },
       { label: "Invoices", path: "/invoices" },
-      { label: "Tax Report", path: "/tax_reports" },
+      // { label: "Tax Report", path: "/tax_reports" },
     ],
   },
   {
