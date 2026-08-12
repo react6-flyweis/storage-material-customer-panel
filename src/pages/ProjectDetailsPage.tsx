@@ -24,6 +24,7 @@ import ProjectTracking from "@/components/my_projects/ProjectTracking";
 import TrackLeadsLifecycleModal from "@/components/my_projects/TrackLeadsLifecycleModal";
 import SuccessModal from "@/components/common_components/SuccessModal";
 import Modal from "@/components/common_components/Modal";
+import ProjectImages from "@/components/my_projects/ProjectImages";
 
 const tabs = [
   "Basic info",
@@ -34,6 +35,7 @@ const tabs = [
   // "Follow Ups",
   "Payments",
   "Project Tracking",
+  "Project Images"
 ];
 
 const ProjectDetailsPage = () => {
@@ -285,7 +287,13 @@ const ProjectDetailsPage = () => {
             <Button
               key={tab}
               variant={tab === activeTab ? "default" : "outline"}
-              onClick={() => setActiveTab(tab)}
+              onClick={() => {
+                if (tab === "Project Images") {
+                  navigate(`/project-images/${id}`);
+                } else {
+                  setActiveTab(tab);
+                }
+              }}
               className="md:min-w-30 border "
             >
               {tab}
@@ -320,6 +328,8 @@ const ProjectDetailsPage = () => {
           <ProjectPayments invoices={data?.invoices} leadId={data?.lead?.projectId || id} />
         ) : activeTab === "Project Tracking" ? (
           <ProjectTracking data={data} />
+        ) : activeTab === "Project Images" ? (
+          <ProjectImages leadId={id} projectName={data?.lead?.projectName} />
         ) : (
           <>
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
