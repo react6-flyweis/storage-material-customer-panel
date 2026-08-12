@@ -19,12 +19,16 @@ const getStatusDetails = (status: string) => {
         label: "Approved",
         colorClass: "bg-[#D1FADF] text-[#16A34A]",
       };
-    case "revision required":
-    case "revision_required":
     case "rejected":
       return {
-        label: "Revision Required",
+        label: "Rejected",
         colorClass: "bg-[#FEE2E2] text-[#EF4444]",
+      };
+    case "revision required":
+    case "revision_required":
+      return {
+        label: "Revision Required",
+        colorClass: "bg-[#FFF7ED] text-[#FF9409]",
       };
     case "pending":
     case "pending review":
@@ -80,6 +84,7 @@ const ProjectDrawingPage = () => {
   const onViewDrawing = (drawing: any) => {
     const statusInfo = getStatusDetails(drawing.status);
     const projectData = {
+      leadId: id,
       projectName: drawing.name,
       projectCode: id,
       siteLocation: "-",
