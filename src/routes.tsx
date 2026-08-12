@@ -8,12 +8,13 @@ import SettingsView from "./components/settings/SettingsView";
 import ProfileView from "./components/profile/ProfileView";
 import InvoicePreview from "./pages/InvoicePreview";
 import ScannedPage from "./components/delivery-schedule/ScannedPage";
-import ProjectDrawingPage from "./pages/ProjectDrawingPage";
 import { RouterErrorFallback } from "./pages/ErrorPage";
 
 const Dashboard = lazy(() => import("@/pages/Dashboard"));
 const MyProjectsPage = lazy(() => import("@/pages/MyProjectsPage"));
 const ProjectDetailsPage = lazy(() => import("@/pages/ProjectDetailsPage"));
+const ProjectDrawingPage = lazy(() => import("./pages/ProjectDrawingPage"));
+const ProjectImagesPage = lazy(() => import("@/pages/ProjectImagesPage"));
 const AllDrawingsPage = lazy(
   () => import("@/pages/drawings_and_documents/AllDrawingsPage")
 );
@@ -59,6 +60,9 @@ const OrderQuotationsPage = lazy(
 const ProjectOrderQuotationsPage = lazy(
   () => import("@/pages/ProjectOrderQuotationsPage")
 );
+const AddNewOrderPage = lazy(
+  () => import("@/pages/AddNewOrderPage")
+);
 
 import ProjectDeliverySchedule from "./components/delivery-schedule/ProjectDeliverySchedule";
 
@@ -73,6 +77,7 @@ export const adminRoutes: RouteObject[] = [
       },
       { path: "/my_projects", element: <MyProjectsPage /> },
       { path: "/material-orders", element: <MaterialOrdersPage /> },
+      { path: "/add-new-order", element: <AddNewOrderPage /> },
       { path: "/project-orders", element: <ProjectOrdersPage /> },
       { path: "/project-orders/:id", element: <ProjectOrdersPage /> },
 
@@ -83,6 +88,7 @@ export const adminRoutes: RouteObject[] = [
       { path: "/order-quotation-details/:id", element: <OrderQuotationDetailsPage /> },
       { path: "/my_projects/:id", element: <ProjectDetailsPage /> },
       { path: "/project-drawings/:id", element: <ProjectDrawingPage /> },
+      { path: "/project-images/:id", element: <ProjectImagesPage /> },
       { path: "/project-buildings/:id", element: <ProjectDrawingsPage /> },
       { path: "/project-building-drawings/:id", element: <ProjectBuildingDrawingsPage /> },
       { path: "/drawings", element: <AllDrawingsPage /> },
