@@ -2,9 +2,10 @@
 
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Download, MoveLeft, Wallet } from "lucide-react";
+import { Download, MoveLeft, Wallet, FileText } from "lucide-react";
 import invoicePlaceholder from "../assets/Invoice_placeholder.png";
 import PaymentModal from "./payments_and_invoices/PaymentModal";
+import SendRemarksModal from "./payments_and_invoices/SendRemarksModal";
 import { useState } from "react";
 import { useGetInvoiceDetailQuery } from "@/redux/api/paymentsApi";
 import InvoiceTemplate from "@/components/invoice/InvoiceTemplate";
@@ -13,6 +14,7 @@ export default function InvoicePreview() {
   const navigate = useNavigate();
   const location = useLocation();
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [isRemarkModalOpen, setIsRemarkModalOpen] = useState(false);
 
   // Extract ID from query params or navigation state
   const searchParams = new URLSearchParams(location.search);
@@ -87,6 +89,8 @@ export default function InvoicePreview() {
     stages: apiPaymentSchedule?.stages || [],
   };
 
+  const isPaid = apiInvoice.status?.toLowerCase() === "paid";
+
   return (
     <div className="space-y-6 px-2 pb-10 pt-3 md:px-5 md:pt-5">
       <div className="w-full flex flex-wrap items-center justify-between gap-4">
@@ -100,6 +104,14 @@ export default function InvoicePreview() {
         </Button>
 
         <div className="flex gap-3">
+          {isPaid ? (
+            <Button
+              className="bg-emerald-600 hover:bg-emerald-600 text-white cursor-default"
+            >
+              Paid
+            </Button>
+          ) : null}
+
           <Button
             asChild
             className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
@@ -110,15 +122,32 @@ export default function InvoicePreview() {
             </a>
           </Button>
 
-          <Button
-            variant="outline"
-            onClick={() => setIsPaymentModalOpen(true)}
-          >
-            <Wallet className="h-4 w-4" />
-            Payments
-          </Button>
+          {!isPaid && (
+            <>
+              <Button
+                variant="outline"
+                onClick={() => setIsRemarkModalOpen(true)}
+              >
+                <FileText className="h-4 w-4" />
+                Submit Remark
+              </Button>
+
+              <Button
+                variant="outline"
+                onClick={() => setIsPaymentModalOpen(true)}
+              >
+                <Wallet className="h-4 w-4" />
+                Payments
+              </Button>
+            </>
+          )}
         </div>
       </div>
+
+      <SendRemarksModal
+        isOpen={isRemarkModalOpen}
+        onClose={() => setIsRemarkModalOpen(false)}
+      />
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
