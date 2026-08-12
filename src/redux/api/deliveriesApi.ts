@@ -293,29 +293,98 @@ export interface DeliverySummaryProject {
   rescheduled: number;
 }
 
-export interface ScanBundlePart {
-  id?: number | string;
-  part: string;
-  qty: number;
-  length: string;
-  weight: string;
+export interface ScanBundleItemSourceLineSnapshot {
+  _id?: string;
+  vendorLineNo?: string;
+  extractionFormat?: string;
+  qty?: number;
+  pieceQty?: number;
+  totalLinearFeet?: number;
+  safeTotalLinearFeet?: number;
+  uom?: string;
+  partCode?: string | null;
+  vendorProductCode?: string | null;
+  description?: string;
+  color?: string | null;
+  lengthText?: string;
+  lengthFeet?: number;
+  reportedLengthFeet?: number;
+  shippingLengthFeet?: number;
+  weight?: number | null;
+  rawWeight?: number;
+  resolvedWeight?: number;
+  unitWeight?: number;
+  totalWeight?: number;
+  weightMultiplier?: number;
+  weightBasis?: string;
+  weightConfidence?: number;
+  weightMissing?: boolean;
+  weightWarnings?: string[];
+  weightSource?: string;
+  bomMatchedTotalWeight?: number;
+  bomMatchedUnitWeight?: number;
+  matchedBomItemIds?: string[];
+  unitPrice?: number;
+  priceUnit?: string;
+  amount?: number;
+  pieceMark?: string;
+  warnings?: string[];
+}
+
+export interface ScanBundleItem {
+  _id?: string;
+  vendorQuoteLineId?: string;
+  partCode?: string;
+  description?: string;
+  category?: string;
+  color?: string;
+  qty?: number;
+  lengthFeet?: number;
+  widthFeet?: number | null;
+  heightFeet?: number | null;
+  weight?: number;
+  unitWeight?: number;
+  totalWeight?: number;
+  weightBasis?: string;
+  weightSource?: string;
+  markIds?: string[];
+  sourceLineSnapshot?: ScanBundleItemSourceLineSnapshot;
+}
+
+export interface ScanBundleProject {
+  leadId?: string;
+  projectName?: string;
+  jobId?: string;
+}
+
+export interface ScanBundleTruck {
+  packingListNo?: string;
+  truck?: string;
+}
+
+export interface ScanBundleDeliveryReference {
+  deliveryNumber?: string;
+  destination?: string;
+  status?: string;
+}
+
+export interface ScanBundleData {
+  bundleId?: string;
+  bundleNo?: string;
+  bundleType?: string;
+  title?: string;
+  totalQty?: number;
+  totalWeight?: number;
+  maxLengthFeet?: number;
+  status?: string;
+  items?: ScanBundleItem[];
+  project?: ScanBundleProject;
+  truck?: ScanBundleTruck;
+  deliveryReference?: ScanBundleDeliveryReference;
 }
 
 export interface ScanBundleResponseData {
-  bundleId?: string;
-  loadId?: string;
-  truck?: string;
-  project?: string;
-  deliveryId?: string;
-  destination?: string;
-  status?: string;
-  materialDetails?: {
-    partNumbers?: string[];
-    totalQuantity?: number;
-    totalWeight?: string;
-    length?: string;
-  };
-  parts?: ScanBundlePart[];
+  bundle?: ScanBundleData;
   [key: string]: unknown;
 }
 
