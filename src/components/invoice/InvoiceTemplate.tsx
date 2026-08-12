@@ -235,8 +235,8 @@ export default function InvoiceTemplate({
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-red-600">Discount</span>
-              <span className="text-red-600 font-medium">
+              <span className="text-green-600">Discount</span>
+              <span className="text-green-600 font-medium">
                 -${formatCurrency(Number(discount))}
               </span>
             </div>
