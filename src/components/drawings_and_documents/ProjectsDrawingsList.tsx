@@ -38,6 +38,8 @@ const mapStatus = (status: string): "Approved" | "Pending Review" | "Revision Re
       return "Pending Review";
     case "revision_required":
     case "Revision Required":
+    case "rejected":
+    case "Rejected":
       return "Revision Required";
     default:
       return "Pending Review";
@@ -48,7 +50,7 @@ const StatusPill = ({ status }: { status: "Approved" | "Pending Review" | "Revis
   const statusStyles = {
     Approved: "bg-[#DCFCE7] text-[#3AB449]",
     "Pending Review": "bg-[#FEFAE2] text-[#F0CC16]",
-    "Revision Required": "bg-[#FEE2E2] text-[#EF4444]",
+    "Revision Required": "bg-[#FFF7ED] text-[#FF9409]",
   };
 
   return (
