@@ -9,6 +9,7 @@ interface PaymentTableProps<T> {
   renderRow: (item: T, index: number) => React.ReactNode;
   containerClassName?: string;
   headRowClassName?: string;
+  emptyMessage?: string;
 }
 
 const PaymentTable = <T extends object>({
@@ -19,6 +20,7 @@ const PaymentTable = <T extends object>({
   renderRow,
   containerClassName,
   headRowClassName,
+  emptyMessage,
 }: PaymentTableProps<T>) => {
   return (
     <div
@@ -51,7 +53,20 @@ const PaymentTable = <T extends object>({
                 ))}
               </tr>
             </thead>
-            <tbody>{data.map((item, index) => renderRow(item, index))}</tbody>
+            <tbody>
+              {data.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={headers.length}
+                    className="py-12 text-center text-sm text-gray-500 font-medium"
+                  >
+                    {emptyMessage || "No data available"}
+                  </td>
+                </tr>
+              ) : (
+                data.map((item, index) => renderRow(item, index))
+              )}
+            </tbody>
           </table>
         </div>
       </div>
