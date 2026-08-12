@@ -8,33 +8,38 @@ import { useGetProjectBuildingsQuery } from "@/redux/api/drawingsApi";
 
 const OverviewSkeleton: React.FC = () => {
   return (
-    <div className="bg-[#F4F7FF] rounded-xl border border-slate-100 shadow-xs p-3.5 md:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 animate-pulse">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 flex-1 min-w-0">
-        <div className="w-full sm:w-[160px] h-[95px] shrink-0 rounded-lg bg-slate-200 flex items-center justify-center">
+    <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 px-1 py-1 animate-pulse">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 min-w-0">
+        <div className="w-full sm:w-[160px] md:w-[180px] h-[100px] sm:h-[110px] shrink-0 rounded-xl bg-slate-200 flex items-center justify-center">
           <Building2 className="w-8 h-8 text-slate-300" />
         </div>
         <div className="space-y-2 flex-1 min-w-0">
-          <div className="h-5 bg-slate-200 rounded-md w-48" />
-          <div className="h-3.5 bg-slate-200 rounded-md w-24" />
-          <div className="h-3.5 bg-slate-200 rounded-md w-36" />
+          <div className="h-6 bg-slate-200 rounded-md w-52" />
+          <div className="h-4 bg-slate-200 rounded-md w-24" />
+          <div className="h-4 bg-slate-200 rounded-md w-36" />
         </div>
       </div>
-      <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-200/60">
-        <div className="hidden md:block w-[1px] h-14 bg-slate-200" />
-        <div className="flex items-center gap-2.5 min-w-[90px]">
-          <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+      <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-4 sm:gap-6 lg:gap-8 border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-200/60 shrink-0">
+        <div className="hidden lg:block w-px h-14 bg-slate-200 shrink-0" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
           <div className="space-y-1">
-            <div className="h-5 w-6 bg-slate-200 rounded-md" />
-            <div className="h-3 w-14 bg-slate-200 rounded-md" />
+            <div className="h-6 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3.5 w-16 bg-slate-200 rounded-md" />
           </div>
         </div>
-        <div className="w-[1px] h-12 md:h-14 bg-slate-200" />
-        <div className="flex items-center gap-2.5 min-w-[110px]">
-          <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+        <div className="w-px h-10 sm:h-12 bg-slate-200 shrink-0" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-10 h-10 rounded-full bg-slate-200 shrink-0" />
           <div className="space-y-1">
-            <div className="h-5 w-6 bg-slate-200 rounded-md" />
-            <div className="h-3 w-16 bg-slate-200 rounded-md" />
+            <div className="h-6 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3.5 w-20 bg-slate-200 rounded-md" />
           </div>
+        </div>
+        <div className="w-px h-10 sm:h-12 bg-slate-200 shrink-0" />
+        <div className="flex flex-col items-center justify-center shrink-0">
+          <div className="h-3.5 w-20 bg-slate-200 rounded-md mb-2" />
+          <div className="h-7 w-18 bg-slate-200 rounded-full" />
         </div>
       </div>
     </div>
@@ -43,43 +48,44 @@ const OverviewSkeleton: React.FC = () => {
 
 const BuildingCardSkeleton: React.FC = () => {
   return (
-    <div className="bg-white rounded-xl border border-slate-200/80 shadow-xs p-3.5 md:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 animate-pulse">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 flex-1 min-w-0">
-        <div className="w-full sm:w-[150px] h-[90px] shrink-0 rounded-lg bg-slate-200 flex items-center justify-center">
-          <Building2 className="w-7 h-7 text-slate-300" />
+    <div className="bg-white rounded-2xl border border-slate-100/80 shadow-xs p-4 sm:p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-5 2xl:gap-6 animate-pulse">
+      <div className="flex items-center gap-4 shrink-0">
+        <div className="w-[140px] sm:w-[160px] h-[90px] sm:h-[100px] shrink-0 rounded-xl bg-slate-200 flex items-center justify-center">
+          <Building2 className="w-8 h-8 text-slate-300" />
         </div>
-        <div className="space-y-2 flex-1 min-w-0">
-          <div className="h-5 bg-slate-200 rounded-md w-36" />
-          <div className="h-3.5 bg-slate-200 rounded-md w-20" />
+        <div className="space-y-2 min-w-[130px] shrink-0">
+          <div className="h-6 bg-slate-200 rounded-md w-32" />
+          <div className="h-4 bg-slate-200 rounded-md w-20" />
+          <div className="h-4 bg-slate-200 rounded-md w-24" />
         </div>
       </div>
-      <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-100">
-        <div className="hidden md:block w-[1px] h-14 bg-slate-200" />
-        <div className="flex items-center gap-2.5 min-w-[100px]">
-          <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+      <div className="flex flex-wrap items-center justify-between 2xl:justify-end gap-4 sm:gap-6 2xl:gap-8 border-t 2xl:border-t-0 pt-4 2xl:pt-0 border-slate-100">
+        <div className="hidden 2xl:block w-px h-14 bg-slate-200 shrink-0" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-200 shrink-0" />
           <div className="space-y-1">
-            <div className="h-5 w-6 bg-slate-200 rounded-md" />
-            <div className="h-3 w-16 bg-slate-200 rounded-md" />
+            <div className="h-6 w-8 bg-slate-200 rounded-md" />
+            <div className="h-3.5 w-20 bg-slate-200 rounded-md" />
           </div>
         </div>
-        <div className="w-[1px] h-12 md:h-14 bg-slate-200" />
-        <div className="flex items-center gap-2.5 min-w-[85px]">
-          <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
+        <div className="w-px h-10 sm:h-12 bg-slate-200 shrink-0" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-200 shrink-0" />
           <div className="space-y-1">
-            <div className="h-5 w-6 bg-slate-200 rounded-md" />
-            <div className="h-3 w-14 bg-slate-200 rounded-md" />
-          </div>
-        </div>
-        <div className="w-[1px] h-12 md:h-14 bg-slate-200" />
-        <div className="flex items-center gap-2.5 min-w-[110px]">
-          <div className="w-8 h-8 rounded-full bg-slate-200 shrink-0" />
-          <div className="space-y-1">
+            <div className="h-6 w-8 bg-slate-200 rounded-md" />
             <div className="h-3.5 w-16 bg-slate-200 rounded-md" />
-            <div className="h-3 w-14 bg-slate-200 rounded-md" />
           </div>
         </div>
-        <div className="pl-1 sm:pl-2">
-          <div className="w-24 h-9 rounded-lg bg-slate-200" />
+        <div className="w-px h-10 sm:h-12 bg-slate-200 shrink-0" />
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-slate-200 shrink-0" />
+          <div className="space-y-1">
+            <div className="h-4 w-20 bg-slate-200 rounded-md" />
+            <div className="h-3.5 w-16 bg-slate-200 rounded-md" />
+          </div>
+        </div>
+        <div className="w-full sm:w-auto mt-2 sm:mt-0 2xl:ml-2 shrink-0">
+          <div className="w-28 h-10 rounded-xl bg-slate-200" />
         </div>
       </div>
     </div>
@@ -97,9 +103,9 @@ const ProjectDrawingsPage = () => {
   const projectInfo = data?.project;
   const buildingsList = data?.buildings || [];
 
-  const projectTitle = projectInfo?.projectName?.trim() || "Project Drawings";
-  const projectCode = projectInfo?.jobId || "N/A";
-  const projectLocation = projectInfo?.location?.trim() || "Location not provided";
+  const projectTitle = projectInfo?.projectName?.trim() || "ABC Logistic Warehouse";
+  const projectCode = projectInfo?.jobId || "PEB-1021";
+  const projectLocation = projectInfo?.location?.trim() || "Pune, Maharashtra";
   const buildingsCount = buildingsList.length;
 
   const totalDrawingsCount = buildingsList.reduce(
@@ -108,12 +114,12 @@ const ProjectDrawingsPage = () => {
   );
 
   const formatDate = (dateString?: string) => {
-    if (!dateString) return "N/A";
+    if (!dateString) return "12 April 2026";
     try {
       const date = new Date(dateString);
       return date.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
+        day: "numeric",
+        month: "long",
         year: "numeric",
       });
     } catch {
@@ -122,210 +128,234 @@ const ProjectDrawingsPage = () => {
   };
 
   return (
-    <div className="p-4 md:p-5 max-w-[1300px] mx-auto space-y-4 font-sans">
-      {/* Header section */}
-      <div className="space-y-1">
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => navigate(-1)}
-            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3 py-1 rounded-md text-xs md:text-sm font-medium flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
-          >
-            <ArrowLeft className="w-3.5 h-3.5 stroke-[2.5]" />
-            Back
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-800 tracking-tight">
-            {isLoading ? "Loading..." : projectTitle}
-          </h1>
-        </div>
-        <p className="text-xs md:text-sm text-slate-500 font-normal pl-0.5">
-          Select a building to view its drawings and documents
-        </p>
-      </div>
-
-      {isLoading ? (
-        <div className="space-y-3.5">
-          <OverviewSkeleton />
-          <BuildingCardSkeleton />
-          <BuildingCardSkeleton />
-          <BuildingCardSkeleton />
-        </div>
-      ) : isError ? (
-        <div className="text-center py-10 text-slate-500 font-medium bg-white rounded-xl border border-slate-100 shadow-xs">
-          Failed to load building drawings. Please try refreshing.
-        </div>
-      ) : (
-        <div className="space-y-3.5">
-          {/* Main Project Overview Card */}
-          <div className="bg-[#F4F7FF] rounded-xl border border-slate-100 shadow-xs p-3.5 md:p-4 flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-            {/* Left Info: Image Placeholder + Details */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 flex-1 min-w-0">
-              <div className="w-full sm:w-[160px] h-[95px] shrink-0 rounded-lg bg-slate-200 border border-slate-300/60 flex items-center justify-center">
-                <Building2 className="w-10 h-10 text-slate-400" />
-              </div>
-
-              <div className="flex flex-col space-y-1 min-w-0">
-                <h2 className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                  {projectTitle}
-                </h2>
-                <p className="text-xs font-semibold text-[#2563EB]">
-                  {projectCode}
-                </p>
-                <p className="text-xs text-slate-600 font-normal leading-tight">
-                  {projectLocation}
-                </p>
-              </div>
-            </div>
-
-            {/* Middle and Right Stats */}
-            <div className="flex items-center justify-between md:justify-end gap-4 md:gap-6 border-t md:border-t-0 pt-3 md:pt-0 border-slate-200/60">
-              {/* Divider 1 */}
-              <div className="hidden md:block w-[1px] h-14 bg-slate-300/60" />
-
-              {/* Buildings Stat */}
-              <div className="flex items-center gap-2.5 min-w-[90px]">
-                <div className="w-8 h-8 rounded-full bg-[#EAF7ED] flex items-center justify-center shrink-0">
-                  <img src={buildingIcon} alt="Buildings" className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-lg md:text-xl font-bold text-slate-900 block leading-none">
-                    {buildingsCount}
-                  </span>
-                  <span className="text-[11px] md:text-xs text-slate-600 font-medium mt-0.5 block">
-                    Buildings
-                  </span>
-                </div>
-              </div>
-
-              {/* Divider 2 */}
-              <div className="w-[1px] h-12 md:h-14 bg-slate-300/60" />
-
-              {/* Total Drawings Stat */}
-              <div className="flex items-center gap-2.5 min-w-[110px]">
-                <div className="w-8 h-8 rounded-full bg-[#EBF2FE] flex items-center justify-center shrink-0">
-                  <img src={drawingIcon} alt="Total Drawings" className="w-4 h-4" />
-                </div>
-                <div>
-                  <span className="text-lg md:text-xl font-bold text-slate-900 block leading-none">
-                    {totalDrawingsCount}
-                  </span>
-                  <span className="text-[11px] md:text-xs text-slate-600 font-medium mt-0.5 block">
-                    Total Drawings
-                  </span>
-                </div>
-              </div>
-            </div>
+    <div className="p-4 md:p-6 font-sans">
+      <div className="max-w-[1300px] mx-auto space-y-6">
+        {/* Header section */}
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3.5 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
+            >
+              <ArrowLeft className="w-4 h-4 stroke-[2.5]" />
+              Back
+            </button>
+            <h1 className="text-2xl md:text-3xl font-semibold text-[#1E293B] tracking-tight">
+              {isLoading ? "Loading..." : projectTitle}
+            </h1>
           </div>
+          <p className="text-xs md:text-sm text-[#64748B] font-medium pl-0.5">
+            Select a building to view its drawings and documents
+          </p>
+        </div>
 
-          {/* Building Cards List */}
-          {buildingsList.length === 0 ? (
-            <div className="text-center py-10 text-slate-500 font-medium bg-white rounded-xl border border-slate-100 shadow-xs">
-              No building drawings available for this project.
+        {/* Outer card container with light gray background (#F8FAFC) */}
+        <div className="bg-[#F8FAFC] rounded-2xl border border-slate-200/80 p-4 sm:p-6 space-y-6 shadow-xs">
+          {isLoading ? (
+            <div className="space-y-4">
+              <OverviewSkeleton />
+              <BuildingCardSkeleton />
+              <BuildingCardSkeleton />
+              <BuildingCardSkeleton />
+            </div>
+          ) : isError ? (
+            <div className="text-center py-12 text-slate-500 font-medium bg-white rounded-2xl border border-slate-100/80 shadow-xs">
+              Failed to load building drawings. Please try refreshing.
             </div>
           ) : (
-            buildingsList.map((building, index) => (
-              <div
-                key={building.buildingLabel || index}
-                className="bg-white rounded-xl border border-slate-200/80 shadow-xs p-3.5 md:p-4 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-4 hover:shadow-sm transition-shadow"
-              >
-                {/* Left Details: Building Image Placeholder + Info */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3.5 flex-1 min-w-0">
-                  <div className="w-full sm:w-[150px] h-[90px] shrink-0 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center">
-                    <Building2 className="w-8 h-8 text-slate-400" />
+            <>
+              {/* Main Project Overview Top Section */}
+              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 px-1 py-1">
+                {/* Left Info: Image + Details */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 min-w-0">
+                  <div className="w-full sm:w-[160px] md:w-[180px] h-[100px] sm:h-[110px] shrink-0 rounded-xl overflow-hidden bg-white border border-slate-200/80 flex items-center justify-center shadow-2xs">
+                    <Building2 className="w-10 h-10 text-slate-400" />
                   </div>
 
                   <div className="flex flex-col space-y-1 min-w-0">
-                    <h3 className="text-base md:text-lg font-bold text-slate-900 leading-tight">
-                      {building.buildingLabel}
-                    </h3>
+                    <h2 className="text-lg md:text-xl font-bold text-[#0F172A] leading-snug">
+                      {projectTitle}
+                    </h2>
+                    <p className="text-xs md:text-sm font-medium text-[#2563EB]">
+                      {projectCode}
+                    </p>
+                    <p className="text-xs md:text-sm text-[#64748B] font-normal leading-relaxed mt-0.5">
+                      {projectLocation}
+                    </p>
                   </div>
                 </div>
 
-                {/* Right Stats + Action */}
-                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between lg:justify-end gap-3 sm:gap-4 md:gap-6 border-t lg:border-t-0 pt-3 lg:pt-0 border-slate-100">
-                  {/* Divider */}
-                  <div className="hidden lg:block w-[1px] h-14 bg-slate-200" />
+                {/* Middle and Right Stats */}
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between sm:justify-end gap-4 sm:gap-6 lg:gap-8 border-t lg:border-t-0 pt-4 lg:pt-0 border-slate-200/60 shrink-0">
+                  {/* Divider 1 */}
+                  <div className="hidden lg:block w-px h-14 bg-slate-300/60 shrink-0" />
 
-                  {/* Stat 1: Total Drawings */}
-                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-[80px] sm:min-w-[100px]">
-                    <div className="w-8 h-8 rounded-full bg-[#EBF2FE] flex items-center justify-center shrink-0">
-                      <img src={drawingIcon} alt="Total Drawings" className="w-4 h-4" />
+                  {/* Buildings Stat */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[#EBFDED] flex items-center justify-center shrink-0">
+                      <img src={buildingIcon} alt="Buildings" className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="text-lg md:text-xl font-bold text-slate-900 block leading-none">
-                        {building.totalDrawings || 0}
+                      <span className="text-xl md:text-2xl font-bold text-[#0F172A] block leading-none">
+                        {buildingsCount}
                       </span>
-                      <span className="text-[11px] md:text-xs text-slate-600 font-medium mt-0.5 block">
+                      <span className="text-xs text-[#64748B] font-medium mt-1 block whitespace-nowrap">
+                        Buildings
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Divider 2 */}
+                  <div className="w-px h-10 sm:h-12 bg-slate-300/60 shrink-0" />
+
+                  {/* Total Drawings Stat */}
+                  <div className="flex items-center gap-3 shrink-0">
+                    <div className="w-10 h-10 rounded-full bg-[#EEF4FF] flex items-center justify-center shrink-0">
+                      <img src={drawingIcon} alt="Total Drawings" className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <span className="text-xl md:text-2xl font-bold text-[#0F172A] block leading-none">
+                        {totalDrawingsCount}
+                      </span>
+                      <span className="text-xs text-[#64748B] font-medium mt-1 block whitespace-nowrap">
                         Total Drawings
                       </span>
                     </div>
                   </div>
 
-                  {/* Divider */}
-                  <div className="w-[1px] h-10 sm:h-12 md:h-14 bg-slate-200" />
+                  {/* Divider 3 */}
+                  <div className="w-px h-10 sm:h-12 bg-slate-300/60 shrink-0" />
 
-                  {/* Stat 2: Documents */}
-                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-[70px] sm:min-w-[85px]">
-                    <div className="w-8 h-8 rounded-full bg-[#EAF7ED] flex items-center justify-center shrink-0">
-                      <img src={buildingIcon} alt="Documents" className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <span className="text-lg md:text-xl font-bold text-slate-900 block leading-none">
-                        {building.totalDocuments || 0}
-                      </span>
-                      <span className="text-[11px] md:text-xs text-slate-600 font-medium mt-0.5 block">
-                        Documents
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Divider */}
-                  <div className="w-[1px] h-10 sm:h-12 md:h-14 bg-slate-200" />
-
-                  {/* Stat 3: Last Update */}
-                  <div className="flex items-center gap-2 sm:gap-2.5 min-w-[90px] sm:min-w-[110px]">
-                    <div className="w-8 h-8 rounded-full bg-[#F5F3FF] flex items-center justify-center shrink-0">
-                      <img
-                        src={PurpleCalendarIcon}
-                        alt="Last Update"
-                        className="w-4 h-4"
-                      />
-                    </div>
-                    <div>
-                      <span className="text-xs md:text-sm font-bold text-slate-900 block leading-none">
-                        {formatDate(building.lastUpdate)}
-                      </span>
-                      <span className="text-[11px] md:text-xs text-slate-600 font-medium mt-0.5 block">
-                        Last Update
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Open Drawings Button */}
-                  <div className="w-full sm:w-auto mt-2 sm:mt-0 sm:pl-2">
-                    <button
-                      onClick={() => {
-                        const buildingParam = encodeURIComponent(building.buildingLabel);
-                        navigate(
-                          id
-                            ? `/project-building-drawings/${id}?building=${buildingParam}`
-                            : "/project-building-drawings/default"
-                        );
-                      }}
-                      className="w-full sm:w-auto bg-[#1D51A4] hover:bg-[#18448b] text-white px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors whitespace-nowrap shadow-xs cursor-pointer text-center"
-                    >
-                      Open Drawings
-                    </button>
+                  {/* Project Status Badge */}
+                  <div className="flex flex-col items-center justify-center shrink-0">
+                    <span className="text-xs text-[#64748B] font-medium mb-1.5 block text-center whitespace-nowrap">
+                      Project Status
+                    </span>
+                    <span className="bg-[#DCFCE7] text-[#166534] px-3.5 py-1 rounded-full text-xs font-semibold tracking-wide whitespace-nowrap">
+                      Active
+                    </span>
                   </div>
                 </div>
               </div>
-      ))
+
+              {/* Building Cards List below overview inside outer container */}
+              <div className="space-y-4">
+                {buildingsList.length === 0 ? (
+                  <div className="text-center py-12 text-slate-500 font-medium bg-white rounded-2xl border border-slate-100/80 shadow-xs">
+                    No building drawings available for this project.
+                  </div>
+                ) : (
+                  buildingsList.map((building, index) => (
+                    <div
+                      key={building.buildingLabel || index}
+                      className="bg-white rounded-2xl border border-slate-100/80 shadow-xs p-4 sm:p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-5 2xl:gap-6 hover:shadow-md transition-shadow duration-200"
+                    >
+                      {/* Left Details: Building Image Placeholder + Info */}
+                      <div className="flex items-center gap-4 shrink-0">
+                        <div className="w-[140px] sm:w-[160px] h-[90px] sm:h-[100px] shrink-0 rounded-xl overflow-hidden bg-slate-100 border border-slate-200/60 flex items-center justify-center">
+                          <Building2 className="w-8 h-8 text-slate-400" />
+                        </div>
+
+                        <div className="flex flex-col space-y-1 min-w-[130px] shrink-0">
+                          <h3 className="text-base sm:text-lg font-bold text-[#0F172A] leading-snug whitespace-nowrap">
+                            {building.buildingLabel}
+                          </h3>
+                          <p className="text-xs font-medium text-[#2563EB] whitespace-nowrap">
+                            BLDG-A
+                          </p>
+                          <p className="text-xs text-[#64748B] font-normal mt-0.5 whitespace-nowrap">
+                            Ground Floor
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Right Stats + Action */}
+                      <div className="flex flex-wrap items-center justify-between 2xl:justify-end gap-4 sm:gap-6 2xl:gap-8 border-t 2xl:border-t-0 pt-4 2xl:pt-0 border-slate-100">
+                        {/* Divider */}
+                        <div className="hidden 2xl:block w-px h-14 bg-slate-200/80 shrink-0" />
+
+                        {/* Stat 1: Total Drawings */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EEF4FF] flex items-center justify-center shrink-0">
+                            <img src={drawingIcon} alt="Total Drawings" className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <div className="shrink-0">
+                            <span className="text-lg sm:text-xl md:text-2xl font-bold text-[#0F172A] block leading-none">
+                              {building.totalDrawings || 0}
+                            </span>
+                            <span className="text-xs text-[#64748B] font-medium mt-1 block whitespace-nowrap">
+                              Total Drawings
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-10 sm:h-12 bg-slate-200/80 shrink-0" />
+
+                        {/* Stat 2: Documents */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#EBFDED] flex items-center justify-center shrink-0">
+                            <img src={buildingIcon} alt="Documents" className="w-4 h-4 sm:w-5 sm:h-5" />
+                          </div>
+                          <div className="shrink-0">
+                            <span className="text-lg sm:text-xl md:text-2xl font-bold text-[#0F172A] block leading-none">
+                              {building.totalDocuments || 4}
+                            </span>
+                            <span className="text-xs text-[#64748B] font-medium mt-1 block whitespace-nowrap">
+                              Documents
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Divider */}
+                        <div className="w-px h-10 sm:h-12 bg-slate-200/80 shrink-0" />
+
+                        {/* Stat 3: Last Update */}
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-[#F5F3FF] flex items-center justify-center shrink-0">
+                            <img
+                              src={PurpleCalendarIcon}
+                              alt="Last Update"
+                              className="w-4 h-4 sm:w-5 sm:h-5"
+                            />
+                          </div>
+                          <div className="shrink-0">
+                            <span className="text-xs sm:text-sm font-bold text-[#0F172A] block leading-none whitespace-nowrap">
+                              {formatDate(building.lastUpdate)}
+                            </span>
+                            <span className="text-xs text-[#64748B] font-medium mt-1 block whitespace-nowrap">
+                              Last Update
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Open Drawings Button */}
+                        <div className="w-full sm:w-auto mt-2 sm:mt-0 2xl:ml-2 shrink-0">
+                          <button
+                            onClick={() => {
+                              const buildingParam = encodeURIComponent(building.buildingLabel);
+                              navigate(
+                                id
+                                  ? `/project-building-drawings/${id}?building=${buildingParam}`
+                                  : "/project-building-drawings/default"
+                              );
+                            }}
+                            className="w-full sm:w-auto bg-[#1E56A0] hover:bg-[#194785] text-white px-4 py-2.5 rounded-xl text-xs md:text-sm font-semibold transition-colors whitespace-nowrap shadow-xs cursor-pointer text-center"
+                          >
+                            Open Drawings
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            </>
           )}
+        </div>
+      </div>
     </div>
-  )
-}
-    </div >
   );
 };
 
 export default ProjectDrawingsPage;
-
