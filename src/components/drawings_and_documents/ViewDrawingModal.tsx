@@ -14,6 +14,7 @@ interface ViewDrawingModalProps {
   onClose: () => void;
   drawing: any | null;
   projectInfo: {
+    leadId?: string;
     projectName: string;
     projectCode: string;
     siteLocation: string;
@@ -30,8 +31,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   projectInfo,
   onSendMessage,
 }) => {
-  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
-  const [cancelReason, setCancelReason] = useState("");
+  const [isRevisionModalOpen, setIsRevisionModalOpen] = useState(false);
+  const [revisionReason, setRevisionReason] = useState("");
   const [reasonError, setReasonError] = useState("");
   const [comment, setComment] = useState("");
 
@@ -41,33 +42,34 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
   const isUpdating = isSendingComment || isApproving || isRequestingRevision;
 
-  const handleCancelProject = async () => {
-    if (!cancelReason.trim()) {
+  const handleRequestRevision = async () => {
+    if (!revisionReason.trim()) {
       setReasonError("Please enter revision");
       return;
     }
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.projectCode;
+    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
       await requestDrawingRevision({
         leadId,
         drawingId,
-        note: cancelReason,
+        note: revisionReason,
       }).unwrap();
       setReasonError("");
-      setCancelReason("");
-      setIsCancelModalOpen(false);
+      setRevisionReason("");
+      setIsRevisionModalOpen(false);
       onClose();
-    } catch (err) {
+    } catch (err: any) {
       console.error("Failed to request revision:", err);
+      setReasonError(err?.data?.message || err?.message || "Failed to request revision. Please try again.");
     }
   };
 
   const handleApprove = async () => {
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.projectCode;
+    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
@@ -84,7 +86,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   const handleSendComment = async () => {
     if (!comment.trim()) return;
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.projectCode;
+    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
@@ -101,7 +103,15 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       console.error("Failed to send comment:", err);
     }
   };
-  
+
+  const normalizedStatus = String(drawing?.status || "").toLowerCase().trim();
+  const isApproved = normalizedStatus === "approved";
+  const isRevisionRequired =
+    normalizedStatus === "revision required" ||
+    normalizedStatus === "revision_required" ||
+    normalizedStatus === "rejected";
+  const isPending = !isApproved && !isRevisionRequired;
+
   if (!drawing || !projectInfo) return null;
 
   return (
@@ -182,7 +192,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
             </button>
 
             <div className="flex items-center gap-3 ml-auto flex-wrap">
-              {drawing.status === "Approved" ? (
+              {isApproved ? (
                 <div className="flex items-center gap-2">
                   <p className="text-black text-sm font-normal">
                     {drawing.updatedAt ? new Date(drawing.updatedAt).toLocaleDateString() : ""}
@@ -191,14 +201,14 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
                     Approved
                   </span>
                 </div>
-              ) : drawing.status === "Revision Required" ? (
+              ) : isRevisionRequired ? (
                 <span className="px-5 py-1.5 bg-[#FFF7ED] text-[#FF9409] rounded-full text-sm font-medium border border-[#FFEDD5]">
                   Sent for Revision
                 </span>
               ) : (
                 <>
                   <button
-                    onClick={() => setIsCancelModalOpen(true)}
+                    onClick={() => setIsRevisionModalOpen(true)}
                     disabled={isUpdating}
                     className="px-5 py-1.5 bg-[#FF9409] text-white rounded-full text-sm font-medium shadow-sm shadow-orange-100 disabled:opacity-50"
                   >
@@ -218,10 +228,10 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           </div>
 
           <Modal
-            isOpen={isCancelModalOpen}
+            isOpen={isRevisionModalOpen}
             onClose={() => {
-              setIsCancelModalOpen(false);
-              setCancelReason("");
+              setIsRevisionModalOpen(false);
+              setRevisionReason("");
               setReasonError("");
             }}
             showHeader={false}
@@ -239,9 +249,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
                 </label>
 
                 <textarea
-                  value={cancelReason}
+                  value={revisionReason}
                   onChange={(e) => {
-                    setCancelReason(e.target.value);
+                    setRevisionReason(e.target.value);
                     if (reasonError) setReasonError("");
                   }}
                   placeholder="Write your revision"
@@ -258,7 +268,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
               <div className="mt-10 flex justify-center">
                 <button
-                  onClick={handleCancelProject}
+                  onClick={handleRequestRevision}
                   disabled={isUpdating}
                   className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
                 >
@@ -269,7 +279,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
             </div>
           </Modal>
 
-          {drawing.status === "Pending Review" && (
+          {isPending && (
             <div className="mt-6 flex items-center gap-2 border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
               <input
                 type="text"
