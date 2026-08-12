@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-import { ArrowLeft, Building2 } from "lucide-react";
+import { ArrowLeft, Building2, ChevronDown } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetBuildingDrawingsQuery, type BuildingDrawingItem } from "@/redux/api/drawingsApi";
 import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 import ViewDrawingModal from "@/components/drawings_and_documents/ViewDrawingModal";
+import { cn } from "@/lib/utils";
 
 const SkeletonCard: React.FC = () => (
   <div className="border border-slate-200 rounded-lg p-4 flex items-center justify-between bg-white shadow-xs animate-pulse">
@@ -65,6 +66,8 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
 
   const [selectedDrawing, setSelectedDrawing] = useState<any | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedStatus, setSelectedStatus] = useState<string>("All");
+  const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
 
   const {
     data: buildingData,
@@ -85,8 +88,26 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   const projectLocation = lead?.location?.trim() || "Location not provided";
 
   const buildingLabel = buildingData?.buildingLabel || buildingNameParam;
-  const drawingsList = buildingData?.drawings || [];
-  const documentsList = buildingData?.documents || [];
+  const rawDrawingsList = buildingData?.drawings || [];
+  const rawDocumentsList = buildingData?.documents || [];
+
+  const filterByStatus = (items: BuildingDrawingItem[]) => {
+    if (selectedStatus === "All") return items;
+    return items.filter((item) => {
+      const s = item.status?.toLowerCase() || "";
+      if (selectedStatus === "Approved") return s === "approved";
+      if (selectedStatus === "Pending") {
+        return s === "pending" || s === "pending review" || s === "under_review";
+      }
+      if (selectedStatus === "Revision") {
+        return s === "revision" || s === "revision_requested" || s === "rejected";
+      }
+      return true;
+    });
+  };
+
+  const drawingsList = filterByStatus(rawDrawingsList);
+  const documentsList = filterByStatus(rawDocumentsList);
 
   const formatFileSize = (bytes?: number) => {
     if (!bytes) return "0 MB";
@@ -181,7 +202,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   };
 
   const getLatestUpdateDate = () => {
-    const allItems = [...drawingsList, ...documentsList];
+    const allItems = [...rawDrawingsList, ...rawDocumentsList];
     if (allItems.length === 0) return "N/A";
     const dates = allItems
       .map((item) => item.updatedAt || item.createdAt)
@@ -192,7 +213,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   };
 
   const getUploadedByName = () => {
-    const itemWithUser = [...drawingsList, ...documentsList].find(
+    const itemWithUser = [...rawDrawingsList, ...rawDocumentsList].find(
       (item) => item.uploadedBy?.name
     );
     return itemWithUser?.uploadedBy?.name || "Admin User";
@@ -237,12 +258,64 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
       ) : (
         <div className="space-y-6">
           <div className="bg-white rounded-xl border border-[#D0D5DD] p-6 space-y-6 shadow-xs">
-            {/* Building Header */}
-            <div className="flex items-center gap-3">
-              <Building2 className="w-6 h-6 text-[#1D51A4]" />
-              <h2 className="text-xl md:text-2xl font-bold text-slate-900">
-                {buildingLabel}
-              </h2>
+            {/* Building Header with Status Filter */}
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <Building2 className="w-6 h-6 text-[#1D51A4]" />
+                <h2 className="text-xl md:text-2xl font-bold text-slate-900">
+                  {buildingLabel}
+                </h2>
+              </div>
+
+              {/* Custom Color-Coded Status Filter Dropdown */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
+                  className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-xs hover:border-slate-300 transition-colors cursor-pointer"
+                >
+                  <span className="text-sm font-semibold text-[#94A3B8]">Select Status</span>
+                  <ChevronDown
+                    className={cn(
+                      "w-4 h-4 text-slate-700 transition-transform duration-200",
+                      isStatusDropdownOpen && "rotate-180"
+                    )}
+                  />
+                </button>
+
+                {isStatusDropdownOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsStatusDropdownOpen(false)}
+                    />
+                    <div className="absolute right-0 mt-2 w-48 bg-white border border-slate-100 rounded-xl shadow-lg p-2.5 z-20 space-y-1 animate-in fade-in zoom-in-95 duration-100">
+                      {[
+                        { label: "All", color: "text-black font-bold" },
+                        { label: "Approved", color: "text-[#16A34A] font-bold" },
+                        { label: "Pending", color: "text-[#D97706] font-bold" },
+                        { label: "Revision", color: "text-[#EA580C] font-bold" },
+                      ].map((item) => (
+                        <button
+                          key={item.label}
+                          type="button"
+                          onClick={() => {
+                            setSelectedStatus(item.label);
+                            setIsStatusDropdownOpen(false);
+                          }}
+                          className={cn(
+                            "w-full text-left px-3 py-2 text-base rounded-lg transition-colors cursor-pointer hover:bg-slate-50",
+                            item.color,
+                            selectedStatus === item.label && "bg-slate-100/80"
+                          )}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
             {/* Drawings Section */}
@@ -423,6 +496,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
         }}
         drawing={selectedDrawing}
         projectInfo={{
+          leadId,
           projectName: projectTitle,
           projectCode: projectCode,
           siteLocation: projectLocation,
