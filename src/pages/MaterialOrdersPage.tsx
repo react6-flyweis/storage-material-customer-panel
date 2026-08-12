@@ -85,9 +85,7 @@ const MaterialOrdersPage: React.FC = () => {
         </div>
 
         <button
-          onClick={() => {
-            // Action or modal can be attached here
-          }}
+          onClick={() => navigate("/add-new-order")}
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#1E40AF] px-4 py-2.5 text-sm font-semibold text-white shadow-xs transition-colors hover:bg-[#1d3999] focus:outline-none cursor-pointer"
         >
           <Plus className="w-4 h-4" />
