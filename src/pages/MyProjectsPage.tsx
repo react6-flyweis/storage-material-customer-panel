@@ -1,3 +1,5 @@
+import { Plus } from "lucide-react";
+import { Link } from "react-router-dom";
 import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import { MyProjectPageText } from "@/data/text/MyProjectPageText";
 import ProjectsList from "@/components/my_projects/ProjectsList";
@@ -65,10 +67,21 @@ const MyProjectsPage = () => {
 
   return (
     <div className="p-5 space-y-6">
-      <TitleSubtitle
-        title={MyProjectPageText.header.title}
-        subtitle={MyProjectPageText.header.subtitle}
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <TitleSubtitle
+          title={MyProjectPageText.header.title}
+          subtitle={MyProjectPageText.header.subtitle}
+        />
+        <Link
+          to="/add-new-project"
+          className="flex items-center gap-2.5 bg-[#1D51A4] hover:bg-[#163e80] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer self-start sm:self-auto shrink-0"
+        >
+          <span className="w-5 h-5 rounded-full bg-white flex items-center justify-center shrink-0">
+            <Plus className="w-3.5 h-3.5 text-[#1D51A4]" strokeWidth={3} />
+          </span>
+          <span>Create New Project</span>
+        </Link>
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {DashboardStats.map((stat, index) => (
           <StatCard
