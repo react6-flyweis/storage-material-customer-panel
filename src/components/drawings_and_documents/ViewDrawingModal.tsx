@@ -17,6 +17,7 @@ interface ViewDrawingModalProps {
     leadId?: string;
     projectName: string;
     projectCode: string;
+    buildingLabel?: string;
     siteLocation: string;
     uploadedBy: string;
     lastUpdate: string;
@@ -104,6 +105,30 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     }
   };
 
+  const handleDownload = async () => {
+    const url = drawing.fileUrl || DrawingPlanImg;
+    const filename = drawing.name ? `${drawing.name}.${url.split('.').pop()?.split('?')[0] || 'pdf'}` : 'download';
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+    } catch (error) {
+      console.error("Download failed via blob, falling back to direct link", error);
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.download = filename;
+      link.click();
+    }
+  };
+
   const normalizedStatus = String(drawing?.status || "").toLowerCase().trim();
   const isApproved = normalizedStatus === "approved";
   const isRevisionRequired =
@@ -122,25 +147,25 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       customPadding="p-0"
       width="max-w-4xl"
     >
-      <div className="bg-white rounded-2xl w-full shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="bg-white rounded-2xl w-full shadow-2xl overflow-hidden flex flex-col h-[85vh]">
         {/* Header */}
-        <div className="px-4 py-4 lg:px-6 lg:py-6 flex items-start justify-between bg-white sticky top-0 z-10">
-          <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
+        <div className="px-4 py-2 lg:px-6 lg:py-3 flex items-start justify-between bg-white sticky top-0 z-10">
+          <div className="flex flex-wrap items-center gap-x-8 gap-y-1">
             <div>
               <h2 className="xl:text-xl text-base font-semibold text-black leading-tight w-[240px] overflow-hidden whitespace-nowrap text-ellipsis">
                 {drawing.name}
               </h2>
               <p className="text-sm text-(-text-color-gray-2) font-normal">
-                {projectInfo?.projectCode}
+                {drawing?.buildingLabel || drawing?.building || projectInfo?.buildingLabel || projectInfo?.projectCode}
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-x-8 gap-y-2">
-              <div>
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-1">
+              {/* <div>
                 <p className="text-sm text-black font-normal tracking-wider">
                   Pune,
                 </p>
                 <p className="text-sm font-normal text-black">Maharashtra</p>
-              </div>
+              </div> */}
               <div>
                 <p className="text-sm text-black font-normal tracking-wider">
                   Uploaded By:
@@ -167,28 +192,36 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           </button>
         </div>
 
-        {/* Content - Image Area */}
-        <div className="flex-1 overflow-y-auto flex items-center justify-center min-h-[300px]">
-          <div className="relative w-full h-full max-w-3xl shadow-sm  rounded-lg overflow-hidden p-0">
-            {/* Large Mock Drawing Image */}
-            <div className="w-full aspect-4/3rounded flex items-center justify-center relative group">
-              <img
-                src={drawing.fileUrl || DrawingPlanImg}
-                alt="Drawing Plan"
-                className="w-full h-full object-contain"
+        {/* Content - Image / PDF Preview Area */}
+        <div className="flex-1 min-h-0 bg-gray-50 p-2 flex items-center justify-center">
+          <div className="relative w-full h-full shadow-sm rounded-lg overflow-hidden flex items-center justify-center">
+            {drawing.fileUrl?.toLowerCase().endsWith(".pdf") || drawing.type?.toLowerCase().includes("pdf") ? (
+              <iframe
+                src={`${drawing.fileUrl}#toolbar=0`}
+                title={drawing.name || "PDF Document"}
+                className="w-full h-full border-0 rounded-lg flex-1"
               />
-            </div>
+            ) : (
+              <div className="w-full h-full flex items-center justify-center relative group">
+                <img
+                  src={drawing.fileUrl || DrawingPlanImg}
+                  alt="Drawing Plan"
+                  className="max-w-full max-h-full object-contain"
+                />
+              </div>
+            )}
           </div>
         </div>
 
         {/* Footer - Conditional UI */}
-        <div className="p-6 mt-2 border-t border-gray-300 bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-4">
-            <button className="flex items-center gap-2 md:px-4 px-2 py-1 bg-[#9CA3AF] hover:bg-[#E2E8F0] text-white rounded-full md:text-base text-sm font-medium transition-all">
-              <a href={drawing.fileUrl || DrawingPlanImg} download target="_blank" rel="noopener noreferrer" className="flex flex-wrap items-center gap-2">
+        <div className="p-3 lg:px-6 lg:py-3 border-t border-gray-300 bg-white">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 md:px-4 px-2 py-1 bg-[#9CA3AF] hover:bg-[#E2E8F0] text-white rounded-full md:text-base text-sm font-medium transition-all cursor-pointer"
+            >
               <ArrowDown className="md:w-5 md:h-5 w-4 h-4" />
               Download
-              </a>
             </button>
 
             <div className="flex items-center gap-3 ml-auto flex-wrap">
@@ -256,9 +289,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
                   }}
                   placeholder="Write your revision"
                   rows={5}
-                  className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
-                    reasonError ? "border-red-500" : "border-[#D0D5DD]"
-                  }`}
+                  className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${reasonError ? "border-red-500" : "border-[#D0D5DD]"
+                    }`}
                 />
 
                 {reasonError && (
@@ -280,21 +312,21 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           </Modal>
 
           {isPending && (
-            <div className="mt-6 flex items-center gap-2 border border-gray-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+            <div className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
               <input
                 type="text"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder="Type your Comment..."
-                className="flex-1 px-3 py-2 text-sm text-gray-600 outline-none"
+                className="flex-1 px-3 py-1 text-sm text-gray-600 outline-none"
               />
-              <button className="p-2 text-[#00000080] hover:text-gray-600">
+              <button className="p-1 text-[#00000080] hover:text-gray-600">
                 <Paperclip className="w-5 h-5 -rotate-5" />
               </button>
               <Button
                 onClick={handleSendComment}
                 disabled={isUpdating || !comment.trim()}
-                className="text-sm font-normal bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] hover:bg-blue-700 text-white rounded-lg flex items-center md:gap-2 gap-1 md:px-6 px-3 py-3 h-auto disabled:opacity-50"
+                className="text-sm font-normal bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] hover:bg-blue-700 text-white rounded-lg flex items-center md:gap-2 gap-1 md:px-4 px-3 py-1.5 h-auto disabled:opacity-50"
               >
                 {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
                 Send Comment
