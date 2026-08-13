@@ -37,6 +37,8 @@ export interface Project {
 export interface GetProjectsParams {
   page: number;
   limit: number;
+  tab?: string;
+  status?: string;
 }
 
 export interface GetProjectsResponseData {
@@ -57,16 +59,31 @@ export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Drawings", "Quotation"],
+  tagTypes: ["Drawings", "Quotation", "CustomerDrawings", "ProjectBuildings", "BuildingDrawings"],
   endpoints: (builder) => ({
     getProjects: builder.query<GetProjectsResponseData, GetProjectsParams>({
-      query: ({ page, limit }) => ({
-        url: "/api/customer/projects",
-        method: "GET",
-        params: { page, limit },
-      }),
+      query: ({ page, limit, tab, status }) => {
+        const params: Record<string, unknown> = { page, limit };
+        if (tab && tab !== "All Projects") {
+          params.tab = tab.toLowerCase();
+        } else if (status && status !== "All Projects") {
+          params.status = status.toLowerCase();
+        }
+        return {
+          url: "/api/customer/projects",
+          method: "GET",
+          params,
+        };
+      },
       transformResponse: (response: GetProjectsApiResponse) =>
         response.data as GetProjectsResponseData,
+    }),
+    createProject: builder.mutation<ApiResponse<Project>, Partial<Project> & Record<string, unknown>>({
+      query: (body) => ({
+        url: "/api/customer/projects",
+        method: "POST",
+        body,
+      }),
     }),
     getProjectDetails: builder.query<ProjectDetailsResponseData, string>({
       query: (id) => ({
@@ -94,6 +111,13 @@ export const projectsApi = createApi({
         method: "PUT",
         body: { status, notes },
       }),
+      invalidatesTags: (_result, _error, { leadId }) => [
+        { type: "Drawings", id: leadId },
+        "Drawings",
+        "CustomerDrawings",
+        "ProjectBuildings",
+        "BuildingDrawings",
+      ],
     }),
     approveDrawing: builder.mutation<
       ApiResponse<Drawing>,
@@ -103,7 +127,13 @@ export const projectsApi = createApi({
         url: `/api/customer/projects/${leadId}/drawings/${drawingId}/approve`,
         method: "POST",
       }),
-      invalidatesTags: (_result, _error, { leadId }) => [{ type: "Drawings", id: leadId }],
+      invalidatesTags: (_result, _error, { leadId }) => [
+        { type: "Drawings", id: leadId },
+        "Drawings",
+        "CustomerDrawings",
+        "ProjectBuildings",
+        "BuildingDrawings",
+      ],
     }),
     requestDrawingRevision: builder.mutation<
       ApiResponse<Drawing>,
@@ -114,7 +144,13 @@ export const projectsApi = createApi({
         method: "POST",
         body: { note },
       }),
-      invalidatesTags: (_result, _error, { leadId }) => [{ type: "Drawings", id: leadId }],
+      invalidatesTags: (_result, _error, { leadId }) => [
+        { type: "Drawings", id: leadId },
+        "Drawings",
+        "CustomerDrawings",
+        "ProjectBuildings",
+        "BuildingDrawings",
+      ],
     }),
     getProjectActivity: builder.query<GetProjectActivityResponseData, GetProjectActivityParams>({
       query: ({ leadId, page = 1, limit = 20 }) => ({
@@ -737,6 +773,7 @@ export type GetProjectTrackingApiResponse = ApiResponse<ProjectTrackingResponseD
 
 export const {
   useGetProjectsQuery,
+  useCreateProjectMutation,
   useGetProjectDetailsQuery,
   useGetProjectDrawingsQuery,
   useUpdateDrawingStatusMutation,
