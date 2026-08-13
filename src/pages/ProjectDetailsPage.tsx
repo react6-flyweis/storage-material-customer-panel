@@ -135,7 +135,7 @@ const ProjectDetailsPage = () => {
         {activeTab === "Basic info" && (
           <div className="flex items-center gap-3">
             <Button onClick={() => navigate(`/project-drawings/${id}`)} className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
-              Drawings & Images
+              Drawings
             </Button>
             <Button
               onClick={() => setIsCancelModalOpen(true)}
