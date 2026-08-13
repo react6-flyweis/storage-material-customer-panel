@@ -13,26 +13,26 @@ import ViewDrawingModal from "@/components/drawings_and_documents/ViewDrawingMod
 import { useGetProjectDrawingsQuery } from "@/redux/api/projectsApi";
 
 const getStatusDetails = (status: string) => {
-  switch (status?.toLowerCase()) {
+  const s = status?.toLowerCase().trim();
+  switch (s) {
     case "approved":
       return {
         label: "Approved",
         colorClass: "bg-[#D1FADF] text-[#16A34A]",
       };
     case "rejected":
-      return {
-        label: "Rejected",
-        colorClass: "bg-[#FEE2E2] text-[#EF4444]",
-      };
     case "revision required":
     case "revision_required":
+    case "revision":
+    case "revision_requested":
       return {
-        label: "Revision Required",
+        label: "Sent for Revision",
         colorClass: "bg-[#FFF7ED] text-[#FF9409]",
       };
     case "pending":
     case "pending review":
     case "pending_review":
+    case "under_review":
     default:
       return {
         label: "Pending Review",
@@ -46,14 +46,14 @@ const isImageFile = (url: string) => {
   return /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(url);
 };
 
-const formatBytes = (bytes: number, decimals = 2) => {
-  if (!bytes) return "0 Bytes";
-  const k = 1024;
-  const dm = decimals < 0 ? 0 : decimals;
-  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-  return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
-};
+// const formatBytes = (bytes: number, decimals = 2) => {
+//   if (!bytes) return "0 Bytes";
+//   const k = 1024;
+//   const dm = decimals < 0 ? 0 : decimals;
+//   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+//   const i = Math.floor(Math.log(bytes) / Math.log(k));
+//   return `${parseFloat((bytes / Math.pow(k, i)).toFixed(dm))} ${sizes[i]}`;
+// };
 
 const ProjectDrawingPage = () => {
   const { id } = useParams()
@@ -82,7 +82,6 @@ const ProjectDrawingPage = () => {
   const buildingPhotos = filteredDrawings.filter((d) => isImageFile(d.fileUrl));
 
   const onViewDrawing = (drawing: any) => {
-    const statusInfo = getStatusDetails(drawing.status);
     const projectData = {
       leadId: id,
       projectName: drawing.name,
@@ -91,11 +90,7 @@ const ProjectDrawingPage = () => {
       uploadedBy: drawing.uploadedBy?.name || "N/A",
       lastUpdate: drawing.updatedAt ? new Date(drawing.updatedAt).toLocaleDateString() : "-",
     };
-    setSelectedDrawing({
-      ...drawing,
-      status: statusInfo.label,
-      statusColor: statusInfo.colorClass,
-    });
+    setSelectedDrawing(drawing);
     setSelectedProjectInfo(projectData);
     setIsModalOpen(true);
   };
@@ -130,7 +125,7 @@ const ProjectDrawingPage = () => {
             "All",
             "Pending Review",
             "Approved",
-            "Revision Required",
+            "Sent for Revision",
           ]}
         />
       </div>
@@ -169,9 +164,9 @@ const ProjectDrawingPage = () => {
                             {file.name}
                           </p>
 
-                          <p className=" text-[14px] text-[#667085]">
+                          {/* <p className=" text-[14px] text-[#667085]">
                             {formatBytes(file.fileSize)}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
 
@@ -235,9 +230,9 @@ const ProjectDrawingPage = () => {
                             {file.name}
                           </p>
 
-                          <p className="mt-1 text-[14px] text-[#667085]">
+                          {/* <p className="mt-1 text-[14px] text-[#667085]">
                             {formatBytes(file.fileSize)}
-                          </p>
+                          </p> */}
                         </div>
                       </div>
 
