@@ -1,7 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Eye } from "lucide-react";
 import { useGetProjectsQuery } from "@/redux/api/projectsApi";
 import { PaginationComp } from "../common_components/PaginationComp";
+import ProjectStatusFilter, {
+  type ProjectStatusOption,
+} from "./ProjectStatusFilter";
 
 const formatStatus = (status: string) => {
   if (!status) return "-";
@@ -15,10 +19,17 @@ const ProjectsList = () => {
   const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(20);
+  const [selectedStatus, setSelectedStatus] =
+    useState<ProjectStatusOption>("All Projects");
+
+  const tabParam =
+    selectedStatus !== "All Projects" ? selectedStatus.toLowerCase() : undefined;
 
   const { data, isLoading, isError } = useGetProjectsQuery({
     page,
     limit: rowsPerPage,
+    tab: tabParam,
+    status: selectedStatus,
   });
 
   const handlePageChange = (newPage: number) => {
@@ -30,13 +41,26 @@ const ProjectsList = () => {
     setPage(1);
   };
 
-  const projects = data?.projects || [];
+  const rawProjects = data?.projects || [];
+  const projects = rawProjects.filter((project) => {
+    if (selectedStatus === "All Projects") return true;
+    const statusStr = (project.lifecycleStatus || "").toLowerCase();
+    const target = selectedStatus.toLowerCase();
+    return statusStr.includes(target);
+  });
   const totalItems = data?.total || 0;
 
   return (
     <div className="bg-white rounded-md shadow-sm border border-gray-100 overflow-hidden">
-      <div className="xl:p-6 p-4 border-b border-[#00000026]">
+      <div className="xl:p-6 p-4 border-b border-[#00000026] flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800">Projects List</h2>
+        <ProjectStatusFilter
+          selectedStatus={selectedStatus}
+          onStatusChange={(status) => {
+            setSelectedStatus(status);
+            setPage(1);
+          }}
+        />
       </div>
 
       <div className="overflow-x-auto">
@@ -50,7 +74,7 @@ const ProjectsList = () => {
             <div className="col-span-1">Manager</div>
             <div className="col-span-1">Status</div>
             <div className="col-span-1">Project Amount</div>
-            <div className="col-span-1 text-center">Progress</div>
+            <div className="col-span-1 text-center">Action</div>
           </div>
 
           {/* Projects List */}
@@ -71,8 +95,7 @@ const ProjectsList = () => {
               projects.map((project) => (
                 <div
                   key={project._id}
-                  onClick={() => navigate(`/my_projects/${project._id}`)}
-                  className="grid grid-cols-8 gap-2.5 items-center p-6 border border-[#00000026] rounded-md hover:shadow-md transition-shadow bg-white cursor-pointer"
+                  className="grid grid-cols-8 gap-2.5 items-center p-6 border border-[#00000026] rounded-md hover:shadow-md transition-shadow bg-white"
                 >
                   {/* Project Name */}
                   <div className="col-span-1">
@@ -149,11 +172,16 @@ const ProjectsList = () => {
                     </p>
                   </div>
 
-                  {/* Progress */}
-                  <div className="col-span-1 text-center">
-                    <div className="inline-block px-4 py-1.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                      -
-                    </div>
+                  {/* Action */}
+                  <div className="col-span-1 flex justify-center items-center">
+                    <button
+                      type="button"
+                      onClick={() => navigate(`/my_projects/${project._id}`)}
+                      className="p-2 text-gray-600 hover:text-[#1D51A4] hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
+                      title="View Project"
+                    >
+                      <Eye className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               ))
