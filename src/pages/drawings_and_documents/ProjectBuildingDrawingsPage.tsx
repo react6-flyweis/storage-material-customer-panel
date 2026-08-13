@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { ArrowLeft, Building2, ChevronDown } from "lucide-react";
+import { ArrowLeft, Building2, ChevronDown, Image as ImageIcon } from "lucide-react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useGetBuildingDrawingsQuery, type BuildingDrawingItem } from "@/redux/api/drawingsApi";
 import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
@@ -68,6 +68,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState<string>("All");
   const [isStatusDropdownOpen, setIsStatusDropdownOpen] = useState(false);
+  const [imgErrorMap, setImgErrorMap] = useState<Record<string, boolean>>({});
 
   const {
     data: buildingData,
@@ -94,26 +95,32 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   const filterByStatus = (items: BuildingDrawingItem[]) => {
     if (selectedStatus === "All") return items;
     return items.filter((item) => {
-      const s = item.status?.toLowerCase() || "";
+      const s = item.status?.toLowerCase().trim() || "";
       if (selectedStatus === "Approved") return s === "approved";
       if (selectedStatus === "Pending") {
-        return s === "pending" || s === "pending review" || s === "under_review";
+        return s === "pending" || s === "pending review" || s === "pending_review" || s === "under_review" || !s;
       }
       if (selectedStatus === "Revision") {
-        return s === "revision" || s === "revision_requested" || s === "rejected";
+        return (
+          s === "revision" ||
+          s === "revision_requested" ||
+          s === "revision required" ||
+          s === "revision_required" ||
+          s === "rejected"
+        );
       }
       return true;
     });
   };
 
   const drawingsList = filterByStatus(rawDrawingsList);
-  const documentsList = filterByStatus(rawDocumentsList);
+  // const documentsList = filterByStatus(rawDocumentsList);
 
-  const formatFileSize = (bytes?: number) => {
-    if (!bytes) return "0 MB";
-    const mb = bytes / (1024 * 1024);
-    return `${mb.toFixed(1)} MB`;
-  };
+  // const formatFileSize = (bytes?: number) => {
+  //   if (!bytes) return "0 MB";
+  //   const mb = bytes / (1024 * 1024);
+  //   return `${mb.toFixed(1)} MB`;
+  // };
 
   const formatDate = (dateString?: string) => {
     if (!dateString) return "N/A";
@@ -156,46 +163,110 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
   };
 
   const getStatusBadge = (status: string) => {
-    const s = status?.toLowerCase();
+    const s = status?.toLowerCase().trim();
     if (s === "approved") {
       return (
-        <span className="absolute -top-3 right-4 bg-[#D1FADF] text-[#12B76A] text-xs font-medium px-3 py-0.5 rounded-full">
+        <span className="absolute -top-3 right-4 bg-[#D1FADF] text-[#16A34A] text-xs font-medium px-3 py-0.5 rounded-full">
           Approved
         </span>
       );
     }
-    if (s === "pending" || s === "pending review" || s === "under_review") {
+    if (
+      s === "revision" ||
+      s === "revision_requested" ||
+      s === "revision required" ||
+      s === "revision_required" ||
+      s === "rejected"
+    ) {
       return (
-        <span className="absolute -top-3 right-4 bg-[#FEF3C7] text-[#D97706] text-xs font-medium px-3 py-0.5 rounded-full">
+        <span className="absolute -top-3 right-4 bg-[#FFF7ED] text-[#FF9409] text-xs font-medium px-3 py-0.5 rounded-full border border-[#FFEDD5]">
+          Sent for Revision
+        </span>
+      );
+    }
+    if (s === "pending" || s === "pending review" || s === "pending_review" || s === "under_review" || !s) {
+      return (
+        <span className="absolute -top-3 right-4 bg-[#FEF3C7] text-[#EAB308] text-xs font-medium px-3 py-0.5 rounded-full">
           {s === "under_review" ? "Under Review" : "Pending Review"}
         </span>
       );
     }
-    return null;
+    return (
+      <span className="absolute -top-3 right-4 bg-[#FEF3C7] text-[#EAB308] text-xs font-medium px-3 py-0.5 rounded-full">
+        Pending Review
+      </span>
+    );
+  };
+
+  const getStatusTextColor = (status: string) => {
+    switch (status) {
+      case "Approved":
+        return "text-[#16A34A] font-bold";
+      case "Pending Review":
+      case "Pending":
+        return "text-[#D97706] font-bold";
+      case "Sent for Revision":
+      case "Revision":
+        return "text-[#EA580C] font-bold";
+      case "All":
+        return "text-slate-800 font-bold";
+      default:
+        return "text-[#94A3B8] font-semibold";
+    }
   };
 
   const renderFileIconOrPreview = (item: BuildingDrawingItem) => {
+    const fileTypeLower = item.fileType?.toLowerCase() || "";
+    const fileUrlLower = item.fileUrl?.toLowerCase() || "";
+    const fileNameLower = item.name?.toLowerCase() || "";
+
+    const isPdf =
+      fileTypeLower.includes("pdf") ||
+      fileUrlLower.endsWith(".pdf") ||
+      fileUrlLower.includes(".pdf") ||
+      fileNameLower.endsWith(".pdf");
+
     const isImage =
       item.category === "photo" ||
-      ["jpg", "jpeg", "png", "webp", "gif"].includes(item.fileType?.toLowerCase() || "");
+      ["jpg", "jpeg", "png", "webp", "gif", "svg"].includes(fileTypeLower) ||
+      /\.(jpg|jpeg|png|webp|gif|svg)($|\?)/i.test(fileUrlLower) ||
+      /\.(jpg|jpeg|png|webp|gif|svg)$/i.test(fileNameLower);
 
-    if (isImage && item.fileUrl) {
+    if (isPdf) {
+      return (
+        <div
+          className="w-10 h-8 rounded bg-red-50 text-red-600 font-bold text-[10px] flex items-center justify-center border border-red-200 shrink-0 shadow-xs"
+          title="PDF Document"
+        >
+          PDF
+        </div>
+      );
+    }
+
+    if (isImage && item.fileUrl && !imgErrorMap[item._id]) {
       return (
         <img
           src={item.fileUrl}
           alt={item.name}
           className="w-10 h-8 rounded object-cover shrink-0 border border-slate-200"
-          onError={(e) => {
-            // Fallback icon on error
-            (e.target as HTMLElement).style.display = "none";
+          onError={() => {
+            setImgErrorMap((prev) => ({ ...prev, [item._id]: true }));
           }}
         />
       );
     }
 
+    if (isImage) {
+      return (
+        <div className="w-10 h-8 rounded bg-blue-50 text-blue-600 font-bold flex items-center justify-center shrink-0 border border-blue-100">
+          <ImageIcon className="w-4 h-4 text-blue-600" />
+        </div>
+      );
+    }
+
     const firstChar = item.name ? item.name.charAt(0).toUpperCase() : "D";
     return (
-      <div className="w-8 h-8 rounded bg-pink-50 text-pink-600 font-bold flex items-center justify-center text-xs shrink-0 border border-pink-100">
+      <div className="w-10 h-8 rounded bg-pink-50 text-pink-600 font-bold flex items-center justify-center text-xs shrink-0 border border-pink-100">
         {firstChar}
       </div>
     );
@@ -234,7 +305,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
         </div>
         <div>
           <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">
-            {projectTitle} Drawings & Documents
+            {projectTitle} | Drawings & Documents
           </h1>
           <p className="text-sm md:text-base text-slate-500 font-normal mt-1">
             All structural, fabrication, and erection drawings and documents for{" "}
@@ -248,7 +319,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
           <div className="bg-white rounded-xl border border-[#D0D5DD] p-6 space-y-6 shadow-xs animate-pulse">
             <div className="h-7 bg-slate-200 rounded w-48" />
             <SkeletonSection title="Drawings" />
-            <SkeletonSection title="Documents" />
+            {/* <SkeletonSection title="Documents" /> */}
           </div>
         </div>
       ) : isBuildingError ? (
@@ -274,7 +345,9 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
                   className="flex items-center gap-3 bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-xs hover:border-slate-300 transition-colors cursor-pointer"
                 >
-                  <span className="text-sm font-semibold text-[#94A3B8]">Select Status</span>
+                  <span className={cn("text-sm", getStatusTextColor(selectedStatus))}>
+                    {selectedStatus === "All" ? "Select Status" : selectedStatus}
+                  </span>
                   <ChevronDown
                     className={cn(
                       "w-4 h-4 text-slate-700 transition-transform duration-200",
@@ -373,9 +446,9 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                             <p className="text-sm font-bold text-slate-800 truncate">
                               {item.name}
                             </p>
-                            <p className="text-xs text-slate-400">
+                            {/* <p className="text-xs text-slate-400">
                               {formatFileSize(item.fileSize)}
-                            </p>
+                            </p> */}
                           </div>
                         </div>
                         <div className="flex items-center gap-2.5 text-slate-600 shrink-0 text-sm">
@@ -405,7 +478,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
             </div>
 
             {/* Documents Section */}
-            <div className="bg-white rounded-xl border border-slate-200 p-5 md:p-6 space-y-4">
+            {/* <div className="bg-white rounded-xl border border-slate-200 p-5 md:p-6 space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
                 <div>
                   <h3 className="text-lg font-bold text-slate-900">Documents</h3>
@@ -453,9 +526,6 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                             <p className="text-sm font-bold text-slate-800 truncate">
                               {item.name}
                             </p>
-                            <p className="text-xs text-slate-400">
-                              {formatFileSize(item.fileSize)}
-                            </p>
                           </div>
                         </div>
                         <div className="flex items-center gap-2.5 text-slate-600 shrink-0 text-sm">
@@ -482,7 +552,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                   </div>
                 )}
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
       )}
@@ -499,6 +569,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
           leadId,
           projectName: projectTitle,
           projectCode: projectCode,
+          buildingLabel: buildingLabel,
           siteLocation: projectLocation,
           uploadedBy: getUploadedByName(),
           lastUpdate: getLatestUpdateDate(),
