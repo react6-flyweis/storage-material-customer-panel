@@ -63,6 +63,9 @@ const ProjectOrderQuotationsPage = lazy(
 const AddNewOrderPage = lazy(
   () => import("@/pages/AddNewOrderPage")
 );
+const AddNewProjectPage = lazy(
+  () => import("@/pages/AddNewProjectPage")
+);
 
 import ProjectDeliverySchedule from "./components/delivery-schedule/ProjectDeliverySchedule";
 
@@ -76,6 +79,7 @@ export const adminRoutes: RouteObject[] = [
         element: <Dashboard />,
       },
       { path: "/my_projects", element: <MyProjectsPage /> },
+      { path: "/add-new-project", element: <AddNewProjectPage /> },
       { path: "/material-orders", element: <MaterialOrdersPage /> },
       { path: "/add-new-order", element: <AddNewOrderPage /> },
       { path: "/project-orders", element: <ProjectOrdersPage /> },
