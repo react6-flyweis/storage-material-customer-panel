@@ -28,26 +28,28 @@ const PaymentStatCard = ({
   return (
     <Card
       className={cn(
-        "md:p-4 p-2 border-none text-white overflow-hidden rounded-md h-fit",
+        "md:p-4 p-2 border-none text-white overflow-hidden rounded-md h-full flex flex-col justify-center",
         bgColor
       )}
     >
-      <div className="flex items-start justify-start gap-5">
-        <div className="bg-white h-full max-h-11 md:p-3 p-2 flex justify-center items-center rounded-md">
-          {React.cloneElement(icon as React.ReactElement<any>, {
-            className: cn("xl:h-6 xl:w-6 h-4 w-4", iconColor),
-          })}
+      <div className="flex items-center justify-start gap-3 sm:gap-5">
+        <div className="bg-white shrink-0 md:h-12 md:w-12 h-9 w-9 p-2 md:p-2.5 flex justify-center items-center rounded-md">
+          {React.isValidElement<{ className?: string }>(icon)
+            ? React.cloneElement(icon, {
+                className: cn("xl:h-6 xl:w-6 h-4 w-4", iconColor, icon.props.className),
+              })
+            : icon}
         </div>
-        <div className="flex flex-col gap-0.5 w-full">
-          <p className="xl:text-sm text-xs opacity-90">{title}</p>
+        <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+          <p className="xl:text-sm text-xs opacity-90 truncate">{title}</p>
           <div className="flex items-center md:gap-2 gap-1 flex-wrap w-full">
-            <h3 className="lg:text-lg md:text-base text-xs w-[100px] sm:w-auto overflow-y-hidden overflow-x-auto">
+            <h3 className="lg:text-lg md:text-base text-xs font-semibold overflow-y-hidden overflow-x-auto">
               {value}
             </h3>
             {badge && (
               <div
                 className={cn(
-                  "md:px-2 md:py-1 p-0.5 rounded-md flex items-center gap-1 text-[8px] font-bold",
+                  "md:px-2 md:py-1 p-0.5 rounded-md flex items-center gap-1 text-[8px] font-bold shrink-0",
                   badge.type === "negative"
                     ? "bg-[#FEE2E2] text-[#EF4444]"
                     : "bg-[#DCFCE7] text-[#3AB449]"
