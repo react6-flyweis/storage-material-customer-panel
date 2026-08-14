@@ -39,6 +39,24 @@ export interface GetProjectBuildingsResponseData {
 
 export type GetProjectBuildingsApiResponse = ApiResponse<GetProjectBuildingsResponseData>;
 
+export interface DrawingCommentUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+}
+
+export interface DrawingComment {
+  _id: string;
+  text: string;
+  commentedBy?: string | DrawingCommentUser | null;
+  commentedByCustomer?: DrawingCommentUser | null;
+  authorName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface BuildingDrawingItem {
   _id: string;
   leadId: string;
@@ -62,6 +80,8 @@ export interface BuildingDrawingItem {
   notes?: string;
   revisionNote?: string;
   revisionRequestedAt?: string | null;
+  comments?: DrawingComment[];
+  versionNumber?: number;
   createdAt?: string;
   updatedAt?: string;
 }
