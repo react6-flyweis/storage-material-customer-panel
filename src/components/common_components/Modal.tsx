@@ -1,77 +1,82 @@
-import React, { useEffect, useRef } from "react";
-import ReactDOM from "react-dom";
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
+  description?: string;
   children: React.ReactNode;
   width?: string;
   height?: string;
   showHeader?: boolean;
+  showCloseButton?: boolean;
   customPadding?: string;
+  className?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   title,
+  description,
   children,
-  width = "max-w-2xl",
+  width = "sm:max-w-2xl",
   height = "max-h-[90vh]",
   showHeader = true,
+  showCloseButton = false,
   customPadding = "p-6",
+  className,
 }) => {
-  const modalRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        onClose();
-      }
-    };
-
-    if (isOpen) {
-      document.addEventListener("keydown", handleEscape);
-      document.body.style.overflow = "hidden";
-    }
-
-    return () => {
-      document.removeEventListener("keydown", handleEscape);
-      document.body.style.overflow = "unset";
-    };
-  }, [isOpen, onClose]);
-
-  const handleBackdropClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
-      onClose();
-    }
-  };
-
-  if (!isOpen) return null;
-
-  return ReactDOM.createPortal(
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 transition-opacity"
-      onClick={handleBackdropClick}
-    >
-      <div
-        ref={modalRef}
-        className={`bg-white rounded-xl shadow-2xl w-full ${width} ${height} m-4 relative flex flex-col max-h-[90vh] animate-in fade-in zoom-in-95 duration-200`}
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent
+        showCloseButton={showCloseButton}
+        className={cn(
+          "bg-white rounded-xl shadow-2xl w-full p-0 gap-0 overflow-hidden flex flex-col sm:max-w-none",
+          width,
+          height,
+          className
+        )}
       >
-        {/* Header */}
-        {showHeader && (
-          <div className="flex items-center justify-between p-6 border-b border-[#D5D5D5]">
-            <h2 className="md:text-base text-sm font-bold text-gray-800">
+        {showHeader && title ? (
+          <DialogHeader className="flex flex-col gap-1.5 p-6 border-b border-[#D5D5D5] text-left">
+            <DialogTitle className="md:text-base text-sm font-bold text-gray-800">
               {title}
-            </h2>
-          </div>
+            </DialogTitle>
+            {description ? (
+              <DialogDescription className="text-sm text-gray-500">
+                {description}
+              </DialogDescription>
+            ) : (
+              <DialogDescription className="sr-only">
+                {title}
+              </DialogDescription>
+            )}
+          </DialogHeader>
+        ) : (
+          <>
+            <DialogTitle className="sr-only">{title || "Dialog"}</DialogTitle>
+            {description && (
+              <DialogDescription className="sr-only">
+                {description}
+              </DialogDescription>
+            )}
+          </>
         )}
 
-        <div className={`overflow-y-auto ${customPadding}`}>{children}</div>
-      </div>
-    </div>,
-    document.body
+        <div className={cn("overflow-y-auto flex-1", customPadding)}>
+          {children}
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
