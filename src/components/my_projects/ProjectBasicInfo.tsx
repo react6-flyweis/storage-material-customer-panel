@@ -179,7 +179,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
               </div>
 
               <h2 className="mt-2.5 text-xl font-bold text-[#101828] md:text-2xl">
-                {lead?.projectName || (lead?.buildingType ? lead.buildingType.charAt(0).toUpperCase() + lead.buildingType.slice(1) : "Project Details")}
+                {lead?.projectName || "Project Details"}
               </h2>
 
               <p className="mt-1 text-xs sm:text-sm font-medium text-[#475467]">
@@ -230,6 +230,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
       />
       <ProjectOrdersList leadId={lead?._id || ""} />
 
+      <ProjectUpcomingDelivery leadId={lead?._id || ""} />
 
       <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ProjectStatusCard
@@ -246,7 +247,6 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         <ProjectNotes leadId={lead?._id || ""} />
       </div>
 
-      <ProjectUpcomingDelivery leadId={lead?._id || ""} />
     </div>
   );
 };
