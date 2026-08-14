@@ -4,7 +4,7 @@ import DrawingPlanImg from "../../assets/DrawingPlanImg.svg";
 import Modal from "../common_components/Modal";
 import { Button } from "../ui/button";
 import {
-  useUpdateDrawingStatusMutation,
+  useAddDrawingCommentMutation,
   useApproveDrawingMutation,
   useRequestDrawingRevisionMutation,
 } from "@/redux/api/projectsApi";
@@ -37,7 +37,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   const [reasonError, setReasonError] = useState("");
   const [comment, setComment] = useState("");
 
-  const [updateDrawingStatus, { isLoading: isSendingComment }] = useUpdateDrawingStatusMutation();
+  const [addDrawingComment, { isLoading: isSendingComment }] = useAddDrawingCommentMutation();
   const [approveDrawing, { isLoading: isApproving }] = useApproveDrawingMutation();
   const [requestDrawingRevision, { isLoading: isRequestingRevision }] = useRequestDrawingRevisionMutation();
 
@@ -91,11 +91,10 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     if (!leadId || !drawingId) return;
 
     try {
-      await updateDrawingStatus({
+      await addDrawingComment({
         leadId,
         drawingId,
-        status: drawing?.status || "pending",
-        notes: comment,
+        text: comment.trim(),
       }).unwrap();
       setComment("");
       onClose();
@@ -137,6 +136,64 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     normalizedStatus === "rejected";
   const isPending = !isApproved && !isRevisionRequired;
 
+  const revisionText = (
+    drawing?.revisionNote ||
+    drawing?.revisionReason ||
+    drawing?.notes ||
+    ""
+  ).trim();
+  const commentsList = Array.isArray(drawing?.comments) ? drawing.comments : [];
+  const hasRevision = Boolean(revisionText);
+
+  // Get the latest comment
+  const latestComment =
+    commentsList.length > 0 ? commentsList[commentsList.length - 1] : null;
+  const latestCommentText = (
+    typeof latestComment === "string"
+      ? latestComment
+      : latestComment?.text || ""
+  ).trim();
+
+  const hasComment = Boolean(latestCommentText);
+
+  const renderRevisionAndComments = () => {
+    if (!hasRevision && !hasComment) return null;
+
+    return (
+      <div
+        className={`grid gap-4 py-2 border-b border-gray-200 ${hasRevision && hasComment
+            ? "grid-cols-1 md:grid-cols-2"
+            : "grid-cols-1"
+          }`}
+      >
+        {hasRevision && (
+          <div
+            className={`${hasComment ? "md:border-r md:border-gray-200 md:pr-4" : ""
+              }`}
+          >
+            <h4 className="text-base font-bold text-[#101828] mb-1.5">
+              Revision Message
+            </h4>
+            <p className="text-sm text-[#475467] leading-relaxed break-words">
+              {revisionText}
+            </p>
+          </div>
+        )}
+
+        {hasComment && (
+          <div className={`${hasRevision ? "md:pl-4" : ""}`}>
+            <h4 className="text-base font-bold text-[#101828] mb-1.5">
+              Your Suggestions
+            </h4>
+            <div className="text-sm text-[#475467]">
+              <p className="leading-relaxed break-words">{latestCommentText}</p>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   if (!drawing || !projectInfo) return null;
 
   return (
@@ -145,7 +202,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       onClose={onClose}
       showHeader={false}
       customPadding="p-0"
-      width="max-w-4xl"
+      width="sm:max-w-4xl"
     >
       <div className="bg-white rounded-2xl w-full shadow-2xl overflow-hidden flex flex-col h-[85vh]">
         {/* Header */}
@@ -214,8 +271,11 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
         </div>
 
         {/* Footer - Conditional UI */}
-        <div className="p-3 lg:px-6 lg:py-3 border-t border-gray-300 bg-white">
-          <div className="flex flex-wrap items-center justify-between gap-3 mb-2">
+        <div className="p-3 lg:px-6 lg:py-3 border-t border-gray-300 bg-white space-y-3">
+          {/* Revision Message & Customer Suggestions (Comments) */}
+          {renderRevisionAndComments()}
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
             <button
               onClick={handleDownload}
               className="flex items-center gap-2 md:px-4 px-2 py-1 bg-[#9CA3AF] hover:bg-[#E2E8F0] text-white rounded-full md:text-base text-sm font-medium transition-all cursor-pointer"
@@ -311,7 +371,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
             </div>
           </Modal>
 
-          {isPending && (
+          {/* Show comment box only in pending drawings that don't have comments yet */}
+          {isPending && (!Array.isArray(drawing?.comments) || drawing.comments.length === 0) && (
             <div className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
               <input
                 type="text"
