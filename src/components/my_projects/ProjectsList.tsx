@@ -41,13 +41,7 @@ const ProjectsList = () => {
     setPage(1);
   };
 
-  const rawProjects = data?.projects || [];
-  const projects = rawProjects.filter((project) => {
-    if (selectedStatus === "All Projects") return true;
-    const statusStr = (project.lifecycleStatus || "").toLowerCase();
-    const target = selectedStatus.toLowerCase();
-    return statusStr.includes(target);
-  });
+  const projects = data?.projects || [];
   const totalItems = data?.total || 0;
 
   return (
