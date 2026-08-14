@@ -59,7 +59,7 @@ export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Drawings", "Quotation", "CustomerDrawings", "ProjectBuildings", "BuildingDrawings"],
+  tagTypes: ["Projects", "Drawings", "Quotation", "CustomerDrawings", "ProjectBuildings", "BuildingDrawings"],
   endpoints: (builder) => ({
     getProjects: builder.query<GetProjectsResponseData, GetProjectsParams>({
       query: ({ page, limit, tab, status }) => {
@@ -75,6 +75,7 @@ export const projectsApi = createApi({
           params,
         };
       },
+      providesTags: ["Projects"],
       transformResponse: (response: GetProjectsApiResponse) =>
         response.data as GetProjectsResponseData,
     }),
@@ -84,6 +85,7 @@ export const projectsApi = createApi({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Projects"],
     }),
     getProjectDetails: builder.query<ProjectDetailsResponseData, string>({
       query: (id) => ({
@@ -143,6 +145,23 @@ export const projectsApi = createApi({
         url: `/api/customer/projects/${leadId}/drawings/${drawingId}/request-revision`,
         method: "POST",
         body: { note },
+      }),
+      invalidatesTags: (_result, _error, { leadId }) => [
+        { type: "Drawings", id: leadId },
+        "Drawings",
+        "CustomerDrawings",
+        "ProjectBuildings",
+        "BuildingDrawings",
+      ],
+    }),
+    addDrawingComment: builder.mutation<
+      ApiResponse<Drawing | Record<string, unknown>>,
+      { leadId: string; drawingId: string; text: string }
+    >({
+      query: ({ leadId, drawingId, text }) => ({
+        url: `/api/customer/projects/${leadId}/drawings/${drawingId}/comments`,
+        method: "POST",
+        body: { text },
       }),
       invalidatesTags: (_result, _error, { leadId }) => [
         { type: "Drawings", id: leadId },
@@ -476,6 +495,24 @@ export interface GetProjectFollowUpsResponseData {
 
 export type GetProjectFollowUpsApiResponse = ApiResponse<GetProjectFollowUpsResponseData>;
 
+export interface DrawingCommentUser {
+  _id: string;
+  firstName?: string;
+  lastName?: string;
+  name?: string;
+  email?: string;
+}
+
+export interface DrawingComment {
+  _id: string;
+  text: string;
+  commentedBy?: string | DrawingCommentUser | null;
+  commentedByCustomer?: DrawingCommentUser | null;
+  authorName?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export interface DrawingUploadedBy {
   _id: string;
   name: string;
@@ -484,6 +521,8 @@ export interface DrawingUploadedBy {
 export interface Drawing {
   _id: string;
   leadId: string;
+  buildingLabel?: string;
+  category?: "drawing" | "document" | "photo" | string;
   name: string;
   fileUrl: string;
   fileType: string;
@@ -494,9 +533,12 @@ export interface Drawing {
   approvedBy: string | null;
   approvedAt: string | null;
   notes: string;
+  revisionNote?: string;
+  revisionRequestedAt?: string | null;
+  comments?: DrawingComment[];
+  versionNumber?: number;
   createdAt: string;
   updatedAt: string;
-  __v: number;
 }
 
 export interface GetProjectDrawingsResponseData {
@@ -663,6 +705,7 @@ export interface CustomerDocument {
   fileSize: number;
   notes: string;
   revisionNote?: string;
+  comments?: DrawingComment[];
   uploadedBy: {
     _id: string;
     name: string;
@@ -779,6 +822,7 @@ export const {
   useUpdateDrawingStatusMutation,
   useApproveDrawingMutation,
   useRequestDrawingRevisionMutation,
+  useAddDrawingCommentMutation,
   useGetProjectActivityQuery,
   useGetProjectNotesQuery,
   useGetProjectFollowUpsQuery,
