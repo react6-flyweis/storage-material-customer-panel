@@ -18,6 +18,19 @@ export interface PaymentLineItem {
   _id?: string;
 }
 
+export interface PaymentProofDetail {
+  status?: string;
+  files?: PaymentProofFile[];
+  transactionId?: string;
+  paymentDate?: string;
+  amount?: number;
+  notes?: string;
+  submittedAt?: string;
+  reviewedBy?: string | null;
+  reviewedAt?: string | null;
+  reviewNotes?: string;
+}
+
 export interface PaymentItemDetail {
   _id: string;
   leadId: string;
@@ -40,6 +53,7 @@ export interface PaymentItemDetail {
   updatedAt: string;
   lead?: PaymentLead;
   lineItems?: PaymentLineItem[];
+  paymentProof?: PaymentProofDetail;
 }
 
 export interface PaymentsResponseData {
@@ -94,6 +108,7 @@ export interface InvoiceDetail {
   paidAt: string | null;
   createdAt: string;
   updatedAt: string;
+  paymentProof?: PaymentProofDetail;
 }
 
 export interface PaymentScheduleStage {
@@ -160,15 +175,35 @@ export interface InvoiceStatsResponseData {
 
 export type GetInvoiceStatsApiResponse = ApiResponse<InvoiceStatsResponseData>;
 
+export interface PaymentProofFile {
+  url: string;
+  name: string;
+}
+
+export interface SubmitPaymentProofPayload {
+  files: PaymentProofFile[];
+  transactionId: string;
+  paymentDate: string;
+  amount: number;
+  notes?: string;
+}
+
+export interface SubmitPaymentProofRequest {
+  invoiceId: string;
+  body: SubmitPaymentProofPayload;
+}
+
 export const paymentsApi = createApi({
   reducerPath: "paymentsApi",
   baseQuery: baseQueryWithReauth,
+  tagTypes: ["Payments", "Invoices", "InvoiceDetail", "InvoiceStats", "TaxReport"],
   endpoints: (builder) => ({
     getPayments: builder.query<PaymentsResponseData, void>({
       query: () => ({
         url: "/api/customer/payments",
         method: "GET",
       }),
+      providesTags: ["Payments"],
       transformResponse: (response: GetPaymentsApiResponse) =>
         response.data as PaymentsResponseData,
     }),
@@ -177,6 +212,7 @@ export const paymentsApi = createApi({
         url: "/api/customer/payments/invoices",
         method: "GET",
       }),
+      providesTags: ["Invoices"],
       transformResponse: (response: GetInvoicesApiResponse) =>
         response.data as InvoicesResponseData,
     }),
@@ -185,6 +221,7 @@ export const paymentsApi = createApi({
         url: `/api/customer/payments/invoices/${invoiceId}`,
         method: "GET",
       }),
+      providesTags: (_result, _error, invoiceId) => [{ type: "InvoiceDetail", id: invoiceId }],
       transformResponse: (response: InvoiceDetailApiResponse) =>
         response.data as InvoiceDetailResponseData,
     }),
@@ -193,6 +230,7 @@ export const paymentsApi = createApi({
         url: "/api/customer/payments/invoice-stats",
         method: "GET",
       }),
+      providesTags: ["InvoiceStats"],
       transformResponse: (response: GetInvoiceStatsApiResponse) =>
         response.data as InvoiceStatsResponseData,
     }),
@@ -201,8 +239,20 @@ export const paymentsApi = createApi({
         url: "/api/customer/payments/tax-report",
         method: "GET",
       }),
+      providesTags: ["TaxReport"],
       transformResponse: (response: GetTaxReportApiResponse) =>
         response.data as TaxReportResponseData,
+    }),
+    submitPaymentProof: builder.mutation<
+      ApiResponse<unknown>,
+      { invoiceId: string; body: SubmitPaymentProofPayload }
+    >({
+      query: ({ invoiceId, body }) => ({
+        url: `/api/customer/payments/invoices/${invoiceId}/payment-proof`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: ["Payments", "Invoices", "InvoiceDetail", "InvoiceStats"],
     }),
   }),
 });
@@ -238,7 +288,9 @@ export const {
   useGetInvoiceDetailQuery,
   useGetInvoiceStatsQuery,
   useGetTaxReportQuery,
+  useSubmitPaymentProofMutation,
 } = paymentsApi;
+
 
 
 
