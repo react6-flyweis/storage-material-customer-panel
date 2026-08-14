@@ -137,7 +137,7 @@ export default function InvoicePreview() {
                 onClick={() => setIsPaymentModalOpen(true)}
               >
                 <Wallet className="h-4 w-4" />
-                Payments
+                Submit Proof
               </Button>
             </>
           )}
@@ -152,6 +152,10 @@ export default function InvoicePreview() {
       <PaymentModal
         isOpen={isPaymentModalOpen}
         onClose={() => setIsPaymentModalOpen(false)}
+        invoiceId={apiInvoice?._id}
+        invoiceNumber={apiInvoice?.invoiceNumber}
+        amount={apiInvoice?.totalAmount}
+        dueDate={apiInvoice?.dueDate}
       />
 
       <InvoiceTemplate
