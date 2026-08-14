@@ -6,12 +6,13 @@ import { useCreateProjectMutation } from "@/redux/api/projectsApi";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ProjectRequestSuccessModal } from "@/components/modals/ProjectRequestSuccessModal";
+import { getApiErrorMessage } from "@/redux/utils/apiError";
 
 interface CreateProjectFormValues {
   projectName: string;
   buildingType: string;
-  startDate: string;
-  endDate: string;
+  expectedStartDate: string;
+  targetCompletionDate: string;
   fullAddress: string;
   city: string;
   pincode: string;
@@ -35,54 +36,58 @@ export const AddNewProjectPage: React.FC = () => {
     register,
     control,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<CreateProjectFormValues>({
     defaultValues: {
-      projectName: "ABC Warehouse Expansion",
-      buildingType: "Warehouse",
-      startDate: "2026-09-15",
-      endDate: "2026-12-30",
-      fullAddress: "Baner Road",
-      city: "Pune",
-      pincode: "412101",
-      state: "Maharashtra",
-      width: 20,
-      length: 20,
-      height: 20,
-      doors: 2,
-      windows: 4,
-      insulation: 5,
+      projectName: "",
+      buildingType: "",
+      expectedStartDate: "",
+      targetCompletionDate: "",
+      fullAddress: "",
+      city: "",
+      pincode: "",
+      state: "",
+      width: 0,
+      length: 0,
+      height: 0,
+      doors: 0,
+      windows: 0,
+      insulation: 0,
       description: "",
     },
   });
 
   const onSubmit = async (data: CreateProjectFormValues) => {
+    clearErrors("root");
     try {
       await createProject({
         projectName: data.projectName,
         buildingType: data.buildingType,
-        startDate: data.startDate,
-        endDate: data.endDate,
-        address: data.fullAddress,
+        expectedStartDate: data.expectedStartDate,
+        targetCompletionDate: data.targetCompletionDate,
+        fullAddress: data.fullAddress,
         city: data.city,
         pincode: data.pincode,
         state: data.state,
-        specification: {
-          width: Number(data.width),
-          length: Number(data.length),
-          height: Number(data.height),
-          doors: Number(data.doors),
-          windows: Number(data.windows),
-          insulation: Number(data.insulation),
-        },
+        width: Number(data.width),
+        length: Number(data.length),
+        height: Number(data.height),
+        doors: Number(data.doors),
+        windows: Number(data.windows),
+        insulation: Number(data.insulation),
         description: data.description,
       }).unwrap();
 
       setShowSuccessModal(true);
     } catch (err: unknown) {
       console.error("Failed to create project:", err);
-      // Even if endpoint returns error in dev/mock environment, show success dialog as expected
-      setShowSuccessModal(true);
+      const errorMessage = getApiErrorMessage(err);
+      setError("root", {
+        type: "server",
+        message: errorMessage,
+      });
     }
   };
 
@@ -111,6 +116,13 @@ export const AddNewProjectPage: React.FC = () => {
         {/* Main Form Card Container */}
         <Card className="bg-white rounded-2xl border border-[#E2E8F0] shadow-sm py-6">
           <CardContent className="space-y-6 px-6">
+            {/* Form Root Error Alert */}
+            {errors.root && (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 flex items-start gap-2">
+                <span>{errors.root.message}</span>
+              </div>
+            )}
+
             {/* Top Fields Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
               {/* Project Name */}
@@ -139,6 +151,7 @@ export const AddNewProjectPage: React.FC = () => {
                     {...register("buildingType", { required: "Building type is required" })}
                     className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] appearance-none focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors cursor-pointer"
                   >
+                    <option value="" disabled>Select building type</option>
                     <option value="Warehouse">Warehouse</option>
                     <option value="Commercial">Commercial</option>
                     <option value="Residential">Residential</option>
@@ -160,13 +173,13 @@ export const AddNewProjectPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type="date"
-                    {...register("startDate", { required: "Start date is required" })}
+                    {...register("expectedStartDate", { required: "Start date is required" })}
                     className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
                   />
                   <Calendar className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none bg-[#F8FAFC]" />
                 </div>
-                {errors.startDate && (
-                  <p className="text-xs text-red-500 mt-1">{errors.startDate.message}</p>
+                {errors.expectedStartDate && (
+                  <p className="text-xs text-red-500 mt-1">{errors.expectedStartDate.message}</p>
                 )}
               </div>
 
@@ -178,13 +191,13 @@ export const AddNewProjectPage: React.FC = () => {
                 <div className="relative">
                   <input
                     type="date"
-                    {...register("endDate", { required: "Completion date is required" })}
+                    {...register("targetCompletionDate", { required: "Completion date is required" })}
                     className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
                   />
                   <Calendar className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none bg-[#F8FAFC]" />
                 </div>
-                {errors.endDate && (
-                  <p className="text-xs text-red-500 mt-1">{errors.endDate.message}</p>
+                {errors.targetCompletionDate && (
+                  <p className="text-xs text-red-500 mt-1">{errors.targetCompletionDate.message}</p>
                 )}
               </div>
             </div>
@@ -200,7 +213,7 @@ export const AddNewProjectPage: React.FC = () => {
                   type="text"
                   {...register("fullAddress", { required: "Full address is required" })}
                   className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
-                  placeholder="Baner Road"
+                  placeholder="Enter full address"
                 />
                 {errors.fullAddress && (
                   <p className="text-xs text-red-500 mt-1">{errors.fullAddress.message}</p>
@@ -212,19 +225,12 @@ export const AddNewProjectPage: React.FC = () => {
                 <label className="block text-xs font-semibold text-[#334155] mb-1">
                   City <span className="text-red-500">*</span>
                 </label>
-                <div className="relative">
-                  <select
-                    {...register("city", { required: "City is required" })}
-                    className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] appearance-none focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors cursor-pointer"
-                  >
-                    <option value="Pune">Pune</option>
-                    <option value="Mumbai">Mumbai</option>
-                    <option value="Delhi">Delhi</option>
-                    <option value="Bangalore">Bangalore</option>
-                    <option value="Hyderabad">Hyderabad</option>
-                  </select>
-                  <ChevronDown className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-                </div>
+                <input
+                  type="text"
+                  {...register("city", { required: "City is required" })}
+                  className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
+                  placeholder="Enter city"
+                />
                 {errors.city && (
                   <p className="text-xs text-red-500 mt-1">{errors.city.message}</p>
                 )}
@@ -239,7 +245,7 @@ export const AddNewProjectPage: React.FC = () => {
                   type="text"
                   {...register("pincode", { required: "Pin code is required" })}
                   className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
-                  placeholder="412101"
+                  placeholder="Enter pincode"
                 />
                 {errors.pincode && (
                   <p className="text-xs text-red-500 mt-1">{errors.pincode.message}</p>
@@ -255,7 +261,7 @@ export const AddNewProjectPage: React.FC = () => {
                   type="text"
                   {...register("state", { required: "State is required" })}
                   className="w-full rounded-lg border border-[#E2E8F0] bg-[#F8FAFC] px-3.5 py-2 text-sm text-[#0F172A] focus:bg-white focus:border-[#1D51A4] focus:outline-none transition-colors"
-                  placeholder="Maharashtra"
+                  placeholder="Enter state"
                 />
                 {errors.state && (
                   <p className="text-xs text-red-500 mt-1">{errors.state.message}</p>
