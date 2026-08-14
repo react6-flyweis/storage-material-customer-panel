@@ -151,6 +151,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
       documentType: item.documentType,
       notes: item.notes,
       revisionNote: item.revisionNote,
+      comments: item.comments,
     });
     setIsModalOpen(true);
   };
