@@ -4,8 +4,10 @@ import PaymentTable from "@/components/payments_and_invoices/PaymentTable";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import PaymentModal from "./PaymentModal";
+import ViewPaymentProofModal from "./ViewPaymentProofModal";
 import { useState } from "react";
 import { useGetPaymentsQuery, type PaymentItemDetail } from "@/redux/api/paymentsApi";
+import { UploadCloud, Eye } from "lucide-react";
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return "-";
@@ -52,43 +54,64 @@ const getTaxAmount = (item: PaymentItemDetail) => {
 };
 
 const PaymentsPage = () => {
+  const [selectedInvoice, setSelectedInvoice] = useState<PaymentItemDetail | null>(null);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [selectedProofItem, setSelectedProofItem] = useState<PaymentItemDetail | null>(null);
+  const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
   const { data } = useGetPaymentsQuery();
 
   const upcomingList = data?.upcoming || [];
   const overdueList = data?.overdue || [];
   const paidList = data?.paid || [];
 
-  const renderPaymentRow = (item: PaymentItemDetail, color: string) => (
-    <tr key={item._id} className="border-b border-gray-50 last:border-0">
-      <td className="py-4 px-4 md:text-sm text-xs max-w-[150px] text-[#6B7280] first:pl-0">
-        {item.invoiceNumber || "-"}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs max-w-[150px] font-normal text-black">
-        {getProjectName(item)}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs text-black max-w-[150px]">
-        {getDueDate(item)}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs font-normal text-black max-w-[150px]">
-        {formatCurrency(item.totalAmount)}
-      </td>
-      <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280] max-w-[100px]">
-        {formatDate(item.date)}
-      </td>
-      <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
-        <Button
-          onClick={() => setIsPaymentModalOpen(true)}
-          className={cn(
-            "text-white px-6 py-1 h-auto text-xs font-semibold rounded-md",
-            color,
-          )}
-        >
-          Pay Now
-        </Button>
-      </td>
-    </tr>
-  );
+  const handleOpenPaymentModal = (item: PaymentItemDetail) => {
+    setSelectedInvoice(item);
+    setIsPaymentModalOpen(true);
+  };
+
+  const renderPaymentRow = (item: PaymentItemDetail, color: string) => {
+    const isUploaded = Boolean(
+      item.paymentProof &&
+      (item.paymentProof.status ||
+        (item.paymentProof.files && item.paymentProof.files.length > 0) ||
+        item.paymentProof.transactionId)
+    );
+
+    return (
+      <tr key={item._id} className="border-b border-gray-50 last:border-0">
+        <td className="py-4 px-4 md:text-sm text-xs max-w-[150px] text-[#6B7280] first:pl-0">
+          {item.invoiceNumber || "-"}
+        </td>
+        <td className="py-4 px-4 md:text-sm text-xs max-w-[150px] font-normal text-black">
+          {getProjectName(item)}
+        </td>
+        <td className="py-4 px-4 md:text-sm text-xs text-black max-w-[150px]">
+          {getDueDate(item)}
+        </td>
+        <td className="py-4 px-4 md:text-sm text-xs font-normal text-black max-w-[150px]">
+          {formatCurrency(item.totalAmount)}
+        </td>
+        <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280] max-w-[100px]">
+          {formatDate(item.date)}
+        </td>
+        <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
+          <Button
+            disabled={isUploaded}
+            onClick={() => !isUploaded && handleOpenPaymentModal(item)}
+            className={cn(
+              "px-5 py-1.5 h-auto text-xs font-semibold rounded-md transition-all flex items-center gap-1.5",
+              isUploaded
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed hover:bg-gray-200 opacity-80"
+                : cn("text-white cursor-pointer", color)
+            )}
+          >
+            <UploadCloud className="w-3.5 h-3.5" />
+            {isUploaded ? "Uploaded" : "Upload"}
+          </Button>
+        </td>
+      </tr>
+    );
+  };
 
   const renderHistoryRow = (item: PaymentItemDetail) => (
     <tr
@@ -96,16 +119,16 @@ const PaymentsPage = () => {
       className="border-y border-[#00000033] last:border-0"
     >
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280] first:pl-0">
-        {item.invoiceNumber || "-"}
+        {item.paymentProof?.transactionId || item.invoiceNumber || "-"}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs font-normal text-[#6B7280]">
         {getProjectName(item)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-black">
-        {formatDate(item.paidAt || item.updatedAt)}
+        {formatDate(item.paymentProof?.paymentDate || item.paidAt || item.updatedAt)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs font-normal text-black">
-        {formatCurrency(item.totalAmount)}
+        {formatCurrency(item.paymentProof?.amount ?? item.totalAmount)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-black">
         {getTaxAmount(item)}
@@ -113,10 +136,28 @@ const PaymentsPage = () => {
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
         -
       </td>
-      <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
-        <span className="bg-[#DCFCE7] text-[#3AB449] px-10 py-1.5 rounded-full text-xs font-normal">
-          {item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : "-"}
+      <td className="py-4 px-4 text-center last:pr-0 max-w-[150px]">
+        <span className="bg-[#DCFCE7] text-[#3AB449] px-6 py-1.5 rounded-full text-xs font-normal inline-block">
+          {item.paymentProof?.status
+            ? item.paymentProof.status.charAt(0).toUpperCase() +
+            item.paymentProof.status.slice(1).replace(/_/g, " ")
+            : item.status
+              ? item.status.charAt(0).toUpperCase() + item.status.slice(1)
+              : "-"}
         </span>
+      </td>
+      <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
+        <Button
+          variant="ghost"
+          onClick={() => {
+            setSelectedProofItem(item);
+            setIsViewProofModalOpen(true);
+          }}
+
+        >
+          <Eye />
+
+        </Button>
       </td>
     </tr>
   );
@@ -171,7 +212,15 @@ const PaymentsPage = () => {
 
       <PaymentModal
         isOpen={isPaymentModalOpen}
-        onClose={() => setIsPaymentModalOpen(false)}
+        onClose={() => {
+          setIsPaymentModalOpen(false);
+          setSelectedInvoice(null);
+        }}
+        invoiceId={selectedInvoice?._id}
+        invoiceNumber={selectedInvoice?.invoiceNumber}
+        amount={selectedInvoice?.totalAmount}
+        projectName={selectedInvoice ? getProjectName(selectedInvoice) : undefined}
+        dueDate={selectedInvoice ? getDueDate(selectedInvoice) : undefined}
       />
 
       {/* Payment History */}
@@ -185,12 +234,24 @@ const PaymentsPage = () => {
           "Tax",
           "Payment Mode",
           "Status",
+          "Action",
         ]}
         data={paidList}
         renderRow={renderHistoryRow}
+      />
+
+      <ViewPaymentProofModal
+        isOpen={isViewProofModalOpen}
+        onClose={() => {
+          setIsViewProofModalOpen(false);
+          setSelectedProofItem(null);
+        }}
+        item={selectedProofItem}
+        projectName={selectedProofItem ? getProjectName(selectedProofItem) : undefined}
       />
     </div>
   );
 };
 
 export default PaymentsPage;
+
