@@ -16,6 +16,9 @@ interface DisplayDrawing {
   status: "Approved" | "Pending Review" | "Revision Required";
   fileUrl: string;
   updatedAt: string;
+  revisionNote?: string;
+  notes?: string;
+  comments?: any[];
 }
 
 interface DisplayProject {
@@ -152,6 +155,9 @@ const ProjectsDrawingsList = () => {
         status: mapStatus(d.status),
         fileUrl: d.url,
         updatedAt: d.uploadedAt,
+        revisionNote: d.revisionNote,
+        notes: d.notes,
+        comments: d.comments,
       })),
     };
   });
