@@ -5,7 +5,7 @@ import MenuIcon4 from "@/assets/sidebar_icons/CommunicationIcon.svg";
 import MenuIcon5 from "@/assets/sidebar_icons/RecieptIcon.svg";
 import MenuIcon6 from "@/assets/sidebar_icons/NotificationIcon.svg";
 import MenuIcon7 from "@/assets/sidebar_icons/truck.svg";
-import StackIcon from "@/assets/sidebar_icons/StackIcon.svg"
+// import StackIcon from "@/assets/sidebar_icons/StackIcon.svg"
 
 export type SubNavItem = {
   label: string;
@@ -44,13 +44,6 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    title: "Communication",
-    color: "bg-[#DCC426]",
-    icon: MenuIcon4,
-    items: [],
-    path: "/communication",
-  },
-  {
     title: "",
     color: "bg-[#000000]",
     icon: MenuIcon5,
@@ -61,26 +54,33 @@ export const NAV_ITEMS: NavItem[] = [
     ],
   },
   {
-    title: "Notifications",
-    color: "bg-[#A855F7]",
-    icon: MenuIcon6,
-    path: "/notification",
-  },
-  {
     title: "Delivery Shedule",
     color: "bg-[#2B7FFF]",
     icon: MenuIcon7,
     path: "/delivery-schedule",
   },
   {
-    title: "Material Orders",
-    color: "bg-[#CE222B]",
-    icon: StackIcon,
-    items: [
-      {
-        label: "Material Orders", path: "/material-orders"
-      },
-      { label: "Order Quotations", path: "/order-quotations" },
-    ]
-  }
+    title: "Notifications",
+    color: "bg-[#A855F7]",
+    icon: MenuIcon6,
+    path: "/notification",
+  },
+  {
+    title: "Communication",
+    color: "bg-[#DCC426]",
+    icon: MenuIcon4,
+    items: [],
+    path: "/communication",
+  },
+  // {
+  //   title: "Material Orders",
+  //   color: "bg-[#CE222B]",
+  //   icon: StackIcon,
+  //   items: [
+  //     {
+  //       label: "Material Orders", path: "/material-orders"
+  //     },
+  //     { label: "Order Quotations", path: "/order-quotations" },
+  //   ]
+  // }
 ];
