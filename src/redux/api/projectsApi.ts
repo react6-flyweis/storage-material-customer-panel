@@ -59,7 +59,7 @@ export type GetProjectsApiResponse = ApiResponse<GetProjectsResponseData>;
 export const projectsApi = createApi({
   reducerPath: "projectsApi",
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["Projects", "Drawings", "Quotation", "CustomerDrawings", "ProjectBuildings", "BuildingDrawings"],
+  tagTypes: ["Projects", "Drawings", "Quotation", "CustomerDrawings", "ProjectBuildings", "BuildingDrawings", "ProjectMedia"],
   endpoints: (builder) => ({
     getProjects: builder.query<GetProjectsResponseData, GetProjectsParams>({
       query: ({ page, limit, tab, status }) => {
@@ -275,6 +275,22 @@ export const projectsApi = createApi({
       }),
       invalidatesTags: (_result, _error, { leadId }) => [{ type: "Quotation", id: leadId }],
     }),
+    getQuotationHtmlPreview: builder.query<string, { previewUrl?: string; leadId?: string }>({
+      query: ({ previewUrl, leadId }) => ({
+        url: previewUrl || `/api/customer/projects/${leadId}/quotation/preview?format=html`,
+        method: "GET",
+        responseHandler: (response) => response.text(),
+      }),
+      providesTags: (_result, _error, { leadId }) =>
+        leadId ? [{ type: "Quotation", id: `${leadId}-html` }] : [],
+    }),
+    downloadQuotationPdf: builder.mutation<Blob, { pdfUrl?: string; leadId: string }>({
+      query: ({ pdfUrl, leadId }) => ({
+        url: pdfUrl || `/api/customer/projects/${leadId}/quotation/pdf`,
+        method: "GET",
+        responseHandler: (response) => response.blob(),
+      }),
+    }),
     getChatHistory: builder.query<
       {
         isChatEnded: boolean;
@@ -331,6 +347,26 @@ export const projectsApi = createApi({
       }),
       transformResponse: (response: ApiResponse<ProjectTrackingResponseData>) =>
         response.data as ProjectTrackingResponseData,
+    }),
+    getProjectMedia: builder.query<
+      ProjectMediaResponseData,
+      { leadId: string; type?: "photo" | "video" } | string
+    >({
+      query: (arg) => {
+        const leadId = typeof arg === "string" ? arg : arg.leadId;
+        const type = typeof arg === "object" ? arg.type : undefined;
+        return {
+          url: `/api/customer/projects/${leadId}/media`,
+          method: "GET",
+          params: type ? { type } : undefined,
+        };
+      },
+      providesTags: (_result, _error, arg) => {
+        const leadId = typeof arg === "string" ? arg : arg.leadId;
+        return [{ type: "ProjectMedia" as const, id: leadId }];
+      },
+      transformResponse: (response: GetProjectMediaApiResponse) =>
+        response.data as ProjectMediaResponseData,
     }),
   }),
 });
@@ -742,8 +778,60 @@ export interface ProjectPaymentsSummaryResponseData {
 
 export type GetProjectPaymentsSummaryApiResponse = ApiResponse<ProjectPaymentsSummaryResponseData>;
 
+export interface QuotationAssignedSalesperson {
+  name?: string;
+  email?: string;
+  phone?: string;
+  avatar?: string;
+}
+
+export interface QuotationSourceEstimate {
+  grandTotal?: number;
+  squareFootage?: number;
+  [key: string]: unknown;
+}
+
+export interface ProjectQuotationPreview {
+  htmlUrl?: string;
+  pdfUrl?: string;
+  useGeneratorPreview?: boolean;
+}
+
+export interface ProjectQuotationDocumentMeta {
+  source?: string;
+  hasPricingData?: boolean;
+  [key: string]: unknown;
+}
+
+export interface ProjectQuotationSummary {
+  summary: string;
+  generatedAt?: string;
+}
+
+export interface BuildingQuotationData extends Partial<Quotation> {
+  _id: string;
+  quoteNumber?: string;
+  status?: string;
+  workflowStatus?: string;
+  finalPrice?: number;
+  sourceEstimate?: QuotationSourceEstimate;
+  assignedSalesperson?: QuotationAssignedSalesperson;
+  createdAt?: string;
+  updatedAt?: string;
+  validTill?: string;
+  versionNumber?: number;
+  clientNotes?: string;
+  specialNote?: string;
+  [key: string]: unknown;
+}
+
 export interface GetProjectQuotationResponseData {
-  quotation: Quotation | null;
+  availability?: "ready" | "pending" | string;
+  quotation?: BuildingQuotationData | null;
+  quoteSummary?: ProjectQuotationSummary | null;
+  preview?: ProjectQuotationPreview | null;
+  documentMeta?: ProjectQuotationDocumentMeta | null;
+  message?: string | null;
 }
 
 export type GetProjectQuotationApiResponse = ApiResponse<GetProjectQuotationResponseData>;
@@ -814,6 +902,44 @@ export interface ProjectTrackingResponseData {
 
 export type GetProjectTrackingApiResponse = ApiResponse<ProjectTrackingResponseData>;
 
+export interface ProjectMediaUploadedBy {
+  _id?: string;
+  name?: string;
+  role?: string;
+  email?: string;
+}
+
+export interface ProjectMediaDocument {
+  _id: string;
+  url: string;
+  name?: string;
+  type?: "photo" | "video" | string;
+  uploadedAt?: string;
+  requiresApproval?: boolean;
+  uploadedBy?: ProjectMediaUploadedBy | string;
+  building?: string;
+  buildingLabel?: string;
+}
+
+export interface ProjectMediaResponseData {
+  leadId: string;
+  projectId?: string;
+  projectName?: string;
+  documents?: ProjectMediaDocument[];
+  photos?: ProjectMediaDocument[];
+  videos?: ProjectMediaDocument[];
+  total?: number;
+  photoCount?: number;
+  videoCount?: number;
+}
+
+export type GetProjectMediaApiResponse = ApiResponse<ProjectMediaResponseData>;
+
+export interface GetProjectMediaParams {
+  leadId: string;
+  type?: "photo" | "video";
+}
+
 export const {
   useGetProjectsQuery,
   useCreateProjectMutation,
@@ -832,10 +958,13 @@ export const {
   useGetCustomerDocumentsQuery,
   useGetProjectPaymentsSummaryQuery,
   useGetProjectQuotationQuery,
+  useGetQuotationHtmlPreviewQuery,
+  useDownloadQuotationPdfMutation,
   useApproveQuotationMutation,
   useRejectQuotationMutation,
   useGetChatHistoryQuery,
   useGetProjectTrackingQuery,
+  useGetProjectMediaQuery,
 } = projectsApi;
 
 
