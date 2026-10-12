@@ -1,6 +1,6 @@
-import { useState } from "react";
-import MegaphoneIcon from "../../assets/new-images/megaphone.svg";
-import { Bell, DownloadIcon, FileIcon, UserPlus, X } from "lucide-react";
+import { X, Building2, Clock, ShieldCheck, CheckCircle2 } from "lucide-react";
+import logo from "../../assets/logo.png";
+import { useAppSelector } from "@/redux/hooks";
 
 type Props = {
   open: boolean;
@@ -8,128 +8,115 @@ type Props = {
 };
 
 export default function ChatInfoDrawer({ open, onClose }: Props) {
-  const [activeTab, setActiveTab] = useState<"members" | "files">("members");
+  const currentUser = useAppSelector((state) => state.auth.user);
 
   if (!open) return null;
 
   return (
-    <div className="absolute right-[-1px] top-0 -bottom-[1px] inset-0 z-50 flex justify-end">
-      <div className="w-[332px] h-full bg-white flex flex-col shadow-[0px_4px_4px_0px_#00000040]">
-        <div className="p-4 flex items-center gap-8">
-          <button onClick={onClose}>
-            <X className="h-5 w-5 text-[#6B7280]" />
+    <div className="fixed md:absolute inset-0 z-50 flex justify-end bg-black/30 backdrop-blur-xs transition-opacity">
+      <div className="w-full max-w-sm md:w-[360px] h-full bg-white flex flex-col shadow-2xl border-l border-gray-200 animate-in slide-in-from-right duration-200">
+        {/* Header */}
+        <div className="p-4 border-b flex items-center justify-between bg-gray-50/50">
+          <div className="flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-blue-600" />
+            <h2 className="font-semibold text-gray-900 text-base">Support & Contact Info</h2>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+            aria-label="Close details"
+          >
+            <X className="h-5 w-5" />
           </button>
+        </div>
 
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#3B82F6] rounded-[8px] flex items-center justify-center">
-                <img src={MegaphoneIcon} alt="" />
+        {/* Content */}
+        <div className="flex-1 overflow-y-auto p-5 space-y-6">
+          {/* Organization Card */}
+          <div className="flex flex-col items-center text-center p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
+            <img src={logo} alt="MR Storage" className="h-10 object-contain mb-2" />
+            <h3 className="font-semibold text-gray-900 text-sm">MR Storage Operations Team</h3>
+            <p className="text-xs text-gray-500 mt-1">
+              Direct line between customer account & support team.
+            </p>
+            <div className="mt-3 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              Support Active
             </div>
+          </div>
 
+          {/* Support Services Covered */}
+          <div>
+            <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2.5">
+              Support Coverage
+            </h4>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2.5 p-2 rounded-lg bg-gray-50 text-gray-700">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-xs text-gray-900">Plant & Fabrication</p>
+                  <p className="text-[11px] text-gray-500">Material production, packing & dispatches</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-2 rounded-lg bg-gray-50 text-gray-700">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-xs text-gray-900">Sales & Quotations</p>
+                  <p className="text-[11px] text-gray-500">Orders, BOM approvals & quotation revisions</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2.5 p-2 rounded-lg bg-gray-50 text-gray-700">
+                <CheckCircle2 className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-xs text-gray-900">Project Operations</p>
+                  <p className="text-[11px] text-gray-500">Drawings, milestones & delivery schedules</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Customer Context */}
+          {currentUser && (
             <div>
-                <p className="font-semibold text-[#111827] text-base">Marketing Team</p>
-                <p className="text-sm text-[#6B7280]">2 members · Marketing</p>
+              <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">
+                Your Account
+              </h4>
+              <div className="p-3 rounded-lg border border-gray-200 bg-gray-50 text-xs space-y-1.5">
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Name:</span>
+                  <span className="font-medium text-gray-800">{currentUser.firstName || "Customer"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-500">Email:</span>
+                  <span className="font-medium text-gray-800 truncate max-w-[180px]">{currentUser.email}</span>
+                </div>
+                {currentUser.customerId && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Customer ID:</span>
+                    <span className="font-mono text-gray-800">{currentUser.customerId}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Operating hours & security */}
+          <div className="space-y-3 pt-2 border-t text-xs text-gray-600">
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-gray-400 shrink-0" />
+              <span>Working Hours: Mon – Fri (8:00 AM – 6:00 PM EST)</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>End-to-end recorded communication linked to your account</span>
             </div>
           </div>
         </div>
 
-        <p className="px-4 text-sm text-[#6B7280]">
-          Marketing department discussions and campaigns
-        </p>
-
-        <button className="flex items-center justify-center text-sm gap-2 px-4 py-4 pt-6 text-[#6B7280]">
-           <Bell className="h-5 w-5" />
-           Mute
-        </button>
-
-        <div className="flex border-b">
-          <button
-            onClick={() => setActiveTab("members")}
-            className={`flex-1 py-3 text-sm ${
-              activeTab === "members"
-                ? "text-[#2563EB] border-b-2 border-[#2563EB] font-medium"
-                : "text-[#6B7280] border-b-2 border-transparent"
-            }`}
-          >
-            Members
-          </button>
-
-          <button
-            onClick={() => setActiveTab("files")}
-            className={`flex-1 py-3 text-sm ${
-              activeTab === "files"
-                ? "text-[#2563EB] border-b-2 border-[#2563EB] font-medium"
-                : "text-[#6B7280] border-b-2 border-transparent"
-            }`}
-          >
-            Files
-          </button>
-        </div>
-
-        <div className="flex-1 overflow-auto scroll-hide p-4">
-          {activeTab === "members" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://i.pravatar.cc/40?img=1"
-                  className="w-8 h-8 rounded-full"
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-[#111827] text-sm">John Doe</p>
-                  <p className="text-[12px] text-[#6B7280]">Marketing</p>
-                </div>
-                <span className="px-3 py-1 text-xs bg-[#DBEAFE] text-[#2563EB] rounded-full">
-                  Admin
-                </span>
-              </div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://i.pravatar.cc/40?img=1"
-                  className="w-8 h-8 rounded-full"
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-[#111827] text-sm">John Doe</p>
-                  <p className="text-[12px] text-[#6B7280]">Marketing</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <img
-                  src="https://i.pravatar.cc/40?img=1"
-                  className="w-8 h-8 rounded-full"
-                />
-                <div className="flex-1">
-                  <p className="font-medium text-[#111827] text-sm">John Doe</p>
-                  <p className="text-[12px] text-[#6B7280]">Marketing</p>
-                </div>
-              </div>
-
-              <button className="flex items-center text-[#6B7280] text-sm justify-center gap-2 !mt-6 w-full">
-                <UserPlus className="h-5 w-5" />
-                 Add member
-              </button>
-            </div>
-          )}
-
-          {activeTab === "files" && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-[8px] bg-[#DBEAFE] flex items-center justify-center">
-                  <FileIcon className="h-4 w-4 text-[#2563EB]" />
-                </div>
-
-                <div className="flex-1">
-                  <p className="font-medium text-sm text-[#000]">
-                    Q1-Marketing-Budget-2024
-                  </p>
-                  <p className="text-[12px] text-[#6B7280]">Sarah Johnson</p>
-                </div>
-
-                <button>
-                  <DownloadIcon className="h-5 w-5 text-[#6B7280]" />
-                </button>
-              </div>
-              
-            </div>
-          )}
+        {/* Footer */}
+        <div className="p-4 border-t bg-gray-50 flex items-center justify-between text-xs text-gray-500">
+          <span>Need phone support?</span>
+          <span className="font-semibold text-blue-600">Contact your Account Manager</span>
         </div>
       </div>
     </div>

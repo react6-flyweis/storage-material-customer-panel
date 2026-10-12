@@ -100,22 +100,58 @@ export const deliveriesApi = createApi({
   reducerPath: "deliveriesApi",
   baseQuery: baseQueryWithReauth,
   endpoints: (builder) => ({
-    getDeliveries: builder.query<GetDeliveriesResponseData, { tab: string; project?: string }>({
-      query: ({ tab, project }) => ({
-        url: project ? `/api/customer/deliveries/${project}` : "/api/customer/deliveries",
-        method: "GET",
-        params: { tab },
-      }),
-      transformResponse: (response: GetDeliveriesApiResponse) =>
-        response.data as GetDeliveriesResponseData,
+    getDeliveries: builder.query<
+      GetDeliveriesResponseData,
+      { tab?: string; project?: string; leadId?: string }
+    >({
+      query: ({ tab = "upcoming", project, leadId }) => {
+        const id = leadId || project;
+        return {
+          url: id ? `/api/customer/deliveries/${id}` : "/api/customer/deliveries",
+          method: "GET",
+          params: {
+            tab,
+            ...(id ? { leadId: id } : {}),
+          },
+        };
+      },
+      transformResponse: (response: ApiResponse<GetDeliveriesResponseData | Delivery[]>) => {
+        if (Array.isArray(response.data)) {
+          const list = response.data;
+          return {
+            deliveries: list,
+            total: list.length,
+            tabs: {
+              upcoming: list.filter((d) => d.status === "scheduled" || d.status === "in_transit").length,
+              past: list.filter((d) => d.status === "delivered").length,
+              rescheduled: list.filter((d) => d.status === "rescheduled" || Boolean(d.reschedule)).length,
+            },
+          };
+        }
+        const data = response.data as GetDeliveriesResponseData;
+        return {
+          deliveries: data?.deliveries || [],
+          total: data?.total ?? (data?.deliveries?.length || 0),
+          tabs: data?.tabs || {
+            upcoming: 0,
+            past: 0,
+            rescheduled: 0,
+          },
+        };
+      },
     }),
     getDeliveryById: builder.query<Delivery, string>({
       query: (deliveryId) => ({
         url: `/api/customer/deliveries/${deliveryId}`,
         method: "GET",
       }),
-      transformResponse: (response: ApiResponse<{ delivery: Delivery }>) =>
-        response.data?.delivery as Delivery,
+      transformResponse: (response: ApiResponse<{ delivery: Delivery } | Delivery>) => {
+        const raw = response.data;
+        if (raw && typeof raw === "object" && "delivery" in raw) {
+          return (raw as { delivery: Delivery }).delivery;
+        }
+        return raw as Delivery;
+      },
     }),
     sendConfirmationEmail: builder.mutation<ApiResponse<unknown>, string>({
       query: (deliveryId) => ({
@@ -200,8 +236,14 @@ export const deliveriesApi = createApi({
         url: "/api/customer/deliveries/summary",
         method: "GET",
       }),
-      transformResponse: (response: GetDeliveriesSummaryApiResponse) =>
-        response.data as GetDeliveriesSummaryResponseData,
+      transformResponse: (
+        response: ApiResponse<GetDeliveriesSummaryResponseData | DeliverySummaryProject[]>
+      ) => {
+        if (Array.isArray(response.data)) {
+          return { projects: response.data };
+        }
+        return (response.data || { projects: [] }) as GetDeliveriesSummaryResponseData;
+      },
     }),
     confirmSiteReady: builder.mutation<
       ApiResponse<{ deliveryId: string; siteReadyConfirmation: unknown }>,

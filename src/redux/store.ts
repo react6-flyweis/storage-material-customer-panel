@@ -20,6 +20,7 @@ import { quotationsApi } from "./api/quotationsApi";
 import { materialOrdersApi } from "./api/materialOrdersApi";
 import { drawingsApi } from "./api/drawingsApi";
 import { notificationsApi } from "./api/notificationsApi";
+import { customerChatApi } from "./api/customerChatApi";
 
 const rootReducer = combineReducers({
   auth: authReducer,
@@ -32,6 +33,7 @@ const rootReducer = combineReducers({
   [materialOrdersApi.reducerPath]: materialOrdersApi.reducer,
   [drawingsApi.reducerPath]: drawingsApi.reducer,
   [notificationsApi.reducerPath]: notificationsApi.reducer,
+  [customerChatApi.reducerPath]: customerChatApi.reducer,
 });
 
 const persistConfig = {
@@ -58,7 +60,8 @@ export const store = configureStore({
       quotationsApi.middleware,
       materialOrdersApi.middleware,
       drawingsApi.middleware,
-      notificationsApi.middleware
+      notificationsApi.middleware,
+      customerChatApi.middleware
     ),
 });
 
