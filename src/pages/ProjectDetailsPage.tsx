@@ -47,6 +47,7 @@ const ProjectDetailsPage = () => {
 
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false);
   const [modalTitle, setModalTitle] = useState("");
+  const [modalSubSubTitle, setModalSubSubTitle] = useState("");
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("Basic info");
   const [isTrackLifecycleOpen, setIsTrackLifecycleOpen] = useState(false);
@@ -69,10 +70,11 @@ const ProjectDetailsPage = () => {
     try {
       await approveQuotation(id).unwrap();
       setModalTitle("Quotation Approved Successfully");
+      setModalSubSubTitle("Our project team has been notified and will proceed with next steps.");
       setIsSuccessModalOpen(true);
       setTimeout(() => {
         setIsSuccessModalOpen(false);
-      }, 5000);
+      }, 4000);
     } catch (err) {
       console.error("Failed to approve quotation:", err);
     }
@@ -85,10 +87,11 @@ const ProjectDetailsPage = () => {
       setIsRejectQuotationModalOpen(false);
       setRejectQuotationReason("");
       setModalTitle("Quotation Rejected Successfully");
+      setModalSubSubTitle("Your feedback has been sent to the sales team to prepare revisions.");
       setIsSuccessModalOpen(true);
       setTimeout(() => {
         setIsSuccessModalOpen(false);
-      }, 5000);
+      }, 4000);
     } catch (err) {
       console.error("Failed to reject quotation:", err);
       const error = err as { data?: { message?: string } };
@@ -145,7 +148,7 @@ const ProjectDetailsPage = () => {
             </Button>
           </div>
         )}
-        {activeTab === "Quotation" && quotationData?.quotation?.status?.toLowerCase() !== "accepted" && quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
+        {activeTab === "Quotation" && quotationData?.availability === "ready" && quotationData?.quotation?.status?.toLowerCase() !== "accepted" && quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
           <div className="flex items-center gap-3">
             <Button
               onClick={() => setIsRejectQuotationModalOpen(true)}
@@ -170,6 +173,7 @@ const ProjectDetailsPage = () => {
           isOpen={isSuccessModalOpen}
           onClose={() => setIsSuccessModalOpen(false)}
           title={modalTitle}
+          subSubTitle={modalSubSubTitle}
         />
 
         <Modal
