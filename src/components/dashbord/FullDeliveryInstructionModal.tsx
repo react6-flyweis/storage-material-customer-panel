@@ -15,7 +15,10 @@ import {
   Clock4,
   Loader2,
 } from "lucide-react";
-import { useGetDeliveryByIdQuery } from "@/redux/api/deliveriesApi";
+import {
+  useGetDeliveryByIdQuery,
+  useLazyDownloadDeliveryDetailsQuery,
+} from "@/redux/api/deliveriesApi";
 
 interface FullDeliveryInstructionModalProps {
   open: boolean;
@@ -31,7 +34,25 @@ export default function FullDeliveryInstructionModal({
   const { data: delivery, isLoading } = useGetDeliveryByIdQuery(deliveryId, {
     skip: !open || !deliveryId,
   });
+  const [triggerDownload, { isLoading: isDownloading }] =
+    useLazyDownloadDeliveryDetailsQuery();
 
+  const handleDownloadPdf = async () => {
+    if (!deliveryId) return;
+    try {
+      const blob = await triggerDownload(deliveryId).unwrap();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `delivery-instructions-${delivery?.deliveryNumber || deliveryId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Failed to download delivery instructions", err);
+    }
+  };
 
   if (!open) return null;
 
@@ -262,9 +283,13 @@ export default function FullDeliveryInstructionModal({
               </div>
 
               <div className="mt-4 grid grid-cols-2 gap-4">
-                <button className="flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium text-[#101828]">
+                <button
+                  onClick={handleDownloadPdf}
+                  disabled={isDownloading}
+                  className="flex items-center justify-center gap-2 rounded-lg border py-3 text-sm font-medium text-[#101828] hover:bg-gray-50 transition-colors cursor-pointer disabled:opacity-50"
+                >
                   <Download size={18} />
-                  Download PDF
+                  {isDownloading ? "Downloading..." : "Download PDF"}
                 </button>
 
                 <button
