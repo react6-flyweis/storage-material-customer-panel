@@ -1,5 +1,8 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Eye, ChevronDown, Truck, Loader2 } from "lucide-react";
 import { useGetDeliveriesQuery, type Delivery } from "@/redux/api/deliveriesApi";
+import FullDeliveryInstructionModal from "../dashbord/FullDeliveryInstructionModal";
 
 export interface DeliveryItem {
   id: string;
@@ -58,10 +61,31 @@ const ProjectUpcomingDelivery = ({
   onViewAll,
   onViewDeliveryDetails,
 }: ProjectUpcomingDeliveryProps) => {
+  const navigate = useNavigate();
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | null>(null);
+
   const { data, isLoading } = useGetDeliveriesQuery(
-    { tab: "upcoming", project: leadId },
+    { tab: "upcoming", leadId },
     { skip: !leadId }
   );
+
+  const handleViewAll = () => {
+    if (onViewAll) {
+      onViewAll();
+    } else if (leadId) {
+      navigate(`/project-delivery-schedule/${leadId}`);
+    } else {
+      navigate("/delivery-schedule");
+    }
+  };
+
+  const handleViewDetails = (delivery: DeliveryItem) => {
+    if (onViewDeliveryDetails) {
+      onViewDeliveryDetails(delivery);
+    } else {
+      setSelectedDeliveryId(delivery.id);
+    }
+  };
 
   const apiDeliveries = data?.deliveries?.map(mapApiDeliveryToItem);
   const displayDeliveries = propDeliveries || apiDeliveries || [];
@@ -74,14 +98,12 @@ const ProjectUpcomingDelivery = ({
           <Truck className="h-6 w-6 text-[#2563EB] fill-[#2563EB]/10" />
           <h2 className="text-xl font-bold text-[#101828]">Upcoming Delivery</h2>
         </div>
-        {onViewAll && (
-          <button
-            onClick={onViewAll}
-            className="rounded-lg border border-[#D0D5DD] bg-white px-5 py-2 text-sm font-semibold text-[#101828] shadow-xs hover:bg-gray-50 transition-colors"
-          >
-            View All
-          </button>
-        )}
+        <button
+          onClick={handleViewAll}
+          className="rounded-lg border border-[#D0D5DD] bg-white px-5 py-2 text-sm font-semibold text-[#101828] shadow-xs hover:bg-gray-50 transition-colors cursor-pointer"
+        >
+          View All
+        </button>
       </div>
 
       {/* Table Container */}
@@ -153,8 +175,8 @@ const ProjectUpcomingDelivery = ({
                   </td>
                   <td className="py-5 px-4 sm:px-6 text-right whitespace-nowrap">
                     <button
-                      onClick={() => onViewDeliveryDetails?.(delivery)}
-                      className="p-1 text-[#101828] hover:text-[#2563EB] transition-colors rounded-md"
+                      onClick={() => handleViewDetails(delivery)}
+                      className="p-1 text-[#101828] hover:text-[#2563EB] transition-colors rounded-md cursor-pointer"
                       title="View details"
                     >
                       <Eye className="h-5 w-5 stroke-[1.75]" />
@@ -166,6 +188,12 @@ const ProjectUpcomingDelivery = ({
           </table>
         )}
       </div>
+
+      <FullDeliveryInstructionModal
+        open={Boolean(selectedDeliveryId)}
+        deliveryId={selectedDeliveryId || ""}
+        onClose={() => setSelectedDeliveryId(null)}
+      />
     </div>
   );
 };
