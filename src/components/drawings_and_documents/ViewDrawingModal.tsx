@@ -37,9 +37,12 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   const [reasonError, setReasonError] = useState("");
   const [comment, setComment] = useState("");
 
-  const [addDrawingComment, { isLoading: isSendingComment }] = useAddDrawingCommentMutation();
-  const [approveDrawing, { isLoading: isApproving }] = useApproveDrawingMutation();
-  const [requestDrawingRevision, { isLoading: isRequestingRevision }] = useRequestDrawingRevisionMutation();
+  const [addDrawingComment, { isLoading: isSendingComment }] =
+    useAddDrawingCommentMutation();
+  const [approveDrawing, { isLoading: isApproving }] =
+    useApproveDrawingMutation();
+  const [requestDrawingRevision, { isLoading: isRequestingRevision }] =
+    useRequestDrawingRevisionMutation();
 
   const isUpdating = isSendingComment || isApproving || isRequestingRevision;
 
@@ -49,7 +52,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       return;
     }
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
+    const leadId =
+      drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
@@ -64,13 +68,18 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       onClose();
     } catch (err: any) {
       console.error("Failed to request revision:", err);
-      setReasonError(err?.data?.message || err?.message || "Failed to request revision. Please try again.");
+      setReasonError(
+        err?.data?.message ||
+          err?.message ||
+          "Failed to request revision. Please try again.",
+      );
     }
   };
 
   const handleApprove = async () => {
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
+    const leadId =
+      drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
@@ -87,7 +96,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
   const handleSendComment = async () => {
     if (!comment.trim()) return;
     const drawingId = drawing?._id || drawing?.id;
-    const leadId = drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
+    const leadId =
+      drawing?.leadId || projectInfo?.leadId || projectInfo?.projectCode;
     if (!leadId || !drawingId) return;
 
     try {
@@ -106,7 +116,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
   const handleDownload = async () => {
     const url = drawing.fileUrl || DrawingPlanImg;
-    const filename = drawing.name ? `${drawing.name}.${url.split('.').pop()?.split('?')[0] || 'pdf'}` : 'download';
+    const filename = drawing.name
+      ? `${drawing.name}.${url.split(".").pop()?.split("?")[0] || "pdf"}`
+      : "download";
     try {
       const response = await fetch(url);
       const blob = await response.blob();
@@ -119,7 +131,10 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
       document.body.removeChild(link);
       window.URL.revokeObjectURL(blobUrl);
     } catch (error) {
-      console.error("Download failed via blob, falling back to direct link", error);
+      console.error(
+        "Download failed via blob, falling back to direct link",
+        error,
+      );
       const link = document.createElement("a");
       link.href = url;
       link.target = "_blank";
@@ -128,7 +143,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
     }
   };
 
-  const normalizedStatus = String(drawing?.status || "").toLowerCase().trim();
+  const normalizedStatus = String(drawing?.status || "")
+    .toLowerCase()
+    .trim();
   const isApproved = normalizedStatus === "approved";
   const isRevisionRequired =
     normalizedStatus === "revision required" ||
@@ -161,15 +178,17 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
     return (
       <div
-        className={`grid gap-4 py-2 border-b border-gray-200 ${hasRevision && hasComment
+        className={`grid gap-4 py-2 border-b border-gray-200 ${
+          hasRevision && hasComment
             ? "grid-cols-1 md:grid-cols-2"
             : "grid-cols-1"
-          }`}
+        }`}
       >
         {hasRevision && (
           <div
-            className={`${hasComment ? "md:border-r md:border-gray-200 md:pr-4" : ""
-              }`}
+            className={`${
+              hasComment ? "md:border-r md:border-gray-200 md:pr-4" : ""
+            }`}
           >
             <h4 className="text-base font-bold text-[#101828] mb-1.5">
               Revision Message
@@ -212,8 +231,11 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
               <h2 className="xl:text-xl text-base font-semibold text-black leading-tight w-[240px] overflow-hidden whitespace-nowrap text-ellipsis">
                 {drawing.name}
               </h2>
-              <p className="text-sm text-(-text-color-gray-2) font-normal">
-                {drawing?.buildingLabel || drawing?.building || projectInfo?.buildingLabel || projectInfo?.projectCode}
+              <p className="text-sm text-(--text-color-gray-2) font-normal">
+                {drawing?.buildingLabel ||
+                  drawing?.building ||
+                  projectInfo?.buildingLabel ||
+                  projectInfo?.projectCode}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-x-8 gap-y-1">
@@ -252,7 +274,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
         {/* Content - Image / PDF Preview Area */}
         <div className="flex-1 min-h-0 bg-gray-50 p-2 flex items-center justify-center">
           <div className="relative w-full h-full shadow-sm rounded-lg overflow-hidden flex items-center justify-center">
-            {drawing.fileUrl?.toLowerCase().endsWith(".pdf") || drawing.type?.toLowerCase().includes("pdf") ? (
+            {drawing.fileUrl?.toLowerCase().endsWith(".pdf") ||
+            drawing.type?.toLowerCase().includes("pdf") ? (
               <iframe
                 src={`${drawing.fileUrl}#toolbar=0`}
                 title={drawing.name || "PDF Document"}
@@ -288,7 +311,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
               {isApproved ? (
                 <div className="flex items-center gap-2">
                   <p className="text-black text-sm font-normal">
-                    {drawing.updatedAt ? new Date(drawing.updatedAt).toLocaleDateString() : ""}
+                    {drawing.updatedAt
+                      ? new Date(drawing.updatedAt).toLocaleDateString()
+                      : ""}
                   </p>
                   <span className="px-5 py-1.5 bg-[#DCFCE7] text-[#16A34A] rounded-full text-sm font-medium border border-[#BBF7D0]">
                     Approved
@@ -328,7 +353,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
               setReasonError("");
             }}
             showHeader={false}
-            width="max-w-[520px]"
+            width="sm:max-w-md"
             customPadding="p-0"
           >
             <div className="rounded-lg bg-white px-5 py-8">
@@ -349,8 +374,9 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
                   }}
                   placeholder="Write your revision"
                   rows={5}
-                  className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${reasonError ? "border-red-500" : "border-[#D0D5DD]"
-                    }`}
+                  className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
+                    reasonError ? "border-red-500" : "border-[#D0D5DD]"
+                  }`}
                 />
 
                 {reasonError && (
@@ -372,28 +398,30 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           </Modal>
 
           {/* Show comment box only in pending drawings that don't have comments yet */}
-          {isPending && (!Array.isArray(drawing?.comments) || drawing.comments.length === 0) && (
-            <div className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
-              <input
-                type="text"
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                placeholder="Type your Comment..."
-                className="flex-1 px-3 py-1 text-sm text-gray-600 outline-none"
-              />
-              <button className="p-1 text-[#00000080] hover:text-gray-600">
-                <Paperclip className="w-5 h-5 -rotate-5" />
-              </button>
-              <Button
-                onClick={handleSendComment}
-                disabled={isUpdating || !comment.trim()}
-                className="text-sm font-normal bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] hover:bg-blue-700 text-white rounded-lg flex items-center md:gap-2 gap-1 md:px-4 px-3 py-1.5 h-auto disabled:opacity-50"
-              >
-                {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
-                Send Comment
-              </Button>
-            </div>
-          )}
+          {isPending &&
+            (!Array.isArray(drawing?.comments) ||
+              drawing.comments.length === 0) && (
+              <div className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+                <input
+                  type="text"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  placeholder="Type your Comment..."
+                  className="flex-1 px-3 py-1 text-sm text-gray-600 outline-none"
+                />
+                <button className="p-1 text-[#00000080] hover:text-gray-600">
+                  <Paperclip className="w-5 h-5 -rotate-5" />
+                </button>
+                <Button
+                  onClick={handleSendComment}
+                  disabled={isUpdating || !comment.trim()}
+                  className="text-sm font-normal bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] hover:bg-blue-700 text-white rounded-lg flex items-center md:gap-2 gap-1 md:px-4 px-3 py-1.5 h-auto disabled:opacity-50"
+                >
+                  {isUpdating && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Send Comment
+                </Button>
+              </div>
+            )}
         </div>
       </div>
     </Modal>
