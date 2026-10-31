@@ -40,10 +40,10 @@ const Modal: React.FC<ModalProps> = ({
       <DialogContent
         showCloseButton={showCloseButton}
         className={cn(
-          "bg-white rounded-xl shadow-2xl w-full p-0 gap-0 overflow-hidden flex flex-col sm:max-w-none",
+          "bg-white rounded-xl shadow-2xl w-full p-0 gap-0 overflow-hidden flex flex-col",
           width,
           height,
-          className
+          className,
         )}
       >
         {showHeader && title ? (
@@ -56,9 +56,7 @@ const Modal: React.FC<ModalProps> = ({
                 {description}
               </DialogDescription>
             ) : (
-              <DialogDescription className="sr-only">
-                {title}
-              </DialogDescription>
+              <DialogDescription className="sr-only">{title}</DialogDescription>
             )}
           </DialogHeader>
         ) : (
