@@ -3,7 +3,7 @@ import logo from "../../assets/logo.png";
 import bellIcon from "../../assets/bellIcon.svg";
 import { useNavigate } from "react-router-dom";
 import { Menu, User, Settings, LogOut } from "lucide-react";
-import ProjectSearchPopover from "./ProjectSearchPopover";
+import { HeaderSearch } from "./HeaderSearch";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/slices/authSlice";
 import { useGetNotificationsQuery } from "@/redux/api/notificationsApi";
@@ -52,7 +52,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
           <Menu className="w-6 h-6" />
         </button>
 
-        <ProjectSearchPopover />
+        <HeaderSearch />
       </div>
 
       <div className="flex items-center gap-4 lg:gap-6">
