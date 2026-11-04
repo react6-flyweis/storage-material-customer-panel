@@ -58,7 +58,7 @@ const PaymentsPage = () => {
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
   const [selectedProofItem, setSelectedProofItem] = useState<PaymentItemDetail | null>(null);
   const [isViewProofModalOpen, setIsViewProofModalOpen] = useState(false);
-  const { data } = useGetPaymentsQuery();
+  const { data, isLoading } = useGetPaymentsQuery();
 
   const upcomingList = data?.upcoming || [];
   const overdueList = data?.overdue || [];
@@ -176,6 +176,7 @@ const PaymentsPage = () => {
       {/* Upcoming Payments */}
       <PaymentTable
         title="Upcoming Payments"
+        isLoading={isLoading}
         headers={[
           "Payment ID",
           "Project Name",
@@ -189,12 +190,14 @@ const PaymentsPage = () => {
           renderPaymentRow(item, "bg-[#3AB449] hover:bg-[#2F923B]")
         }
         headRowClassName="border-b border-[#00000033]"
+        emptyMessage="No upcoming payments found."
       />
 
       {/* Payment Overdue */}
       <PaymentTable
         title="Payment Overdue"
         titleColor="text-[#EF4444]"
+        isLoading={isLoading}
         headers={[
           "Payment ID",
           "Project Name",
@@ -208,6 +211,7 @@ const PaymentsPage = () => {
           renderPaymentRow(item, "bg-[#EF4444] hover:bg-[#DC2626]")
         }
         headRowClassName="border-b border-[#00000033]"
+        emptyMessage="No overdue payments found."
       />
 
       <PaymentModal
@@ -226,6 +230,7 @@ const PaymentsPage = () => {
       {/* Payment History */}
       <PaymentTable
         title="Payment History"
+        isLoading={isLoading}
         headers={[
           "Transaction ID",
           "Project Name",
@@ -238,6 +243,7 @@ const PaymentsPage = () => {
         ]}
         data={paidList}
         renderRow={renderHistoryRow}
+        emptyMessage="No payment history found."
       />
 
       <ViewPaymentProofModal
@@ -248,6 +254,67 @@ const PaymentsPage = () => {
         }}
         item={selectedProofItem}
         projectName={selectedProofItem ? getProjectName(selectedProofItem) : undefined}
+      />
+    </div>
+  );
+};
+
+export const PaymentsPageSkeleton = () => {
+  return (
+    <div className="p-5 space-y-6">
+      <TitleSubtitle
+        title={"Payments"}
+        subtitle={
+          "Review your project billing, track payments, and download invoice documents."
+        }
+      />
+      <PaymentStatGrid />
+      <PaymentTable
+        title="Upcoming Payments"
+        isLoading={true}
+        headers={[
+          "Payment ID",
+          "Project Name",
+          "Due Date",
+          "Amount",
+          "Over due From",
+          "Action",
+        ]}
+        data={[]}
+        renderRow={() => null}
+        headRowClassName="border-b border-[#00000033]"
+      />
+      <PaymentTable
+        title="Payment Overdue"
+        titleColor="text-[#EF4444]"
+        isLoading={true}
+        headers={[
+          "Payment ID",
+          "Project Name",
+          "Due Date",
+          "Amount",
+          "Over due From",
+          "Action",
+        ]}
+        data={[]}
+        renderRow={() => null}
+        headRowClassName="border-b border-[#00000033]"
+      />
+      <PaymentTable
+        title="Payment History"
+        isLoading={true}
+        headers={[
+          "Transaction ID",
+          "Project Name",
+          "Payment Date",
+          "Amount",
+          "Tax",
+          "Payment Mode",
+          "Status",
+          "Action",
+        ]}
+        data={[]}
+        renderRow={() => null}
       />
     </div>
   );
