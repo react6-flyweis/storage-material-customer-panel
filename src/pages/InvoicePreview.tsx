@@ -90,6 +90,10 @@ export default function InvoicePreview() {
   };
 
   const isPaid = apiInvoice.status?.toLowerCase() === "paid";
+  const customerObj =
+    typeof apiInvoice.customerId === "object" && apiInvoice.customerId !== null
+      ? apiInvoice.customerId
+      : apiInvoice.customer || null;
 
   return (
     <div className="space-y-6 px-2 pb-10 pt-3 md:px-5 md:pt-5">
@@ -103,13 +107,11 @@ export default function InvoicePreview() {
           Back
         </Button>
 
-        <div className="flex gap-3">
+        <div className="flex items-center gap-3">
           {isPaid ? (
-            <Button
-              className="bg-emerald-600 hover:bg-emerald-600 text-white cursor-default"
-            >
+            <span className="bg-[#DCFCE7] text-[#3AB449] border border-[#BBF7D0] px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center justify-center">
               Paid
-            </Button>
+            </span>
           ) : null}
 
           <Button
@@ -161,12 +163,17 @@ export default function InvoicePreview() {
       <InvoiceTemplate
         invoiceNumber={resolvedInvoice.invoiceNumber}
         date={resolvedInvoice.date}
+        dueDate={apiInvoice.dueDate}
         daysToPay={resolvedInvoice.daysToPay}
         subtotal={resolvedInvoice.subtotal}
         taxAmount={resolvedInvoice.taxAmount}
         total={resolvedInvoice.total}
         discount={resolvedInvoice.discount}
         depositAmount={resolvedInvoice.depositAmount}
+        billingAddress={apiInvoice.billingAddress}
+        recipientAddress={apiInvoice.recipientAddress}
+        bankDetails={apiInvoice.bankDetails}
+        customer={customerObj}
         items={resolvedInvoice.items}
         stages={resolvedInvoice.stages}
       />

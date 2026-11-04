@@ -1,5 +1,4 @@
 import React from "react";
-import noQuotationImg from "@/assets/images/no-quotation.png";
 
 interface NoQuotationModalProps {
   isOpen: boolean;
@@ -22,14 +21,6 @@ export const NoQuotationModal: React.FC<NoQuotationModalProps> = ({
           <p className="text-lg font-medium text-[#64748B]">
             We will Update you soon
           </p>
-        </div>
-
-        <div className="flex justify-center py-2">
-          <img
-            src={noQuotationImg}
-            alt="Quotation Not Received"
-            className="w-48 h-auto object-contain"
-          />
         </div>
 
         <button

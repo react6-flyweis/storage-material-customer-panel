@@ -68,14 +68,24 @@ const ProjectDeliverySchedule = () => {
         const todayDate = new Date().toDateString();
         return delDate === todayDate;
       }
-      if (statusFilter.toLowerCase() === "past") return delivery.status === "delivered";
+      if (statusFilter.toLowerCase() === "past") {
+        return (
+          delivery.status?.toLowerCase() === "delivered" ||
+          delivery.status?.toLowerCase() === "past" ||
+          delivery.status?.toLowerCase() === "completed"
+        );
+      }
       return true;
     })
     .map((delivery) => {
       return {
         title: delivery.description || delivery.deliveryNumber || "Delivery",
         description: delivery.description || "",
-        deliveryId: delivery.deliveryId,
+        deliveryId:
+          delivery.deliveryId ||
+          (delivery as any)._id ||
+          (delivery as any).id ||
+          "",
         status: delivery.status === "in_transit" ? "inTransit" : (delivery.status || "scheduled"),
         deliveryInfo: {
           date: delivery.deliveryDate ? new Date(delivery.deliveryDate).toLocaleDateString("en-US", {
@@ -225,7 +235,11 @@ const ProjectDeliverySchedule = () => {
         </div>
       ) : (
         filteredDeliveries.map((delivery) => (
-          <NextDeliveryCard key={delivery.deliveryId} data={delivery} />
+          <NextDeliveryCard
+            key={delivery.deliveryId}
+            data={delivery}
+            isPast={activeTab === "past"}
+          />
         ))
       )}
     </div>

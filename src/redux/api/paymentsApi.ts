@@ -7,6 +7,28 @@ export interface PaymentLead {
   location?: string;
 }
 
+export interface InvoiceAddress {
+  companyName?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  lines?: string[];
+}
+
+export interface InvoiceBankDetails {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  swiftCode?: string;
+  iban?: string;
+  branchAddress?: string;
+  paymentInstructions?: string;
+}
+
 export interface PaymentLineItem {
   images?: string[];
   items?: string[];
@@ -88,7 +110,15 @@ export interface InvoiceLineItem {
 export interface InvoiceDetail {
   _id: string;
   leadId: string;
-  customerId: string;
+  customerId:
+    | string
+    | {
+        _id?: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        phone?: string;
+      };
   quotationId: string | null;
   invoiceNumber: string;
   date: string;
@@ -109,6 +139,16 @@ export interface InvoiceDetail {
   createdAt: string;
   updatedAt: string;
   paymentProof?: PaymentProofDetail;
+  billingAddress?: InvoiceAddress | null;
+  recipientAddress?: InvoiceAddress | null;
+  bankDetails?: InvoiceBankDetails | null;
+  customer?: {
+    _id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  } | null;
 }
 
 export interface PaymentScheduleStage {
