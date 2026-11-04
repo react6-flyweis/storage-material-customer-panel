@@ -15,6 +15,7 @@ interface PaymentStatCardProps {
     text: string;
     type: "positive" | "negative";
   };
+  isLoading?: boolean;
 }
 
 const PaymentStatCard = ({
@@ -24,6 +25,7 @@ const PaymentStatCard = ({
   bgColor,
   iconColor,
   badge,
+  isLoading,
 }: PaymentStatCardProps) => {
   return (
     <Card
@@ -43,10 +45,14 @@ const PaymentStatCard = ({
         <div className="flex flex-col gap-0.5 min-w-0 flex-1">
           <p className="xl:text-sm text-xs opacity-90 truncate">{title}</p>
           <div className="flex items-center md:gap-2 gap-1 flex-wrap w-full">
-            <h3 className="lg:text-lg md:text-base text-xs font-semibold overflow-y-hidden overflow-x-auto">
-              {value}
-            </h3>
-            {badge && (
+            {isLoading ? (
+              <div className="h-5 w-20 bg-white/40 rounded animate-pulse my-0.5" />
+            ) : (
+              <h3 className="lg:text-lg md:text-base text-xs font-semibold overflow-y-hidden overflow-x-auto">
+                {value}
+              </h3>
+            )}
+            {badge && !isLoading && (
               <div
                 className={cn(
                   "md:px-2 md:py-1 p-0.5 rounded-md flex items-center gap-1 text-[8px] font-bold shrink-0",
@@ -152,6 +158,7 @@ const PaymentStatGrid = ({
       icon: <FileText />,
       bgColor: "bg-[#FF9F43]",
       iconColor: "text-[#FF9F43]",
+      isLoading,
     },
     {
       title: "Pending Amount",
@@ -159,6 +166,7 @@ const PaymentStatGrid = ({
       icon: <Repeat />,
       bgColor: "bg-[#001E3C]",
       iconColor: "text-[#001E3C]",
+      isLoading,
     },
     {
       title: "Amount Paid",
@@ -166,6 +174,7 @@ const PaymentStatGrid = ({
       icon: <Gift />,
       bgColor: "bg-[#0D9488]",
       iconColor: "text-[#0D9488]",
+      isLoading,
     },
     {
       title: "Upcoming Invoice Due",
@@ -176,6 +185,7 @@ const PaymentStatGrid = ({
       bgColor: "bg-[#2563EB]",
       iconColor: "text-[#2563EB]",
       badge: badgeInfo,
+      isLoading,
     },
   ];
 
