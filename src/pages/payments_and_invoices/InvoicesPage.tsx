@@ -143,13 +143,13 @@ const InvoicesPage = () => {
 
       {/* Status Filter Tabs */}
       <div className="flex items-center">
-        <div className="bg-white border border-gray-200 rounded-2xl p-1.5 flex items-center gap-3 shadow-xs">
+        <div className="bg-white border border-gray-200 rounded-full p-1.5 flex items-center gap-3 shadow-xs">
           <button
             onClick={() => setActiveFilter("paid")}
             className={cn(
-              "px-8 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer",
+              "px-8 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer",
               activeFilter === "paid"
-                ? "bg-(--button-bg-primary-color) text-white shadow-xs"
+                ? "bg-[#DCFCE7] text-[#3AB449] shadow-xs"
                 : "bg-white text-black border border-gray-200 hover:bg-gray-50"
             )}
           >
@@ -158,9 +158,9 @@ const InvoicesPage = () => {
           <button
             onClick={() => setActiveFilter("unpaid")}
             className={cn(
-              "px-8 py-2 rounded-xl text-sm font-semibold transition-all cursor-pointer",
+              "px-8 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer",
               activeFilter === "unpaid"
-                ? "bg-(--button-bg-primary-color) text-white shadow-xs"
+                ? "bg-[#FEF3C7] text-[#D97706] shadow-xs"
                 : "bg-white text-black border border-gray-200 hover:bg-gray-50"
             )}
           >

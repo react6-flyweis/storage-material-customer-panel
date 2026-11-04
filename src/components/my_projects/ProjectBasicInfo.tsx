@@ -1,9 +1,8 @@
-
 import ProgressSteps from "./ProgressSteps";
 import ProjectStatusCard from "./ProjectStatusCard";
 import ProjectActivityLog from "./ProjectActivityLog";
 import ProjectNotes from "./ProjectNotes";
-import ProjectOrdersList from "./ProjectOrdersList";
+// import ProjectOrdersList from "./ProjectOrdersList";
 import ProjectUpcomingDelivery from "./ProjectUpcomingDelivery";
 import {
   Building2,
@@ -11,7 +10,6 @@ import {
   MapPin,
   CircleDollarSign,
 } from "lucide-react";
-
 
 import type { ProjectDetailsResponseData } from "@/redux/api/projectsApi";
 import {
@@ -30,73 +28,83 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
   const projectStepsData = data?.projectSteps;
 
   const currentStatusKey = lead?.lifecycleStatus?.toLowerCase() || "";
-  const fallbackStepIndex = currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
+  const fallbackStepIndex =
+    currentStatusKey in STATUS_MAP ? STATUS_MAP[currentStatusKey] : 0;
 
-  const currentStep = projectStepsData?.currentStepNumber ?? (fallbackStepIndex + 1);
+  const currentStep =
+    projectStepsData?.currentStepNumber ?? fallbackStepIndex + 1;
   const totalSteps = projectStepsData?.totalSteps ?? LIFECYCLE_STEPS.length;
-  const overallProgressPct = projectStepsData?.overallProgressPct ?? Math.round((currentStep / totalSteps) * 100);
+  const overallProgressPct =
+    projectStepsData?.overallProgressPct ??
+    Math.round((currentStep / totalSteps) * 100);
 
   const dynamicSteps = projectStepsData?.steps?.length
     ? projectStepsData.steps.map((step, index) => {
-      let subtitle = "Pending";
-      if (step.status === "completed") {
-        const dateStr = step.completedAt || step.date;
-        const formatted = dateStr
-          ? new Date(dateStr).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          : "";
-        subtitle = formatted ? `Completed on\n${formatted}` : "Completed";
-      } else if (step.status === "in_progress") {
-        const dateStr = step.startedAt || step.date;
-        const formatted = dateStr
-          ? new Date(dateStr).toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          : "";
-        subtitle = formatted ? `Started on\n${formatted}` : "In Progress";
-      }
+        let subtitle = "Pending";
+        if (step.status === "completed") {
+          const dateStr = step.completedAt || step.date;
+          const formatted = dateStr
+            ? new Date(dateStr).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "";
+          subtitle = formatted ? `Completed on\n${formatted}` : "Completed";
+        } else if (step.status === "in_progress") {
+          const dateStr = step.startedAt || step.date;
+          const formatted = dateStr
+            ? new Date(dateStr).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : "";
+          subtitle = formatted ? `Started on\n${formatted}` : "In Progress";
+        }
 
-      return {
-        id: index + 1,
-        title: step.label || step.key,
-        date: step.date ? new Date(step.date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : undefined,
-        subtitle,
-        status: step.status === "in_progress" ? "current" : step.status,
-      };
-    })
+        return {
+          id: index + 1,
+          title: step.label || step.key,
+          date: step.date
+            ? new Date(step.date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+            : undefined,
+          subtitle,
+          status: step.status === "in_progress" ? "current" : step.status,
+        };
+      })
     : LIFECYCLE_STEPS.map((step, index) => {
-      let status = "pending";
-      let subtitle = "Pending";
+        let status = "pending";
+        let subtitle = "Pending";
 
-      const formattedDate = lead?.createdAt
-        ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "short",
-          year: "numeric",
-        })
-        : "12 May 2025";
+        const formattedDate = lead?.createdAt
+          ? new Date(lead.createdAt).toLocaleDateString("en-GB", {
+              day: "2-digit",
+              month: "short",
+              year: "numeric",
+            })
+          : "12 May 2025";
 
-      if (index < fallbackStepIndex) {
-        status = "completed";
-        subtitle = `Completed on\n${formattedDate}`;
-      } else if (index === fallbackStepIndex) {
-        status = "current";
-        subtitle = `Started on\n${formattedDate}`;
-      }
+        if (index < fallbackStepIndex) {
+          status = "completed";
+          subtitle = `Completed on\n${formattedDate}`;
+        } else if (index === fallbackStepIndex) {
+          status = "current";
+          subtitle = `Started on\n${formattedDate}`;
+        }
 
-      return {
-        id: index + 1,
-        title: step.title,
-        date: index <= fallbackStepIndex ? formattedDate : undefined,
-        subtitle,
-        status,
-      };
-    });
+        return {
+          id: index + 1,
+          title: step.title,
+          date: index <= fallbackStepIndex ? formattedDate : undefined,
+          subtitle,
+          status,
+        };
+      });
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "-";
@@ -105,7 +113,8 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     return date.toISOString().split("T")[0];
   };
 
-  const totalBuildingsCount = lead?.buildingsCount ?? lead?.totalBuildings ?? lead?.buildingCount ?? "-";
+  const totalBuildingsCount =
+    lead?.buildingsCount ?? lead?.totalBuildings ?? lead?.buildingCount ?? "-";
 
   const projectDetails = [
     {
@@ -116,7 +125,10 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     {
       icon: CircleDollarSign,
       title: "Quote Value",
-      value: lead?.quoteValue !== undefined && lead?.quoteValue !== null ? `$${lead.quoteValue.toLocaleString()}` : "-",
+      value:
+        lead?.quoteValue !== undefined && lead?.quoteValue !== null
+          ? `$${lead.quoteValue.toLocaleString()}`
+          : "-",
     },
     {
       icon: CalendarDays,
@@ -130,7 +142,11 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
     },
   ];
 
-  const currentStepTitle = projectStepsData?.currentStepLabel || dynamicSteps[currentStep - 1]?.title || LIFECYCLE_STEPS[fallbackStepIndex]?.title || "-";
+  const currentStepTitle =
+    projectStepsData?.currentStepLabel ||
+    dynamicSteps[currentStep - 1]?.title ||
+    LIFECYCLE_STEPS[fallbackStepIndex]?.title ||
+    "-";
 
   const chartOption = {
     series: [
@@ -172,8 +188,12 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
           <div className="flex flex-1 flex-col justify-between pt-1">
             <div>
               <div>
-                <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-semibold ${statusInfo.className}`}>
-                  <span className={`h-2 w-2 rounded-full shrink-0 ${statusInfo.dotColor}`} />
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs sm:text-sm font-semibold ${statusInfo.className}`}
+                >
+                  <span
+                    className={`h-2 w-2 rounded-full shrink-0 ${statusInfo.dotColor}`}
+                  />
                   {statusInfo.label}
                 </span>
               </div>
@@ -196,12 +216,13 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
                 return (
                   <div
                     key={item.title}
-                    className={`flex items-start gap-3 ${index === 0
-                      ? "md:pr-4"
-                      : index === projectDetails.length - 1
-                        ? "md:pl-4"
-                        : "md:px-4"
-                      }`}
+                    className={`flex items-start gap-3 ${
+                      index === 0
+                        ? "md:pr-4"
+                        : index === projectDetails.length - 1
+                          ? "md:pl-4"
+                          : "md:px-4"
+                    }`}
                   >
                     <Icon className="mt-0.5 h-5 w-5 text-[#344054] shrink-0" />
 
@@ -228,7 +249,7 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         totalSteps={totalSteps}
         assignedSales={lead?.assignedSales}
       />
-      <ProjectOrdersList leadId={lead?._id || ""} />
+      {/* <ProjectOrdersList leadId={lead?._id || ""} /> */}
 
       <ProjectUpcomingDelivery leadId={lead?._id || ""} />
 
@@ -246,7 +267,6 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
 
         <ProjectNotes leadId={lead?._id || ""} />
       </div>
-
     </div>
   );
 };
