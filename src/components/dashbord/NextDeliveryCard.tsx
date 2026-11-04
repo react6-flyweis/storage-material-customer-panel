@@ -116,11 +116,13 @@ export interface DeliveryCardData {
 type NextDeliveryCardProps = {
   data: DeliveryCardData;
   dashboardpage?: boolean;
+  isPast?: boolean;
 };
 
 export default function NextDeliveryCard({
   data,
   dashboardpage,
+  isPast,
 }: NextDeliveryCardProps) {
   const [documentModal, setDocumentModal] = useState(false);
   const [calendarModal, setCalendarModal] = useState(false);
@@ -141,9 +143,27 @@ export default function NextDeliveryCard({
   const [isAcknowledgedLocal, setIsAcknowledgedLocal] = useState(false);
   const isAcknowledged = data.rescheduleInfo?.acknowledged || isAcknowledgedLocal;
 
-  const statusKey = (data.status in statusConfig
-    ? data.status
-    : "scheduled") as keyof typeof statusConfig;
+  const [isSiteReadyLocal, setIsSiteReadyLocal] = useState(false);
+  const [isEquipmentReadyLocal, setIsEquipmentReadyLocal] = useState(false);
+
+  const isSiteReady = Boolean(data.siteStatus?.siteReady || isSiteReadyLocal);
+  const isEquipmentReady = Boolean(data.siteStatus?.equipmentReady || isEquipmentReadyLocal);
+
+  const isPastDelivery = Boolean(
+    isPast ||
+    data.status?.toLowerCase() === "delivered" ||
+    data.status?.toLowerCase() === "past" ||
+    data.status?.toLowerCase() === "completed"
+  );
+
+  const normalizedStatus = data.status?.toLowerCase();
+  const statusKey = (isPastDelivery
+    ? "delivered"
+    : data.status in statusConfig
+      ? data.status
+      : normalizedStatus in statusConfig
+        ? normalizedStatus
+        : "scheduled") as keyof typeof statusConfig;
 
   const StatusIcon = statusConfig[statusKey].icon;
 
@@ -157,7 +177,7 @@ export default function NextDeliveryCard({
         </button>
       )}
 
-      {data.status === "rescheduled" && !isAcknowledged && (
+      {!isPastDelivery && data.status === "rescheduled" && !isAcknowledged && (
         <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4 sm:p-5 mb-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
@@ -196,7 +216,7 @@ export default function NextDeliveryCard({
       <div className="mb-6 flex flex-wrap items-center gap-4">
         <div
           className={`flex h-14 w-14 items-center justify-center rounded-lg shadow-md shrink-0
-  ${data.status === "delivered"
+  ${isPastDelivery
               ? "bg-[#667085]"
               : data.status === "rescheduled"
                 ? "bg-[#22C55E]"
@@ -209,7 +229,7 @@ export default function NextDeliveryCard({
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-[20px] font-bold leading-tight">
-              {data.status != "delivered" && (
+              {!isPastDelivery && (
                 <span className="text-[#00A63E]">Next Delivery :</span>
               )}
               <span className="text-[#101828]"> {data.title}</span>
@@ -473,7 +493,7 @@ export default function NextDeliveryCard({
         </div>
       </div>
 
-      {data.status !== "delivered" && data.status !== "inTransit" && (
+      {!isPastDelivery && data.status !== "inTransit" && (
         <div className="rounded-xl border border-[#E0E7FF] bg-[#EEF2FF] p-4 my-6">
           <h3 className="mb-3 text-[16px] font-bold text-[#4338CA]">
             Site Readiness Status
@@ -483,30 +503,30 @@ export default function NextDeliveryCard({
             <div className="flex flex-wrap items-center gap-6 sm:gap-10 text-sm sm:text-base font-medium">
               <div className="flex items-center gap-2 text-[#4F46E5]">
                 <div
-                  className={`h-3.5 w-3.5 rounded-full ${data.siteStatus?.siteReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
+                  className={`h-3.5 w-3.5 rounded-full ${isSiteReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
                     }`}
                 />
                 <span>
                   Site Ready:{" "}
-                  {data.siteStatus?.siteReady ? "Confirmed" : "Not Confirmed"}
+                  {isSiteReady ? "Confirmed" : "Not Confirmed"}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-[#4F46E5]">
                 <div
-                  className={`h-3.5 w-3.5 rounded-full ${data.siteStatus?.equipmentReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
+                  className={`h-3.5 w-3.5 rounded-full ${isEquipmentReady ? "bg-[#22C55E]" : "bg-[#D1D5DB]"
                     }`}
                 />
                 <span>
                   Equipment Ready:{" "}
-                  {data.siteStatus?.equipmentReady ? "Confirmed" : "Not Confirmed"}
+                  {isEquipmentReady ? "Confirmed" : "Not Confirmed"}
                 </span>
               </div>
             </div>
 
-            {(!data.siteStatus?.siteReady || !data.siteStatus?.equipmentReady) && (
+            {(!isSiteReady || !isEquipmentReady) && (
               <div className="flex flex-wrap items-center gap-3">
-                {!data.siteStatus?.siteReady && (
+                {!isSiteReady && (
                   <button
                     onClick={() => setSiteConfirmedModal(true)}
                     className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
@@ -515,7 +535,7 @@ export default function NextDeliveryCard({
                   </button>
                 )}
 
-                {!data.siteStatus?.equipmentReady && (
+                {!isEquipmentReady && (
                   <button
                     onClick={() => setConfirmEquipmentModal(true)}
                     className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
@@ -529,7 +549,7 @@ export default function NextDeliveryCard({
         </div>
       )}
 
-      {data.status != "delivered" && (<>
+      {!isPastDelivery && (<>
 
         <div className="my-5 border-t border-slate-200" />
 
@@ -641,6 +661,7 @@ export default function NextDeliveryCard({
         deliveryData={data}
         deliveryId={data.deliveryId}
         onClose={() => setSiteConfirmedModal(false)}
+        onSuccess={() => setIsSiteReadyLocal(true)}
         confirmed={false}
       />
       <FullDeliveryInstructionModal
@@ -658,6 +679,7 @@ export default function NextDeliveryCard({
         deliveryData={data}
         deliveryId={data.deliveryId}
         onClose={() => setConfirmEquipmentModal(false)}
+        onSuccess={() => setIsEquipmentReadyLocal(true)}
       />
 
       <AcknowledgeRescheduleModal
