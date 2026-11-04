@@ -8,7 +8,6 @@ import {
   XCircle,
   Clock,
 } from "lucide-react";
-import noQuotationImg from "@/assets/images/no-quotation.png";
 import {
   useGetProjectQuotationQuery,
   useGetQuotationHtmlPreviewQuery,
@@ -238,14 +237,6 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
           <p className="text-base sm:text-lg font-medium text-[#64748B]">
             {serverMessage}
           </p>
-        </div>
-
-        <div className="flex justify-center py-4">
-          <img
-            src={noQuotationImg}
-            alt="Quotation Not Received"
-            className="w-56 sm:w-64 h-auto object-contain"
-          />
         </div>
       </div>
     );
