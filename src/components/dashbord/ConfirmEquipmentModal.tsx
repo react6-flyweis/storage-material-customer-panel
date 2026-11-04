@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { X, User, Phone, ShieldAlert, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, User, Phone, ShieldAlert, AlertCircle, Loader2 } from "lucide-react";
 import { useConfirmEquipmentMutation } from "@/redux/api/deliveriesApi";
+import { getApiErrorMessage } from "@/redux/utils/apiError";
 import SuccessModal from "@/components/common_components/SuccessModal";
 import type { DeliveryCardData } from "./NextDeliveryCard";
 
@@ -24,7 +25,7 @@ const checklistItems = [
 export default function ConfirmEquipmentModal({
   open,
   onClose,
-  deliveryId = "DEL-1001",
+  deliveryId,
   deliveryData,
   onSuccess,
 }: ConfirmEquipmentModalProps) {
@@ -34,9 +35,20 @@ export default function ConfirmEquipmentModal({
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("Equipment confirmed");
 
+  useEffect(() => {
+    if (open) {
+      setError("");
+    }
+  }, [open]);
+
   if (!open) return null;
 
-  const currentDeliveryId = deliveryData?.deliveryId || deliveryId || "-";
+  const currentDeliveryId =
+    deliveryData?.deliveryId ||
+    (deliveryData as any)?._id ||
+    (deliveryData as any)?.id ||
+    deliveryId ||
+    "";
   const title = deliveryData?.title || "-";
   const status = deliveryData?.status || "-";
   const equipmentList = deliveryData?.deliveryInfo?.equipment || [];
@@ -62,6 +74,12 @@ export default function ConfirmEquipmentModal({
       return;
     }
 
+    if (!currentDeliveryId || currentDeliveryId === "-") {
+      setError("Delivery ID is missing or invalid.");
+      return;
+    }
+
+    setError("");
     try {
       const res = await confirmEquipment({
         deliveryId: currentDeliveryId,
@@ -76,10 +94,11 @@ export default function ConfirmEquipmentModal({
         setSuccessMsg(res.message);
       }
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to confirm equipment", err);
-      // Demo fallback to success modal
-      setShowSuccess(true);
+      const message =
+        getApiErrorMessage(err) || "Failed to confirm equipment. Please try again.";
+      setError(message);
     }
   };
 
@@ -165,7 +184,12 @@ export default function ConfirmEquipmentModal({
                 ))}
               </div>
 
-              {error && <p className="mt-4 text-sm text-red-500">{error}</p>}
+              {error && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               <div className="mt-3 grid grid-cols-2 gap-4">
                 <button
