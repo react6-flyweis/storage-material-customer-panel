@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   XCircle,
   FileCheck,
+  CreditCard,
 } from "lucide-react";
 import Modal from "@/components/common_components/Modal";
 import { Button } from "@/components/ui/button";
@@ -61,7 +62,9 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
   if (!item) return null;
 
   const proof = item.paymentProof;
-  const status = proof?.status?.toLowerCase() || item.status?.toLowerCase() || "pending_review";
+  const hasProofStatus = Boolean(proof?.status && proof.status !== "none");
+  const rawStatus = hasProofStatus ? proof?.status : (item.status || "pending_review");
+  const status = (rawStatus || "pending_review").toLowerCase();
 
   const getStatusBadge = () => {
     switch (status) {
@@ -70,7 +73,7 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Approved
+            {status === "paid" ? "Paid" : "Approved"}
           </span>
         );
       case "rejected":
@@ -127,7 +130,7 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
               Transaction ID
             </div>
             <p className="text-sm font-semibold text-gray-800 break-all">
-              {proof?.transactionId || "-"}
+              {proof?.transactionId || item.invoiceNumber || "-"}
             </p>
           </div>
 
@@ -160,6 +163,18 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
               {projectName || "-"}
             </p>
           </div>
+
+          {item.paymentMethod && (
+            <div className="p-3.5 bg-gray-50/70 rounded-lg border border-gray-100 space-y-1 sm:col-span-2">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 font-medium">
+                <CreditCard className="w-3.5 h-3.5 text-gray-400" />
+                Payment Method
+              </div>
+              <p className="text-sm font-medium text-gray-800">
+                {item.paymentMethod.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())}
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Notes if any */}
