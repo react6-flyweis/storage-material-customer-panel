@@ -36,21 +36,18 @@ const getProjectName = (item: PaymentItemDetail) => {
 };
 
 const getDueDate = (item: PaymentItemDetail) => {
-  if (!item.date) return "-";
-  const d = new Date(item.date);
-  if (isNaN(d.getTime())) return "-";
-  if (item.daysToPay) {
-    d.setDate(d.getDate() + item.daysToPay);
-  }
-  return formatDate(d.toISOString());
+  return formatDate(item.dueDate);
 };
 
 const getTaxAmount = (item: PaymentItemDetail) => {
-  if (item.lineItems && Array.isArray(item.lineItems)) {
-    const totalTax = item.lineItems.reduce((acc: number, current) => acc + (current.tax || 0), 0);
-    return formatCurrency(totalTax);
-  }
-  return "-";
+  return formatCurrency(item.tax);
+};
+
+const formatPaymentMethod = (method?: string | null) => {
+  if (!method) return "-";
+  return method
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
 const PaymentsPage = () => {
@@ -72,9 +69,11 @@ const PaymentsPage = () => {
   const renderPaymentRow = (item: PaymentItemDetail, color: string) => {
     const isUploaded = Boolean(
       item.paymentProof &&
-      (item.paymentProof.status ||
+      (
+        (item.paymentProof.status && item.paymentProof.status !== "none") ||
         (item.paymentProof.files && item.paymentProof.files.length > 0) ||
-        item.paymentProof.transactionId)
+        Boolean(item.paymentProof.transactionId?.trim())
+      )
     );
 
     return (
@@ -94,7 +93,7 @@ const PaymentsPage = () => {
         <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280] max-w-[100px]">
           {formatDate(item.date)}
         </td>
-        <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
+        <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center gap-1.5">
           <Button
             disabled={isUploaded}
             onClick={() => !isUploaded && handleOpenPaymentModal(item)}
@@ -108,6 +107,20 @@ const PaymentsPage = () => {
             <UploadCloud className="w-3.5 h-3.5" />
             {isUploaded ? "Uploaded" : "Upload"}
           </Button>
+          {isUploaded && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-[#6B7280] hover:text-black cursor-pointer"
+              onClick={() => {
+                setSelectedProofItem(item);
+                setIsViewProofModalOpen(true);
+              }}
+              title="View Payment Proof"
+            >
+              <Eye className="w-4 h-4" />
+            </Button>
+          )}
         </td>
       </tr>
     );
@@ -125,7 +138,7 @@ const PaymentsPage = () => {
         {getProjectName(item)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-black">
-        {formatDate(item.paymentProof?.paymentDate || item.paidAt || item.updatedAt)}
+        {formatDate(item.paymentProof?.paymentDate || item.paidAt)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs font-normal text-black">
         {formatCurrency(item.paymentProof?.amount ?? item.totalAmount)}
@@ -134,11 +147,11 @@ const PaymentsPage = () => {
         {getTaxAmount(item)}
       </td>
       <td className="py-4 px-4 md:text-sm text-xs text-[#6B7280]">
-        -
+        {formatPaymentMethod(item.paymentMethod)}
       </td>
       <td className="py-4 px-4 text-center last:pr-0 max-w-[150px]">
         <span className="bg-[#DCFCE7] text-[#3AB449] px-6 py-1.5 rounded-full text-xs font-normal inline-block">
-          {item.paymentProof?.status
+          {item.paymentProof?.status && item.paymentProof.status !== "none"
             ? item.paymentProof.status.charAt(0).toUpperCase() +
             item.paymentProof.status.slice(1).replace(/_/g, " ")
             : item.status
@@ -153,10 +166,8 @@ const PaymentsPage = () => {
             setSelectedProofItem(item);
             setIsViewProofModalOpen(true);
           }}
-
         >
           <Eye />
-
         </Button>
       </td>
     </tr>
@@ -182,7 +193,7 @@ const PaymentsPage = () => {
           "Project Name",
           "Due Date",
           "Amount",
-          "Over due From",
+          "Invoice Date",
           "Action",
         ]}
         data={upcomingList}
@@ -277,7 +288,7 @@ export const PaymentsPageSkeleton = () => {
           "Project Name",
           "Due Date",
           "Amount",
-          "Over due From",
+          "Invoice Date",
           "Action",
         ]}
         data={[]}
