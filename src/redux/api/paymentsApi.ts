@@ -31,11 +31,17 @@ export interface InvoiceBankDetails {
 
 export interface PaymentLineItem {
   images?: string[];
+  description?: string;
   items?: string[];
   rate?: number;
   markup?: number;
+  markupType?: string;
   quantity?: number;
   tax?: number;
+  taxType?: string;
+  effectiveRate?: number;
+  markupAmount?: number;
+  taxAmount?: number;
   total?: number;
   _id?: string;
 }
@@ -59,18 +65,30 @@ export interface PaymentItemDetail {
   customerId: string;
   quotationId: string | null;
   invoiceNumber: string;
+  description?: string;
+  invoiceType?: string;
   date: string;
   paymentScheduleId: string | null;
+  paymentScheduleStageId?: string | null;
   daysToPay: number | null;
+  dueDate?: string | null;
   poNumber: string;
+  billingAddress?: InvoiceAddress;
+  recipientAddress?: InvoiceAddress;
+  shipToAddress?: InvoiceAddress;
+  bankDetails?: InvoiceBankDetails;
   subtotal: number;
   markupTotal: number;
+  tax?: number;
+  taxableSales?: number;
+  taxCollected?: number;
   discount: number;
   depositAmount: number;
   totalAmount: number;
   status: string;
   sentAt: string | null;
   paidAt: string | null;
+  paymentMethod?: string | null;
   createdAt: string;
   updatedAt: string;
   lead?: PaymentLead;
