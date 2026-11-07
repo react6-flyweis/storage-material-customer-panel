@@ -1,4 +1,8 @@
 import logo from "@/assets/logo.png";
+import type {
+  InvoiceAddress,
+  InvoiceBankDetails,
+} from "@/redux/api/paymentsApi";
 
 function formatCurrency(value: number) {
   return value.toLocaleString("en-US", {
@@ -35,15 +39,68 @@ function formatStageName(
   return stageName;
 }
 
+const DEFAULT_COMPANY_ADDRESS_LINES = [
+  "1851 Madison Ave Suite 300",
+  "Council Bluffs, IA 51503",
+  "United States",
+  "info@steelbuildingdepot.com",
+  "www.steelbuildingdepot.com",
+];
+
+const DEFAULT_BANK_DETAILS: InvoiceBankDetails = {
+  bankName: "",
+  accountName: "",
+  accountNumber: "",
+  routingNumber: "",
+  swiftCode: "",
+  iban: "",
+  branchAddress: "",
+  paymentInstructions: "",
+};
+
+function getAddressLines(
+  address?: InvoiceAddress | null,
+  fallbackLines?: string[],
+): string[] {
+  if (!address) return fallbackLines ?? [];
+  if (address.lines && address.lines.length > 0) {
+    return address.lines;
+  }
+  const lines: string[] = [];
+  if (address.line1) lines.push(address.line1);
+  if (address.line2) lines.push(address.line2);
+  const cityStateZip = [
+    address.city,
+    [address.state, address.postalCode].filter(Boolean).join(" "),
+  ]
+    .filter(Boolean)
+    .join(", ");
+  if (cityStateZip) lines.push(cityStateZip);
+  if (address.country) lines.push(address.country);
+
+  return lines.length > 0 ? lines : (fallbackLines ?? []);
+}
+
 export interface InvoiceTemplateProps {
   invoiceNumber?: string;
   date?: string;
+  dueDate?: string | null;
   daysToPay?: string | number;
   subtotal?: number;
   taxAmount?: number;
   total?: number;
   discount?: number;
   depositAmount?: number;
+  companyEmail?: string;
+  companyWebsite?: string;
+  billingAddress?: InvoiceAddress | null;
+  recipientAddress?: InvoiceAddress | null;
+  bankDetails?: InvoiceBankDetails | null;
+  customer?: {
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+  } | null;
   items?: Array<{
     id?: string;
     description?: string;
@@ -54,6 +111,8 @@ export interface InvoiceTemplateProps {
     images?: string[];
     photos?: string[];
     items?: string[];
+    taxAmount?: number;
+    tax?: number;
   }>;
   stages?: Array<{
     _id?: string;
@@ -68,18 +127,59 @@ export interface InvoiceTemplateProps {
 export default function InvoiceTemplate({
   invoiceNumber = "-",
   date = "-",
+  dueDate,
   daysToPay = "15",
   subtotal = 0,
   taxAmount = 0,
   total = 0,
   discount = 0,
   depositAmount,
+  billingAddress,
+  recipientAddress,
+  bankDetails,
+  customer,
   items = [],
   stages = [],
 }: InvoiceTemplateProps) {
   const deposit = depositAmount ?? total * 0.25;
   const FALLBACK_IMAGE =
     "https://images.unsplash.com/photo-1504307651254-35680f356dfd?q=80&w=2670&auto=format&fit=crop";
+
+  const sellerAddress = billingAddress;
+  const sellerCompanyName =
+    sellerAddress?.companyName || "STEEL BUILDING DEPOT";
+  const sellerLines = getAddressLines(
+    sellerAddress,
+    DEFAULT_COMPANY_ADDRESS_LINES,
+  );
+
+  const customerFullName = customer
+    ? `${customer.firstName ?? ""} ${customer.lastName ?? ""}`.trim()
+    : "";
+  const recipientCompanyName =
+    recipientAddress?.companyName || customerFullName || "Valued Customer";
+  const recipientLines = getAddressLines(recipientAddress);
+  const hasRecipientInfo = Boolean(
+    recipientAddress?.companyName ||
+      recipientLines.length > 0 ||
+      customerFullName ||
+      customer?.email,
+  );
+
+  const bank = {
+    bankName: bankDetails?.bankName || DEFAULT_BANK_DETAILS.bankName,
+    accountName: bankDetails?.accountName || DEFAULT_BANK_DETAILS.accountName,
+    accountNumber:
+      bankDetails?.accountNumber || DEFAULT_BANK_DETAILS.accountNumber,
+    routingNumber:
+      bankDetails?.routingNumber || DEFAULT_BANK_DETAILS.routingNumber,
+    swiftCode: bankDetails?.swiftCode || "",
+    iban: bankDetails?.iban || "",
+    branchAddress: bankDetails?.branchAddress || "",
+    paymentInstructions:
+      bankDetails?.paymentInstructions ||
+      DEFAULT_BANK_DETAILS.paymentInstructions,
+  };
 
   return (
     <div className="bg-white rounded-lg p-6 sm:p-14 shadow-sm mx-auto max-w-8xl">
@@ -88,44 +188,79 @@ export default function InvoiceTemplate({
       </h1>
 
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row justify-between gap-12 mb-16 ">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16 mb-16 items-start">
+        {/* Seller / Billing Address */}
+        <div className="space-y-4">
           <div className="flex items-center gap-2">
             <div className="flex items-center shrink-0">
-              <img src={logo} alt="Logo" className="h-12 object-contain" />
+              <img
+                src={logo}
+                alt="Logo"
+                className="h-10 max-w-56 object-contain object-left"
+              />
             </div>
           </div>
 
-          <div className="text-xs text-gray-500 leading-relaxed">
-            1851 Madison Ave Suite 300
-            <br />
-            Council Bluffs, IA
-            <br />
-            51503
-            <br />
-            United States
-            <br />
-            travis@storagematerials.com
-            <br />
-            www.storagematerials.com
+          <div>
+            <h2 className="text-xs font-bold text-gray-800 uppercase tracking-wide">
+              {sellerCompanyName}
+            </h2>
+            <div className="text-xs text-gray-500 leading-relaxed mt-1">
+              {sellerLines.map((line, idx) => (
+                <div key={idx}>{line}</div>
+              ))}
+            </div>
           </div>
         </div>
 
-        <div className="min-w-55 space-y-2">
-          <div className="flex justify-between text-sm gap-4">
+        {/* Billed To / Recipient Address */}
+        <div className="space-y-2 md:pl-2">
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">
+            Billed To
+          </span>
+          {hasRecipientInfo ? (
+            <div className="text-xs text-gray-600 space-y-1">
+              <p className="font-semibold text-gray-900">
+                {recipientCompanyName}
+              </p>
+              {customer?.email && recipientCompanyName !== customer.email && (
+                <p className="text-gray-500">{customer.email}</p>
+              )}
+              {recipientLines.map((line, idx) => (
+                <p key={idx} className="text-gray-500">
+                  {line}
+                </p>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-gray-400 italic">
+              Client details on file
+            </div>
+          )}
+        </div>
+
+        {/* Invoice Meta */}
+        <div className="min-w-50 space-y-2 md:text-right">
+          <div className="flex md:justify-end justify-between gap-4 text-sm">
             <span className="text-gray-500 font-medium">Payment terms</span>
             <span className="text-gray-900">
               {daysToPay === "-" || !daysToPay ? "-" : `${daysToPay} days`}
             </span>
           </div>
-          <div className="flex justify-between text-sm gap-4">
+          <div className="flex md:justify-end justify-between gap-4 text-sm">
             <span className="text-gray-500 font-medium">Invoice #</span>
-            <span className="text-gray-900">{invoiceNumber}</span>
+            <span className="text-gray-900 font-bold">{invoiceNumber}</span>
           </div>
-          <div className="flex justify-between text-sm gap-4">
+          <div className="flex md:justify-end justify-between gap-4 text-sm">
             <span className="text-gray-500 font-medium">Date</span>
             <span className="text-gray-900">{formatInvoiceDate(date)}</span>
           </div>
+          {dueDate && (
+            <div className="flex md:justify-end justify-between gap-4 text-sm">
+              <span className="text-gray-500 font-medium">Due Date</span>
+              <span className="text-gray-900">{formatInvoiceDate(dueDate)}</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -225,7 +360,76 @@ export default function InvoiceTemplate({
       </div>
 
       {/* Summary Section */}
-      <div className="flex justify-end mb-12">
+      <div className="flex flex-col lg:flex-row justify-between items-start gap-10 mb-12">
+        {/* Left: Banking & Wire Info */}
+        <div className="w-full max-w-md">
+          <div className="pb-2 border-b border-gray-200">
+            <h3 className="text-sm font-bold text-gray-900">
+              Banking & Wire Info
+            </h3>
+          </div>
+
+          <div className="py-2.5 space-y-2 text-xs">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Bank</span>
+              <span className="font-semibold text-gray-900">
+                {bank.bankName || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Account Name</span>
+              <span className="font-semibold text-gray-900">
+                {bank.accountName || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Account #</span>
+              <span className="font-semibold text-gray-900 font-mono">
+                {bank.accountNumber || "-"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-500">Routing #</span>
+              <span className="font-semibold text-gray-900 font-mono">
+                {bank.routingNumber || "-"}
+              </span>
+            </div>
+            {Boolean(bank.swiftCode) && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">SWIFT</span>
+                <span className="font-semibold text-gray-900 font-mono">
+                  {bank.swiftCode}
+                </span>
+              </div>
+            )}
+            {Boolean(bank.iban) && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">IBAN</span>
+                <span className="font-semibold text-gray-900 font-mono">
+                  {bank.iban}
+                </span>
+              </div>
+            )}
+            {Boolean(bank.branchAddress) && (
+              <div className="flex justify-between items-center">
+                <span className="text-gray-500">Branch Address</span>
+                <span className="font-semibold text-gray-900">
+                  {bank.branchAddress}
+                </span>
+              </div>
+            )}
+          </div>
+
+          {Boolean(bank.paymentInstructions) && (
+            <div className="pt-2 border-t border-gray-200">
+              <p className="text-xs text-gray-500 italic">
+                Memo: {bank.paymentInstructions}
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Right: Totals */}
         <div className="w-64 space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-gray-900 font-bold">Subtotal</span>
@@ -235,8 +439,8 @@ export default function InvoiceTemplate({
           </div>
           {discount > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-green-600">Discount</span>
-              <span className="text-green-600 font-medium">
+              <span className="text-red-600">Discount</span>
+              <span className="text-red-600 font-medium">
                 -${formatCurrency(Number(discount))}
               </span>
             </div>

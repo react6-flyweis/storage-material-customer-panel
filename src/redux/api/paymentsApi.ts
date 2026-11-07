@@ -7,13 +7,41 @@ export interface PaymentLead {
   location?: string;
 }
 
+export interface InvoiceAddress {
+  companyName?: string;
+  line1?: string;
+  line2?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
+  country?: string;
+  lines?: string[];
+}
+
+export interface InvoiceBankDetails {
+  bankName?: string;
+  accountName?: string;
+  accountNumber?: string;
+  routingNumber?: string;
+  swiftCode?: string;
+  iban?: string;
+  branchAddress?: string;
+  paymentInstructions?: string;
+}
+
 export interface PaymentLineItem {
   images?: string[];
+  description?: string;
   items?: string[];
   rate?: number;
   markup?: number;
+  markupType?: string;
   quantity?: number;
   tax?: number;
+  taxType?: string;
+  effectiveRate?: number;
+  markupAmount?: number;
+  taxAmount?: number;
   total?: number;
   _id?: string;
 }
@@ -37,18 +65,30 @@ export interface PaymentItemDetail {
   customerId: string;
   quotationId: string | null;
   invoiceNumber: string;
+  description?: string;
+  invoiceType?: string;
   date: string;
   paymentScheduleId: string | null;
+  paymentScheduleStageId?: string | null;
   daysToPay: number | null;
+  dueDate?: string | null;
   poNumber: string;
+  billingAddress?: InvoiceAddress;
+  recipientAddress?: InvoiceAddress;
+  shipToAddress?: InvoiceAddress;
+  bankDetails?: InvoiceBankDetails;
   subtotal: number;
   markupTotal: number;
+  tax?: number;
+  taxableSales?: number;
+  taxCollected?: number;
   discount: number;
   depositAmount: number;
   totalAmount: number;
   status: string;
   sentAt: string | null;
   paidAt: string | null;
+  paymentMethod?: string | null;
   createdAt: string;
   updatedAt: string;
   lead?: PaymentLead;
@@ -88,7 +128,15 @@ export interface InvoiceLineItem {
 export interface InvoiceDetail {
   _id: string;
   leadId: string;
-  customerId: string;
+  customerId:
+    | string
+    | {
+        _id?: string;
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        phone?: string;
+      };
   quotationId: string | null;
   invoiceNumber: string;
   date: string;
@@ -109,6 +157,16 @@ export interface InvoiceDetail {
   createdAt: string;
   updatedAt: string;
   paymentProof?: PaymentProofDetail;
+  billingAddress?: InvoiceAddress | null;
+  recipientAddress?: InvoiceAddress | null;
+  bankDetails?: InvoiceBankDetails | null;
+  customer?: {
+    _id?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
+    phone?: string;
+  } | null;
 }
 
 export interface PaymentScheduleStage {

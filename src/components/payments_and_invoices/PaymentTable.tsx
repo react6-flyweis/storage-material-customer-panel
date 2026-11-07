@@ -10,7 +10,39 @@ interface PaymentTableProps<T> {
   containerClassName?: string;
   headRowClassName?: string;
   emptyMessage?: string;
+  isLoading?: boolean;
+  skeletonRowCount?: number;
 }
+
+export const PaymentTableSkeleton = ({
+  title,
+  titleColor = "text-black",
+  headers,
+  containerClassName,
+  headRowClassName,
+  rowCount = 3,
+}: {
+  title?: string;
+  titleColor?: string;
+  headers: string[];
+  containerClassName?: string;
+  headRowClassName?: string;
+  rowCount?: number;
+}) => {
+  return (
+    <PaymentTable
+      title={title || ""}
+      titleColor={titleColor}
+      headers={headers}
+      data={[]}
+      renderRow={() => null}
+      isLoading={true}
+      skeletonRowCount={rowCount}
+      containerClassName={containerClassName}
+      headRowClassName={headRowClassName}
+    />
+  );
+};
 
 const PaymentTable = <T extends object>({
   title,
@@ -21,6 +53,8 @@ const PaymentTable = <T extends object>({
   containerClassName,
   headRowClassName,
   emptyMessage,
+  isLoading = false,
+  skeletonRowCount = 3,
 }: PaymentTableProps<T>) => {
   return (
     <div
@@ -30,14 +64,16 @@ const PaymentTable = <T extends object>({
       )}
     >
       <div className="xl:p-6 p-4">
-        <h2
-          className={cn(
-            "md:text-lg text-base font-inter font-medium",
-            titleColor
-          )}
-        >
-          {title}
-        </h2>
+        {title && (
+          <h2
+            className={cn(
+              "md:text-lg text-base font-inter font-medium",
+              titleColor
+            )}
+          >
+            {title}
+          </h2>
+        )}
 
         <div className="overflow-x-auto">
           <table className="w-full border-collapse">
@@ -54,7 +90,71 @@ const PaymentTable = <T extends object>({
               </tr>
             </thead>
             <tbody>
-              {data.length === 0 ? (
+              {isLoading ? (
+                Array.from({ length: skeletonRowCount }).map((_, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className={cn(
+                      "border-b border-gray-50 last:border-0",
+                      headRowClassName?.includes("border-y")
+                        ? "border-y border-[#00000033]"
+                        : headRowClassName?.includes("border-b")
+                        ? "border-b border-gray-100"
+                        : ""
+                    )}
+                  >
+                    {headers.map((_, colIndex) => {
+                      const isLast = colIndex === headers.length - 1;
+                      const isSecondLast = colIndex === headers.length - 2;
+
+                      return (
+                        <td
+                          key={colIndex}
+                          className={cn(
+                            "py-4 px-4 md:text-sm text-xs first:pl-0 last:pr-0",
+                            isLast ? "text-right" : ""
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "animate-pulse",
+                              isLast
+                                ? "flex justify-center items-center"
+                                : ""
+                            )}
+                          >
+                            {isLast ? (
+                              <div
+                                className={cn(
+                                  "bg-gray-200 rounded-md",
+                                  headers.length > 6
+                                    ? "h-8 w-8"
+                                    : "h-7 w-20"
+                                )}
+                              />
+                            ) : isSecondLast && headers.length > 6 ? (
+                              <div className="h-6 w-20 bg-gray-200 rounded-full mx-auto" />
+                            ) : (
+                              <div
+                                className={cn(
+                                  "h-4 bg-gray-200 rounded",
+                                  colIndex === 0
+                                    ? "w-20"
+                                    : colIndex === 1
+                                    ? "w-32"
+                                    : colIndex === 2
+                                    ? "w-24"
+                                    : "w-16"
+                                )}
+                              />
+                            )}
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))
+              ) : data.length === 0 ? (
                 <tr>
                   <td
                     colSpan={headers.length}

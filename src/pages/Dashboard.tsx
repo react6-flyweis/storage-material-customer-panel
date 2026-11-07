@@ -1,4 +1,3 @@
-
 import TitleSubtitle from "../components/common_components/TitleSubtitle";
 import BlueAddUserIcon from "../assets/icon/BlueAddUserIcon.svg";
 import StatCard from "@/components/ui/stat-card";
@@ -11,9 +10,9 @@ import SalmonGrowthIcon from "../assets/icon/SalmonGrowthIcon.svg";
 import DashboardWidgets from "@/components/dashbord/DashboardWidgets";
 import Ship1 from "../assets/new-images/ship-1.svg";
 import Ship2 from "../assets/new-images/ship-2.svg";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { useGetDashboardQuery } from "@/redux/api/dashboardApi";
-import ProjectOrdersList, { type OrderItem } from "@/components/my_projects/ProjectOrdersList";
+// import ProjectOrdersList, { type OrderItem } from "@/components/my_projects/ProjectOrdersList";
 
 import {
   Truck,
@@ -29,10 +28,12 @@ import {
   Loader2,
 } from "lucide-react";
 import DashStatCard from "@/components/ui/dash-stat-card";
-import NextDeliveryCard, { type DeliveryCardData } from "@/components/dashbord/NextDeliveryCard";
+import NextDeliveryCard, {
+  type DeliveryCardData,
+} from "@/components/dashbord/NextDeliveryCard";
 
 const Dashboard = () => {
-  const navigate = useNavigate();
+  // const navigate = useNavigate();
 
   const { data: dashboardData, isLoading } = useGetDashboardQuery();
 
@@ -44,59 +45,59 @@ const Dashboard = () => {
     );
   }
 
-  const formatDate = (dateStr?: string | null) => {
-    if (!dateStr) return "-";
-    try {
-      const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return dateStr;
-      return d.toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      });
-    } catch {
-      return dateStr || "-";
-    }
-  };
+  // const formatDate = (dateStr?: string | null) => {
+  //   if (!dateStr) return "-";
+  //   try {
+  //     const d = new Date(dateStr);
+  //     if (isNaN(d.getTime())) return dateStr;
+  //     return d.toLocaleDateString("en-GB", {
+  //       day: "2-digit",
+  //       month: "2-digit",
+  //       year: "numeric",
+  //     });
+  //   } catch {
+  //     return dateStr || "-";
+  //   }
+  // };
 
-  const ordersList: OrderItem[] = (dashboardData?.ordersList || []).map((order) => {
-    const items = order.requestedItems || [];
-    const coilType = items.map((i) => i.name).filter(Boolean).join(", ") || "-";
-    const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
-    const calculatedLength = items.reduce(
-      (sum, item) => sum + ((item.lengthFeet || 0) * (item.quantity || 0)),
-      0
-    );
+  // const ordersList: OrderItem[] = (dashboardData?.ordersList || []).map((order) => {
+  //   const items = order.requestedItems || [];
+  //   const coilType = items.map((i) => i.name).filter(Boolean).join(", ") || "-";
+  //   const totalQty = items.reduce((sum, item) => sum + (item.quantity || 0), 0);
+  //   const calculatedLength = items.reduce(
+  //     (sum, item) => sum + ((item.lengthFeet || 0) * (item.quantity || 0)),
+  //     0
+  //   );
 
-    const totalLength = calculatedLength > 0
-      ? `${calculatedLength} ft`
-      : items[0]?.unit && totalQty > 0
-      ? `${totalQty} ${items[0].unit}`
-      : "-";
+  //   const totalLength = calculatedLength > 0
+  //     ? `${calculatedLength} ft`
+  //     : items[0]?.unit && totalQty > 0
+  //     ? `${totalQty} ${items[0].unit}`
+  //     : "-";
 
-    let mappedStatus = order.status || "Pending";
-    const normStatus = mappedStatus.toLowerCase();
-    if (normStatus === "fulfilled" || normStatus === "completed") {
-      mappedStatus = "Completed";
-    } else if (normStatus === "pending") {
-      mappedStatus = "Pending";
-    } else if (normStatus === "approved" || normStatus === "new") {
-      mappedStatus = "New Order";
-    }
+  //   let mappedStatus = order.status || "Pending";
+  //   const normStatus = mappedStatus.toLowerCase();
+  //   if (normStatus === "fulfilled" || normStatus === "completed") {
+  //     mappedStatus = "Completed";
+  //   } else if (normStatus === "pending") {
+  //     mappedStatus = "Pending";
+  //   } else if (normStatus === "approved" || normStatus === "new") {
+  //     mappedStatus = "New Order";
+  //   }
 
-    return {
-      id: order._id,
-      orderId: order.requestId || order._id,
-      building: order.buildingLabel || "-",
-      coilType,
-      totalLength,
-      quantity: totalQty,
-      orderDate: formatDate(order.requestDate || order.createdAt),
-      requiredDate: formatDate(order.requiredBy),
-      status: mappedStatus,
-      leadId: order.leadId,
-    };
-  });
+  //   return {
+  //     id: order._id,
+  //     orderId: order.requestId || order._id,
+  //     building: order.buildingLabel || "-",
+  //     coilType,
+  //     totalLength,
+  //     quantity: totalQty,
+  //     orderDate: formatDate(order.requestDate || order.createdAt),
+  //     requiredDate: formatDate(order.requiredBy),
+  //     status: mappedStatus,
+  //     leadId: order.leadId,
+  //   };
+  // });
 
   const dashboardStats = [
     {
@@ -137,7 +138,9 @@ const Dashboard = () => {
     },
     {
       title: "Project Timeline",
-      value: dashboardData?.projectTimeline ? `${dashboardData.projectTimeline}` : "-",
+      value: dashboardData?.projectTimeline
+        ? `${dashboardData.projectTimeline}`
+        : "-",
       icon: (
         <img
           src={SalmonGrowthIcon}
@@ -221,12 +224,16 @@ const Dashboard = () => {
     },
     {
       title: "Total Bundles",
-      value: dashboardData?.shipmentBreakdown?.totalBundles !== null && dashboardData?.shipmentBreakdown?.totalBundles !== undefined
-        ? `${dashboardData.shipmentBreakdown.totalBundles} bundles`
-        : "-",
-      description: dashboardData?.shipmentBreakdown?.totalBundles !== null && dashboardData?.shipmentBreakdown?.totalBundles !== undefined
-        ? `Total bundles in transit: ${dashboardData.shipmentBreakdown.totalBundles}`
-        : "No bundle information available",
+      value:
+        dashboardData?.shipmentBreakdown?.totalBundles !== null &&
+        dashboardData?.shipmentBreakdown?.totalBundles !== undefined
+          ? `${dashboardData.shipmentBreakdown.totalBundles} bundles`
+          : "-",
+      description:
+        dashboardData?.shipmentBreakdown?.totalBundles !== null &&
+        dashboardData?.shipmentBreakdown?.totalBundles !== undefined
+          ? `Total bundles in transit: ${dashboardData.shipmentBreakdown.totalBundles}`
+          : "No bundle information available",
       icon: CircleCheck,
       iconBg: "bg-emerald-600",
       accent: "text-emerald-600",
@@ -236,55 +243,82 @@ const Dashboard = () => {
   ];
 
   const nextDelivery = dashboardData?.nextDelivery;
-  const nextDeliveryData: DeliveryCardData | null = nextDelivery ? {
-    title: nextDelivery.description || nextDelivery.deliveryNumber || "Delivery",
-    description: nextDelivery.description || "",
-    deliveryId: nextDelivery.deliveryId || "",
-    status: nextDelivery.status === "in_transit" ? "inTransit" : (nextDelivery.status || "scheduled"),
-    deliveryInfo: {
-      date: nextDelivery.deliveryDate ? new Date(nextDelivery.deliveryDate).toLocaleDateString("en-US", {
-        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
-      }) : "-",
-      trackingStatus: nextDelivery.status === "in_transit" ? "Out for Delivery" : "-",
-      eta: "-",
-      timeWindow: nextDelivery.timings || "-",
-      company: nextDelivery.deliveryCompany?.name || "-",
-      driver: nextDelivery.deliveryCompany?.driver || "-",
-      driverPhone: nextDelivery.deliveryCompany?.phone || "-",
-      estimatedWeight: nextDelivery.estimatedWeight ? `${nextDelivery.estimatedWeight.toLocaleString()} lbs` : "-",
-      equipment: nextDelivery.loadingEquipment || [],
-    },
-    siteContact: {
-      name: nextDelivery.siteContact?.name || "-",
-      phone: nextDelivery.siteContact?.phone || "-",
-      instructions: nextDelivery.siteInstructions || "-",
-      specialNotes: nextDelivery.specialNotes || "-",
-    },
-    logistics: {
-      company: nextDelivery.deliveryCompany?.name || "-",
-      driver: nextDelivery.deliveryCompany?.driver || "-",
-      phone: nextDelivery.deliveryCompany?.phone || "-",
-      communications: [],
-    },
-    rescheduleInfo: nextDelivery.status === "rescheduled" ? {
-      previousDate: nextDelivery.pickupDate ? new Date(nextDelivery.pickupDate).toLocaleDateString() : "-",
-      newDate: nextDelivery.deliveryDate ? new Date(nextDelivery.deliveryDate).toLocaleDateString() : "-",
-      reason: nextDelivery.specialNotes || "Rescheduled",
-      acknowledged: nextDelivery.reschedule?.acknowledged ?? false,
-    } : undefined,
-    loadSummary: nextDelivery.loadAndBundle ? {
-      loadId: nextDelivery.loadAndBundle.loadId,
-      bundleCount: nextDelivery.loadAndBundle.bundleCount,
-      truckNumber: nextDelivery.loadAndBundle.truckNumber,
-      totalWeight: nextDelivery.loadAndBundle.totalWeight
-    } : undefined,
-    siteStatus: {
-      siteReady: nextDelivery.siteReadiness?.siteReady ?? false,
-      equipmentReady: nextDelivery.siteReadiness?.equipmentReady ?? false,
-    },
-    confirmationEmailSent: nextDelivery.confirmationEmailSent ?? false,
-    confirmationEmailSentAt: nextDelivery.confirmationEmailSentAt ?? null,
-  } : null;
+  const nextDeliveryData: DeliveryCardData | null = nextDelivery
+    ? {
+        title:
+          nextDelivery.description || nextDelivery.deliveryNumber || "Delivery",
+        description: nextDelivery.description || "",
+        deliveryId:
+          nextDelivery.deliveryId ||
+          (nextDelivery as any)._id ||
+          (nextDelivery as any).id ||
+          "",
+        status:
+          nextDelivery.status === "in_transit"
+            ? "inTransit"
+            : nextDelivery.status || "scheduled",
+        deliveryInfo: {
+          date: nextDelivery.deliveryDate
+            ? new Date(nextDelivery.deliveryDate).toLocaleDateString("en-US", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })
+            : "-",
+          trackingStatus:
+            nextDelivery.status === "in_transit" ? "Out for Delivery" : "-",
+          eta: "-",
+          timeWindow: nextDelivery.timings || "-",
+          company: nextDelivery.deliveryCompany?.name || "-",
+          driver: nextDelivery.deliveryCompany?.driver || "-",
+          driverPhone: nextDelivery.deliveryCompany?.phone || "-",
+          estimatedWeight: nextDelivery.estimatedWeight
+            ? `${nextDelivery.estimatedWeight.toLocaleString()} lbs`
+            : "-",
+          equipment: nextDelivery.loadingEquipment || [],
+        },
+        siteContact: {
+          name: nextDelivery.siteContact?.name || "-",
+          phone: nextDelivery.siteContact?.phone || "-",
+          instructions: nextDelivery.siteInstructions || "-",
+          specialNotes: nextDelivery.specialNotes || "-",
+        },
+        logistics: {
+          company: nextDelivery.deliveryCompany?.name || "-",
+          driver: nextDelivery.deliveryCompany?.driver || "-",
+          phone: nextDelivery.deliveryCompany?.phone || "-",
+          communications: [],
+        },
+        rescheduleInfo:
+          nextDelivery.status === "rescheduled"
+            ? {
+                previousDate: nextDelivery.pickupDate
+                  ? new Date(nextDelivery.pickupDate).toLocaleDateString()
+                  : "-",
+                newDate: nextDelivery.deliveryDate
+                  ? new Date(nextDelivery.deliveryDate).toLocaleDateString()
+                  : "-",
+                reason: nextDelivery.specialNotes || "Rescheduled",
+                acknowledged: nextDelivery.reschedule?.acknowledged ?? false,
+              }
+            : undefined,
+        loadSummary: nextDelivery.loadAndBundle
+          ? {
+              loadId: nextDelivery.loadAndBundle.loadId,
+              bundleCount: nextDelivery.loadAndBundle.bundleCount,
+              truckNumber: nextDelivery.loadAndBundle.truckNumber,
+              totalWeight: nextDelivery.loadAndBundle.totalWeight,
+            }
+          : undefined,
+        siteStatus: {
+          siteReady: nextDelivery.siteReadiness?.siteReady ?? false,
+          equipmentReady: nextDelivery.siteReadiness?.equipmentReady ?? false,
+        },
+        confirmationEmailSent: nextDelivery.confirmationEmailSent ?? false,
+        confirmationEmailSentAt: nextDelivery.confirmationEmailSentAt ?? null,
+      }
+    : null;
 
   return (
     <div className="p-5 space-y-6">
@@ -345,7 +379,7 @@ const Dashboard = () => {
 
       <DashboardWidgets data={dashboardData} />
 
-      <ProjectOrdersList
+      {/* <ProjectOrdersList
         orders={ordersList}
         onViewAll={() => navigate("/material-orders")}
         onViewOrderDetails={(order) => {
@@ -355,7 +389,7 @@ const Dashboard = () => {
             navigate("/material-orders");
           }
         }}
-      />
+      /> */}
 
       <h3 className="text-[#212B36] text-[18px] font-semibold mb-3">
         Shipment Breakdown

@@ -4,12 +4,14 @@ import {
   User,
   Square,
   AlertTriangle,
+  AlertCircle,
   X,
   CheckSquare2,
   Loader2,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useConfirmSiteReadyMutation } from "@/redux/api/deliveriesApi";
+import { getApiErrorMessage } from "@/redux/utils/apiError";
 import SuccessModal from "@/components/common_components/SuccessModal";
 import type { DeliveryCardData } from "./NextDeliveryCard";
 
@@ -26,17 +28,29 @@ export default function SiteConfirmedModal({
   open,
   onClose,
   confirmed,
-  deliveryId = "DEL-1001",
+  deliveryId,
   deliveryData,
   onSuccess,
 }: SiteConfirmedModalProps) {
   const [confirmSiteReady, { isLoading }] = useConfirmSiteReadyMutation();
   const [showSuccess, setShowSuccess] = useState(false);
   const [successMsg, setSuccessMsg] = useState("Site ready confirmed");
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (open) {
+      setError("");
+    }
+  }, [open]);
 
   if (!open) return null;
 
-  const currentDeliveryId = deliveryData?.deliveryId || deliveryId || "-";
+  const currentDeliveryId =
+    deliveryData?.deliveryId ||
+    (deliveryData as any)?._id ||
+    (deliveryData as any)?.id ||
+    deliveryId ||
+    "";
   const title = deliveryData?.title || "-";
   const status = deliveryData?.status || "-";
   const requiredEquipment = deliveryData?.deliveryInfo?.equipment?.length
@@ -59,6 +73,12 @@ export default function SiteConfirmedModal({
   ];
 
   const handleConfirmSiteReady = async () => {
+    if (!currentDeliveryId || currentDeliveryId === "-") {
+      setError("Delivery ID is missing or invalid.");
+      return;
+    }
+
+    setError("");
     try {
       const res = await confirmSiteReady({
         deliveryId: currentDeliveryId,
@@ -73,10 +93,11 @@ export default function SiteConfirmedModal({
         setSuccessMsg(res.message);
       }
       setShowSuccess(true);
-    } catch (err) {
+    } catch (err: unknown) {
       console.error("Failed to confirm site ready", err);
-      // Even on local mock/error, show success for UI demo if needed or set fallback
-      setShowSuccess(true);
+      const message =
+        getApiErrorMessage(err) || "Failed to confirm site ready. Please try again.";
+      setError(message);
     }
   };
 
@@ -167,6 +188,14 @@ export default function SiteConfirmedModal({
                 </p>
                 <p className="mt-2 text-sm text-[#4A5565]">Site Contact / Customer</p>
               </div>
+
+              {/* Error Message */}
+              {error && (
+                <div className="mt-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
+                  <span>{error}</span>
+                </div>
+              )}
 
               {/* Action Buttons — only in unconfirmed view */}
               {!confirmed && (
