@@ -2,7 +2,7 @@ import React from "react";
 import logo from "../../assets/logo.png";
 import bellIcon from "../../assets/bellIcon.svg";
 import { useNavigate } from "react-router-dom";
-import { Menu, User, Settings, LogOut } from "lucide-react";
+import { Menu, User, LogOut } from "lucide-react";
 import { HeaderSearch } from "./HeaderSearch";
 import { useAppDispatch, useAppSelector } from "@/redux/hooks";
 import { logout } from "@/redux/slices/authSlice";
@@ -20,7 +20,7 @@ import { Button } from "../ui/button";
 interface HeaderProps {
   onMenuToggle: () => void;
   onProfileClick?: () => void;
-  onSettingsClick?: () => void;
+  // onSettingsClick?: () => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
@@ -104,13 +104,13 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               <User className="w-4 h-4 text-gray-500" />
               <span>My profile</span>
             </DropdownMenuItem>
-            <DropdownMenuItem
+            {/* <DropdownMenuItem
               onClick={() => navigate("/settings")}
               className="flex items-center gap-3 px-4 py-2.5"
             >
               <Settings className="w-4 h-4 text-gray-500" />
               <span>Settings</span>
-            </DropdownMenuItem>
+            </DropdownMenuItem> */}
             <DropdownMenuSeparator />
             <DropdownMenuItem
               onClick={handleSignOut}
