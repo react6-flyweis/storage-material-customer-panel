@@ -4,7 +4,7 @@ import { NotFound } from "@/pages/not-found";
 import { MainLayout } from "./components/layout/main-layout";
 import NotificationsView from "./components/notifications/NotificationsView";
 import DeliverySchedule from "./components/delivery-schedule/DeliverySchedule";
-import SettingsView from "./components/settings/SettingsView";
+// import SettingsView from "./components/settings/SettingsView";
 import ProfileView from "./components/profile/ProfileView";
 import InvoicePreview from "./pages/InvoicePreview";
 import ScannedPage from "./components/delivery-schedule/ScannedPage";
@@ -16,56 +16,44 @@ const ProjectDetailsPage = lazy(() => import("@/pages/ProjectDetailsPage"));
 const ProjectDrawingPage = lazy(() => import("./pages/ProjectDrawingPage"));
 const ProjectImagesPage = lazy(() => import("@/pages/ProjectImagesPage"));
 const AllDrawingsPage = lazy(
-  () => import("@/pages/drawings_and_documents/AllDrawingsPage")
+  () => import("@/pages/drawings_and_documents/AllDrawingsPage"),
 );
 const ProjectDrawingsPage = lazy(
-  () => import("@/pages/drawings_and_documents/ProjectDrawingsPage")
+  () => import("@/pages/drawings_and_documents/ProjectDrawingsPage"),
 );
 const ProjectBuildingDrawingsPage = lazy(
-  () => import("@/pages/drawings_and_documents/ProjectBuildingDrawingsPage")
+  () => import("@/pages/drawings_and_documents/ProjectBuildingDrawingsPage"),
 );
 const ProjectDocumentsPage = lazy(
-  () => import("@/pages/drawings_and_documents/ProjectDocumentsPage")
+  () => import("@/pages/drawings_and_documents/ProjectDocumentsPage"),
 );
 const Communication = lazy(
-  () => import("./components/communication/CommunicationView")
+  () => import("./components/communication/CommunicationView"),
 );
 const PaymentsPage = lazy(
-  () => import("@/pages/payments_and_invoices/PaymentsPage")
+  () => import("@/pages/payments_and_invoices/PaymentsPage"),
 );
 const InvoicesPage = lazy(
-  () => import("@/pages/payments_and_invoices/InvoicesPage")
+  () => import("@/pages/payments_and_invoices/InvoicesPage"),
 );
 const TaxReportsPage = lazy(
-  () => import("@/pages/payments_and_invoices/TaxReportsPage")
+  () => import("@/pages/payments_and_invoices/TaxReportsPage"),
 );
 const DocumentPreviewPage = lazy(
-  () => import("@/pages/drawings_and_documents/DocumentPreviewPage")
+  () => import("@/pages/drawings_and_documents/DocumentPreviewPage"),
 );
-const MaterialOrdersPage = lazy(
-  () => import("@/pages/MaterialOrdersPage")
-);
-const ProjectOrdersPage = lazy(
-  () => import("@/pages/ProjectOrdersPage")
-);
-const OrderDetailsPage = lazy(
-  () => import("@/pages/OrderDetailsPage")
-);
+const MaterialOrdersPage = lazy(() => import("@/pages/MaterialOrdersPage"));
+const ProjectOrdersPage = lazy(() => import("@/pages/ProjectOrdersPage"));
+const OrderDetailsPage = lazy(() => import("@/pages/OrderDetailsPage"));
 const OrderQuotationDetailsPage = lazy(
-  () => import("@/pages/OrderQuotationDetailsPage")
+  () => import("@/pages/OrderQuotationDetailsPage"),
 );
-const OrderQuotationsPage = lazy(
-  () => import("@/pages/OrderQuotationsPage")
-);
+const OrderQuotationsPage = lazy(() => import("@/pages/OrderQuotationsPage"));
 const ProjectOrderQuotationsPage = lazy(
-  () => import("@/pages/ProjectOrderQuotationsPage")
+  () => import("@/pages/ProjectOrderQuotationsPage"),
 );
-const AddNewOrderPage = lazy(
-  () => import("@/pages/AddNewOrderPage")
-);
-const AddNewProjectPage = lazy(
-  () => import("@/pages/AddNewProjectPage")
-);
+const AddNewOrderPage = lazy(() => import("@/pages/AddNewOrderPage"));
+const AddNewProjectPage = lazy(() => import("@/pages/AddNewProjectPage"));
 
 import ProjectDeliverySchedule from "./components/delivery-schedule/ProjectDeliverySchedule";
 
@@ -85,16 +73,31 @@ export const adminRoutes: RouteObject[] = [
       { path: "/project-orders", element: <ProjectOrdersPage /> },
       { path: "/project-orders/:id", element: <ProjectOrdersPage /> },
 
-      { path: "/order-details/:leadId/:orderId", element: <OrderDetailsPage /> },
+      {
+        path: "/order-details/:leadId/:orderId",
+        element: <OrderDetailsPage />,
+      },
       { path: "/order-quotations", element: <OrderQuotationsPage /> },
-      { path: "/project-order-quotations", element: <ProjectOrderQuotationsPage /> },
-      { path: "/project-order-quotations/:id", element: <ProjectOrderQuotationsPage /> },
-      { path: "/order-quotation-details/:id", element: <OrderQuotationDetailsPage /> },
+      {
+        path: "/project-order-quotations",
+        element: <ProjectOrderQuotationsPage />,
+      },
+      {
+        path: "/project-order-quotations/:id",
+        element: <ProjectOrderQuotationsPage />,
+      },
+      {
+        path: "/order-quotation-details/:id",
+        element: <OrderQuotationDetailsPage />,
+      },
       { path: "/my_projects/:id", element: <ProjectDetailsPage /> },
       { path: "/project-drawings/:id", element: <ProjectDrawingPage /> },
       { path: "/project-images/:id", element: <ProjectImagesPage /> },
       { path: "/project-buildings/:id", element: <ProjectDrawingsPage /> },
-      { path: "/project-building-drawings/:id", element: <ProjectBuildingDrawingsPage /> },
+      {
+        path: "/project-building-drawings/:id",
+        element: <ProjectBuildingDrawingsPage />,
+      },
       { path: "/drawings", element: <AllDrawingsPage /> },
       { path: "/documents", element: <ProjectDocumentsPage /> },
       { path: "/payments", element: <PaymentsPage /> },
@@ -111,13 +114,19 @@ export const adminRoutes: RouteObject[] = [
 
       { path: "/notification", element: <NotificationsView /> },
       { path: "/delivery-schedule", element: <DeliverySchedule /> },
-      { path: "/project-delivery-schedule", element: <ProjectDeliverySchedule /> },
-      { path: "/project-delivery-schedule/:id", element: <ProjectDeliverySchedule /> },
-      { path: "/scanned-page", element: <ScannedPage /> },
       {
-        path: "settings",
-        element: <SettingsView />,
+        path: "/project-delivery-schedule",
+        element: <ProjectDeliverySchedule />,
       },
+      {
+        path: "/project-delivery-schedule/:id",
+        element: <ProjectDeliverySchedule />,
+      },
+      { path: "/scanned-page", element: <ScannedPage /> },
+      // {
+      //   path: "settings",
+      //   element: <SettingsView />,
+      // },
       {
         path: "profile",
         element: <ProfileView />,
