@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -25,17 +25,20 @@ import TrackLeadsLifecycleModal from "@/components/my_projects/TrackLeadsLifecyc
 import SuccessModal from "@/components/common_components/SuccessModal";
 import Modal from "@/components/common_components/Modal";
 import ProjectImages from "@/components/my_projects/ProjectImages";
+import ProjectAgreementBanner from "@/components/my_projects/ProjectAgreementBanner";
+import ProjectDocumentsTab from "@/components/my_projects/ProjectDocumentsTab";
 
 const tabs = [
   "Basic info",
   "RFQ",
   "Quotation",
+  "Documents",
   "Open Chat",
   // "Timeline",
   // "Follow Ups",
   "Payments",
   "Project Tracking",
-  "Project Images"
+  "Project Images",
 ];
 
 const ProjectDetailsPage = () => {
@@ -54,23 +57,48 @@ const ProjectDetailsPage = () => {
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
   const [reasonError, setReasonError] = useState("");
-  const [cancelProject, { isLoading: isCancelling }] = useCancelProjectMutation();
+  const [cancelProject, { isLoading: isCancelling }] =
+    useCancelProjectMutation();
 
   const { data: quotationData } = useGetProjectQuotationQuery(id, {
     skip: !id,
   });
-  const [approveQuotation, { isLoading: isApprovingQuotation }] = useApproveQuotationMutation();
-  const [rejectQuotation, { isLoading: isRejectingQuotation }] = useRejectQuotationMutation();
+  const [approveQuotation, { isLoading: isApprovingQuotation }] =
+    useApproveQuotationMutation();
+  const [rejectQuotation, { isLoading: isRejectingQuotation }] =
+    useRejectQuotationMutation();
 
-  const [isRejectQuotationModalOpen, setIsRejectQuotationModalOpen] = useState(false);
+  const [isRejectQuotationModalOpen, setIsRejectQuotationModalOpen] =
+    useState(false);
   const [rejectQuotationReason, setRejectQuotationReason] = useState("");
   const [rejectReasonError, setRejectReasonError] = useState("");
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    if (searchParams.get("signing_complete") === "true") {
+      const timer = setTimeout(() => {
+        setModalTitle("Agreement Signed Successfully!");
+        setModalSubSubTitle(
+          "Thank you for signing the Fabrication & Supply Agreement. Your project has moved to the next production stage.",
+        );
+        setIsSuccessModalOpen(true);
+
+        // Clean the query parameter without reload
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }, 0);
+
+      return () => clearTimeout(timer);
+    }
+  }, [location.search]);
 
   const handleApproveQuotation = async () => {
     try {
       await approveQuotation(id).unwrap();
       setModalTitle("Quotation Approved Successfully");
-      setModalSubSubTitle("Our project team has been notified and will proceed with next steps.");
+      setModalSubSubTitle(
+        "Our project team has been notified and will proceed with next steps.",
+      );
       setIsSuccessModalOpen(true);
       setTimeout(() => {
         setIsSuccessModalOpen(false);
@@ -83,11 +111,16 @@ const ProjectDetailsPage = () => {
   const handleRejectQuotationSubmit = async () => {
     try {
       setRejectReasonError("");
-      await rejectQuotation({ leadId: id, reason: rejectQuotationReason }).unwrap();
+      await rejectQuotation({
+        leadId: id,
+        reason: rejectQuotationReason,
+      }).unwrap();
       setIsRejectQuotationModalOpen(false);
       setRejectQuotationReason("");
       setModalTitle("Quotation Rejected Successfully");
-      setModalSubSubTitle("Your feedback has been sent to the sales team to prepare revisions.");
+      setModalSubSubTitle(
+        "Your feedback has been sent to the sales team to prepare revisions.",
+      );
       setIsSuccessModalOpen(true);
       setTimeout(() => {
         setIsSuccessModalOpen(false);
@@ -95,7 +128,9 @@ const ProjectDetailsPage = () => {
     } catch (err) {
       console.error("Failed to reject quotation:", err);
       const error = err as { data?: { message?: string } };
-      setRejectReasonError(error?.data?.message || "Failed to reject quotation. Please try again.");
+      setRejectReasonError(
+        error?.data?.message || "Failed to reject quotation. Please try again.",
+      );
     }
   };
 
@@ -121,7 +156,9 @@ const ProjectDetailsPage = () => {
       }, 5000);
     } catch (err) {
       const error = err as { data?: { message?: string } };
-      setReasonError(error?.data?.message || "Failed to cancel project. Please try again.");
+      setReasonError(
+        error?.data?.message || "Failed to cancel project. Please try again.",
+      );
     }
   };
 
@@ -137,7 +174,10 @@ const ProjectDetailsPage = () => {
         </Button>
         {activeTab === "Basic info" && (
           <div className="flex items-center gap-3">
-            <Button onClick={() => navigate(`/project-drawings/${id}`)} className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
+            <Button
+              onClick={() => navigate(`/project-drawings/${id}`)}
+              className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md"
+            >
               Drawings
             </Button>
             <Button
@@ -148,26 +188,30 @@ const ProjectDetailsPage = () => {
             </Button>
           </div>
         )}
-        {activeTab === "Quotation" && quotationData?.availability === "ready" && quotationData?.quotation?.status?.toLowerCase() !== "accepted" && quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={() => setIsRejectQuotationModalOpen(true)}
-              disabled={isApprovingQuotation || isRejectingQuotation}
-              className="bg-[#78787833] hover:bg-[#78787855] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md transition-all"
-            >
-              Reject
-            </Button>
-            <Button
-              onClick={handleApproveQuotation}
-              disabled={isApprovingQuotation || isRejectingQuotation}
-              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md flex items-center gap-1.5 transition-all"
-            >
-              {isApprovingQuotation && <Loader2 className="h-3 w-3 animate-spin" />}
-              Approve to proceed
-            </Button>
-          </div>
-        )}
-
+        {activeTab === "Quotation" &&
+          quotationData?.availability === "ready" &&
+          quotationData?.quotation?.status?.toLowerCase() !== "accepted" &&
+          quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={() => setIsRejectQuotationModalOpen(true)}
+                disabled={isApprovingQuotation || isRejectingQuotation}
+                className="bg-[#78787833] hover:bg-[#78787855] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md transition-all"
+              >
+                Reject
+              </Button>
+              <Button
+                onClick={handleApproveQuotation}
+                disabled={isApprovingQuotation || isRejectingQuotation}
+                className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md flex items-center gap-1.5 transition-all"
+              >
+                {isApprovingQuotation && (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                )}
+                Approve to proceed
+              </Button>
+            </div>
+          )}
 
         <SuccessModal
           isOpen={isSuccessModalOpen}
@@ -205,8 +249,9 @@ const ProjectDetailsPage = () => {
                 }}
                 placeholder="Enter Reason"
                 rows={5}
-                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${reasonError ? "border-red-500" : "border-[#D0D5DD]"
-                  }`}
+                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
+                  reasonError ? "border-red-500" : "border-[#D0D5DD]"
+                }`}
               />
 
               {reasonError && (
@@ -257,8 +302,9 @@ const ProjectDetailsPage = () => {
                 }}
                 placeholder="Enter Reason"
                 rows={5}
-                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${rejectReasonError ? "border-red-500" : "border-[#D0D5DD]"
-                  }`}
+                className={`w-full resize-none rounded-lg border p-4 text-[16px] outline-none ${
+                  rejectReasonError ? "border-red-500" : "border-[#D0D5DD]"
+                }`}
               />
 
               {rejectReasonError && (
@@ -272,14 +318,29 @@ const ProjectDetailsPage = () => {
                 disabled={isRejectingQuotation}
                 className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
               >
-                {isRejectingQuotation && <Loader2 className="h-4 w-4 animate-spin" />}
+                {isRejectingQuotation && (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                )}
                 Reject Quotation
               </button>
             </div>
           </div>
         </Modal>
-
       </div>
+
+      {/* DocuSign Agreement Status Banner */}
+      <ProjectAgreementBanner
+        leadId={id}
+        status="sent"
+        signerEmail={
+          typeof data?.lead?.assignedSales === "object" &&
+          data?.lead?.assignedSales?.email
+            ? data.lead.assignedSales.email
+            : "client@thesteel.com"
+        }
+        sentAt="2026-11-15T10:30:00Z"
+      />
+
       <TitleSubtitle
         title="Project Details"
         subtitle="Stay updated with your latest activities and alerts"
@@ -322,6 +383,8 @@ const ProjectDetailsPage = () => {
           <ProjectRFQ />
         ) : activeTab === "Quotation" ? (
           <ProjectQuotation leadId={id} />
+        ) : activeTab === "Documents" ? (
+          <ProjectDocumentsTab data={data} leadId={id} />
         ) : activeTab === "Open Chat" ? (
           <ProjectOpenChat />
         ) : activeTab === "Timeline" ? (
@@ -329,7 +392,10 @@ const ProjectDetailsPage = () => {
         ) : activeTab === "Follow Ups" ? (
           <ProjectFollowUps leadId={id} />
         ) : activeTab === "Payments" ? (
-          <ProjectPayments invoices={data?.invoices} leadId={data?.lead?.projectId || id} />
+          <ProjectPayments
+            invoices={data?.invoices}
+            leadId={data?.lead?.projectId || id}
+          />
         ) : activeTab === "Project Tracking" ? (
           <ProjectTracking data={data} />
         ) : activeTab === "Project Images" ? (
@@ -347,7 +413,7 @@ const ProjectDetailsPage = () => {
         isOpen={isTrackLifecycleOpen}
         onClose={() => setIsTrackLifecycleOpen(false)}
       />
-    </div >
+    </div>
   );
 };
 
