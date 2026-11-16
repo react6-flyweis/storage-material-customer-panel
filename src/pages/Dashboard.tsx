@@ -3,6 +3,7 @@ import BlueAddUserIcon from "../assets/icon/BlueAddUserIcon.svg";
 import StatCard from "@/components/ui/stat-card";
 import { dashboardText } from "@/data/text/DashboardText";
 import ActiveProjectsOverview from "../components/dashbord/ActiveProjectsOverview";
+import AgreementActionBanner from "@/components/dashbord/AgreementActionBanner";
 import DrawingsAndApprovals from "../components/dashbord/DrawingsAndApprovals";
 import GreenCheckIcon from "../assets/icon/GreenCheckIcon.svg";
 import YellowDollerIcon from "../assets/icon/YellowDollerIcon.svg";
@@ -329,6 +330,12 @@ const Dashboard = () => {
       <TitleSubtitle
         title={dashboardText.header.title}
         subtitle={dashboardText.header.subtitle}
+      />
+
+      <AgreementActionBanner
+        leadId={dashboardData?.activeProjectOverview?.leadId || "demo-project"}
+        projectName={dashboardData?.activeProjectOverview?.projectName || "Commercial Steel Warehouse"}
+        status="sent"
       />
 
       <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
