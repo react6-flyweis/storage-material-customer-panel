@@ -940,6 +940,35 @@ export interface GetProjectMediaParams {
   type?: "photo" | "video";
 }
 
+export interface ProjectAgreementEnvelope {
+  envelopeId: string;
+  sentAt: string;
+  signerEmail: string;
+  lastViewedAt?: string;
+}
+
+export interface ProjectAgreementData {
+  projectName: string;
+  jobId: string;
+  status: "not_sent" | "sent" | "viewed" | "completed" | "declined" | "voided";
+  signedPdfUrl?: string;
+  signedAt?: string;
+  envelope?: ProjectAgreementEnvelope;
+}
+
+export interface ProjectAgreementResponse {
+  success: boolean;
+  message: string;
+  data: ProjectAgreementData;
+}
+
+export interface DocuSignRecipientUrlResponse {
+  success: boolean;
+  data: {
+    signingUrl: string;
+  };
+}
+
 export const {
   useGetProjectsQuery,
   useCreateProjectMutation,
