@@ -1,16 +1,31 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { mockLeadsData } from "../../data/mockData";
-import { Check, CheckCheck, File, MessageSquare, User, X } from "lucide-react";
+import {
+  Check,
+  CheckCheck,
+  CheckCircle2,
+  FileSignature,
+  ExternalLink,
+  MessageSquare,
+  User,
+  X,
+} from "lucide-react";
 
 interface LeadsDetailsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  leadId?: string;
+  contractStatus?: "sent" | "viewed" | "completed" | "not_sent";
+  signedDate?: string;
 }
 
 const LeadsDetailsModal: React.FC<LeadsDetailsModalProps> = ({
   isOpen = true,
   onClose,
+  leadId,
+  contractStatus = "sent",
+  signedDate,
 }) => {
   const navigate = useNavigate();
   const [isTrackLifecycleOpen, setIsTrackLifecycleOpen] = useState(false);
@@ -184,20 +199,49 @@ const LeadsDetailsModal: React.FC<LeadsDetailsModalProps> = ({
             {/* Contract Card */}
             <div className="bg-[#fcfcfc] rounded-2xl p-5 border border-gray-100">
               <h4 className="text-xs font-semibold text-gray-900 mb-4 uppercase tracking-wider">
-                Signed Contract/Agreement
+                {contractStatus === "completed"
+                  ? "Signed Contract/Agreement"
+                  : "Contract / Agreement"}
               </h4>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-[#DCFCE7] flex items-center justify-center text-[#16A34A]">
-                  <File className="w-6 h-6" />
+              <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+                <div className="flex items-center gap-4">
+                  {contractStatus === "completed" ? (
+                    <div className="w-12 h-12 rounded-full bg-[#DCFCE7] flex items-center justify-center text-[#16A34A] shrink-0">
+                      <CheckCircle2 className="w-6 h-6" />
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-[#2563EB] shrink-0">
+                      <FileSignature className="w-6 h-6" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm font-semibold text-gray-900">
+                      {contractStatus === "completed"
+                        ? "Signed Contract/Agreement"
+                        : "Awaiting Signature"}
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5 font-medium">
+                      {contractStatus === "completed"
+                        ? `Signed on: ${signedDate || "12 Nov 2026"}`
+                        : "Fabrication & Supply Agreement"}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-semibold text-gray-900">
-                    Signed contact/Agreement
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5 font-medium">
-                    Signed on: 12 April 2025
-                  </p>
-                </div>
+
+                {contractStatus !== "completed" && (
+                  <button
+                    onClick={() => {
+                      onClose();
+                      navigate(
+                        `/my_projects/${leadId || "demo"}?signing_complete=true`
+                      );
+                    }}
+                    className="px-4 py-2 bg-[#2563EB] hover:bg-[#1D4ED8] text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer shrink-0"
+                  >
+                    <ExternalLink className="w-3.5 h-3.5" />
+                    Sign Now ↗
+                  </button>
+                )}
               </div>
             </div>
           </div>
