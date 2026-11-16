@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Loader2,
   AlertTriangle,
@@ -7,6 +8,7 @@ import {
   CheckCircle2,
   XCircle,
   Clock,
+  ExternalLink,
 } from "lucide-react";
 import {
   useGetProjectQuotationQuery,
@@ -71,6 +73,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
 
   const [iframeHeight, setIframeHeight] = useState<number>(850);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const navigate = useNavigate();
 
   // Modals state
   const [isApproveModalOpen, setIsApproveModalOpen] = useState(false);
@@ -405,8 +408,48 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
               </Button>
             </>
           )}
+
+          {isApproved && (
+            <Button
+              size="sm"
+              onClick={() => {
+                navigate(`/my_projects/${leadId}?signing_complete=true`);
+              }}
+              className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white h-9 px-3.5 text-xs font-medium rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <ExternalLink className="h-3.5 w-3.5" />
+              Sign Agreement ↗
+            </Button>
+          )}
         </div>
       </div>
+
+      {/* Approved Next Step Callout */}
+      {isApproved && (
+        <div className="bg-gradient-to-r from-blue-50/90 to-emerald-50/70 border border-blue-200 rounded-xl p-3.5 sm:p-4 shadow-2xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5">
+            <CheckCircle2 className="h-5 w-5 text-emerald-600 shrink-0" />
+            <div>
+              <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">
+                Quote Approved — Next step: Fabrication & Supply Agreement signature.
+              </h4>
+              <p className="text-xs text-slate-600">
+                Please complete your e-signature via DocuSign to proceed directly to fabrication.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            onClick={() => {
+              navigate(`/my_projects/${leadId}?signing_complete=true`);
+            }}
+            className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white text-xs font-medium h-8 px-3.5 rounded-lg flex items-center gap-1.5 shadow-xs cursor-pointer shrink-0"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            Review & Sign on DocuSign
+          </Button>
+        </div>
+      )}
 
       {/* Rejection Feedback Banner */}
       {isRejected && (
