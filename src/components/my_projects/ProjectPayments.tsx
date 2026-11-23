@@ -40,7 +40,7 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
   });
 
   return (
-    <div className="space-y-6 md:p-6 p-4 md:space-y-8 bg-white rounded-[10px]">
+    <div data-tour="tab-payments" className="space-y-6 md:p-6 p-4 md:space-y-8 bg-white rounded-[10px]">
       <div className="flex items-center gap-2">
         <span className="text-(--text-color-black) md:text-lg text-base font-normal">
           Lead ID -
@@ -51,7 +51,7 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
       </div>
 
       {/* Financial Summary */}
-      <div className="bg-[#EFF6FF] rounded-xl md:p-6 p-4 border border-[#EBF2FF]">
+      <div data-tour="project-payments-summary" className="bg-[#EFF6FF] rounded-xl md:p-6 p-4 border border-[#EBF2FF]">
         <h3 className="text-(--text-color-black) text-base font-medium mb-6">
           Financial Summary
         </h3>
@@ -80,7 +80,7 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
       </div>
 
       {/* Payment History */}
-      <div className="space-y-6">
+      <div data-tour="project-payments-history" className="space-y-6">
         <h3 className="text-gray-900 text-lg font-medium">Payment History</h3>
 
         <div className="overflow-x-auto -mx-4 md:mx-0">
@@ -139,7 +139,7 @@ const ProjectPayments = ({ invoices = [], leadId }: ProjectPaymentsProps) => {
                         {payment.status}
                       </div>
                       {payment.status === "Pending" && (
-                        <button onClick={() => navigate("/payments")} className="text-[#3AB449] ml-5 text-xs font-normal hover:underline">
+                        <button data-tour="project-payments-pay" onClick={() => navigate("/payments")} className="text-[#3AB449] ml-5 text-xs font-normal hover:underline">
                           Pay
                         </button>
                       )}
