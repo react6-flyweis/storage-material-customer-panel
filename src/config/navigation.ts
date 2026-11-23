@@ -14,6 +14,8 @@ export type SubNavItem = {
 
 export type NavItem = {
   title: string;
+  /** What the product tour calls this tab; defaults to its title. */
+  tourLabel?: string;
   color: string;
   icon: string;
   path?: string;
@@ -36,6 +38,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     title: "",
+    tourLabel: "Drawings",
     color: "bg-[#3AB449]",
     icon: MenuIcon3,
     items: [
@@ -45,6 +48,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     title: "",
+    tourLabel: "Payments & Invoices",
     color: "bg-[#000000]",
     icon: MenuIcon5,
     items: [
@@ -55,6 +59,7 @@ export const NAV_ITEMS: NavItem[] = [
   },
   {
     title: "Delivery Shedule",
+    tourLabel: "Delivery Schedule",
     color: "bg-[#2B7FFF]",
     icon: MenuIcon7,
     path: "/delivery-schedule",
