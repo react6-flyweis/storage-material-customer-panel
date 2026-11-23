@@ -99,6 +99,7 @@ const ProjectUpcomingDelivery = ({
           <h2 className="text-xl font-bold text-[#101828]">Upcoming Delivery</h2>
         </div>
         <button
+          data-tour="project-upcoming-all"
           onClick={handleViewAll}
           className="rounded-lg border border-[#D0D5DD] bg-white px-5 py-2 text-sm font-semibold text-[#101828] shadow-xs hover:bg-gray-50 transition-colors cursor-pointer"
         >
@@ -175,6 +176,7 @@ const ProjectUpcomingDelivery = ({
                   </td>
                   <td className="py-5 px-4 sm:px-6 text-right whitespace-nowrap">
                     <button
+                      data-tour="project-upcoming-view"
                       onClick={() => handleViewDetails(delivery)}
                       className="p-1 text-[#101828] hover:text-[#2563EB] transition-colors rounded-md cursor-pointer"
                       title="View details"
