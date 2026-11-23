@@ -5,6 +5,7 @@ import { useGetBuildingDrawingsQuery, type BuildingDrawingItem } from "@/redux/a
 import { useGetProjectDetailsQuery } from "@/redux/api/projectsApi";
 import ViewDrawingModal from "@/components/drawings_and_documents/ViewDrawingModal";
 import { cn } from "@/lib/utils";
+import { getDrawingStage } from "@/utils/drawingStage";
 
 const SkeletonCard: React.FC = () => (
   <div className="border border-slate-200 rounded-lg p-4 flex items-center justify-between bg-white shadow-xs animate-pulse">
@@ -297,6 +298,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
       <div className="space-y-2">
         <div className="flex items-center gap-3">
           <button
+            data-tour="building-back"
             onClick={() => navigate(-1)}
             className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-4 py-2 text-xs md:text-sm font-medium flex items-center gap-2 rounded-md transition-colors shadow-xs cursor-pointer"
           >
@@ -340,7 +342,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
               </div>
 
               {/* Custom Color-Coded Status Filter Dropdown */}
-              <div className="relative">
+              <div data-tour="building-filter" className="relative">
                 <button
                   type="button"
                   onClick={() => setIsStatusDropdownOpen(!isStatusDropdownOpen)}
@@ -424,7 +426,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                 </div>
               </div>
 
-              <div>
+              <div data-tour="building-drawings">
                 <h4 className="text-sm font-semibold text-slate-600 mb-3">
                   Attachments & Drawings
                 </h4>
@@ -454,6 +456,7 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                         </div>
                         <div className="flex items-center gap-2.5 text-slate-600 shrink-0 text-sm">
                           <span
+                            data-tour="drawing-download"
                             className="hover:text-slate-900 cursor-pointer"
                             title="Download / View URL"
                             onClick={(e) => handleDownload(item, e)}
@@ -461,6 +464,8 @@ const ProjectBuildingDrawingsPage: React.FC = () => {
                             ↓
                           </span>
                           <span
+                            data-tour="drawing-view"
+                            data-tour-status={getDrawingStage(item.status)}
                             className="hover:text-slate-900 cursor-pointer"
                             title="View details"
                             onClick={(e) => {
