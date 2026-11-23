@@ -63,7 +63,7 @@ export default function EmailConfirmationModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-      <div className="w-full max-w-[512px] max-h-[90vh] rounded-lg bg-white p-5 overflow-auto">
+      <div data-tour="email-modal" className="w-full max-w-[512px] max-h-[90vh] rounded-lg bg-white p-5 overflow-auto">
         <div className="mb-5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="flex h-[48px] w-[48px] items-center justify-center rounded-full bg-[#3B5FB8]">
@@ -78,7 +78,7 @@ export default function EmailConfirmationModal({
             </h2>
           </div>
 
-          <button onClick={onClose}>
+          <button data-tour-close onClick={onClose}>
             <X
               size={24}
               className="text-[#98A2B3]"
