@@ -98,10 +98,11 @@ const InvoicesPage = () => {
         </td>
         <td className="py-4 text-sm text-center">
           <div className="flex justify-start items-center gap-2">
-            <a href={invoice} download="invoice.png" className="text-(--button-bg-primary-color) px-2 py-1 text-xs font-normal rounded-md cursor-pointer">
+            <a data-tour="invoice-download" href={invoice} download="invoice.png" className="text-(--button-bg-primary-color) px-2 py-1 text-xs font-normal rounded-md cursor-pointer">
               Download
             </a>
             <div
+              data-tour="invoice-view"
               className="text-(--button-bg-primary-color) px-2 py-1 text-xs font-normal rounded-md cursor-pointer"
               onClick={() => navigate(`/invoice_preview?id=${item._id}`, {
                 state: {
@@ -143,8 +144,9 @@ const InvoicesPage = () => {
 
       {/* Status Filter Tabs */}
       <div className="flex items-center">
-        <div className="bg-white border border-gray-200 rounded-full p-1.5 flex items-center gap-3 shadow-xs">
+        <div data-tour="invoice-filters" data-tour-status={activeFilter} className="bg-white border border-gray-200 rounded-full p-1.5 flex items-center gap-3 shadow-xs">
           <button
+            data-tour="invoice-filter-paid"
             onClick={() => setActiveFilter("paid")}
             className={cn(
               "px-8 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer",
@@ -156,6 +158,7 @@ const InvoicesPage = () => {
             Paid
           </button>
           <button
+            data-tour="invoice-filter-unpaid"
             onClick={() => setActiveFilter("unpaid")}
             className={cn(
               "px-8 py-2 rounded-full text-sm font-semibold transition-all cursor-pointer",
@@ -174,6 +177,7 @@ const InvoicesPage = () => {
         <div className="text-center py-10 text-gray-500">Loading invoices...</div>
       ) : (
         <PaymentTable
+          tourId="invoice-list"
           title="Invoice list"
           headers={[
             "Invoice No.",
