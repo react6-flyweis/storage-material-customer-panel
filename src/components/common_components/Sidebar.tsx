@@ -15,6 +15,7 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   return (
     <div
+      data-tour="sidebar-nav"
       className={`
             w-16 lg:w-20
             flex flex-col items-center
@@ -44,6 +45,7 @@ const Sidebar: React.FC<SidebarProps> = ({
             )}
 
             <button
+              data-tour-nav={item.tourLabel ?? item.title}
               onClick={() => setActiveTab(index)}
               className={`relative z-20 p-2.5 h-10 w-10 rounded-full flex justify-center items-center group focus:outline-none ${item.color}`}
             >
