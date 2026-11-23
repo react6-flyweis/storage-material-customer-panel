@@ -137,6 +137,7 @@ const ProjectDeliverySchedule = () => {
     <div className="p-5 space-y-6">
       <div className="flex items-center gap-4">
         <Button
+          data-tour="schedule-back"
           onClick={() => navigate(-1)}
           className="bg-[#2563EB] hover:bg-blue-700 text-white min-w-25 gap-2 px-6 h-10 rounded-md shadow-sm"
         >
@@ -179,13 +180,13 @@ const ProjectDeliverySchedule = () => {
         </div>
       </div>
 
-      <div className="rounded-lg border border-[#E4E7EC] bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
+      <div data-tour="schedule-tabs" data-tour-status={activeTab} className="rounded-lg border border-[#E4E7EC] bg-white p-6 shadow-[0px_4px_12px_0px_rgba(0,0,0,0.08)]">
         <div className="flex flex-wrap items-center gap-4">
           {tabs.map((tab) => {
             const isActive = activeTab === tab.id;
 
             return (
-              <button
+              <button data-tour={`schedule-tab-${tab.id}`}
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex h-13 items-center gap-2 rounded-lg text-sm px-6 font-medium transition-all ${isActive
@@ -208,7 +209,7 @@ const ProjectDeliverySchedule = () => {
           })}
 
           <div className="min-w-44 ml-auto flex items-center gap-3">
-            <div className="w-44">
+            <div data-tour="schedule-status-filter" className="w-44">
               <CustomSelect
                 placeholder="All Status"
                 value={statusFilter}
