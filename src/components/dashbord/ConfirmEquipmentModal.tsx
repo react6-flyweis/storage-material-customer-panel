@@ -111,13 +111,13 @@ export default function ConfirmEquipmentModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-lg bg-white p-5">
+        <div data-tour="equipment-modal" className="w-full max-w-[900px] max-h-[85vh] overflow-y-auto rounded-lg bg-white p-5">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="text-[24px] font-bold text-[#101828]">
               Confirm Equipment
             </h2>
 
-            <button onClick={onClose}>
+            <button data-tour-close onClick={onClose}>
               <X className="h-6 w-6 text-[#98A2B3]" />
             </button>
           </div>
