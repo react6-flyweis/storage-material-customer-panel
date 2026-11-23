@@ -4,6 +4,8 @@ import Sidebar from "../common_components/Sidebar";
 import Header from "../common_components/Header";
 import SidePanel from "../common_components/SidePanel";
 import { NAV_ITEMS } from "@/config/navigation";
+import { WelcomeTourDialog } from "@/modules/tour/components/welcome-tour-dialog";
+import { tourCoordinator } from "@/modules/tour/tour.service";
 
 export function MainLayout() {
   const navigate = useNavigate();
@@ -12,6 +14,13 @@ export function MainLayout() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
   const [activeSubTab, setActiveSubTab] = useState<string>("");
+
+  useEffect(() => {
+    tourCoordinator.init(navigate);
+  }, [navigate]);
+
+  // Leaving the panel (e.g. signing out) ends the walkthrough.
+  useEffect(() => () => tourCoordinator.stopTour(), []);
 
   const toggleSidebar = () => setIsSidebarOpen((prev) => !prev);
 
@@ -63,6 +72,7 @@ export function MainLayout() {
 
   return (
     <div className="flex min-h-screen bg-[#E5ECFF] relative">
+      <WelcomeTourDialog />
       {isSidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 z-30 md:hidden"
@@ -83,9 +93,15 @@ export function MainLayout() {
         onSubTabClick={handleSubTabChange}
       />
 
+      {/* Tour anchor: frames the icon rail and the side panel as one sidebar. */}
+      <div
+        data-tour="sidebar"
+        className="hidden md:block fixed inset-y-0 left-0 w-72 lg:w-76 pointer-events-none"
+      />
+
       <div className="flex-1 min-w-0 flex flex-col md:ml-72 lg:ml-76">
         <Header onMenuToggle={toggleSidebar} />
-        <main className="flex-1">
+        <main data-tour="page-content" className="flex-1 scroll-mt-28">
           <Outlet />
         </main>
       </div>
