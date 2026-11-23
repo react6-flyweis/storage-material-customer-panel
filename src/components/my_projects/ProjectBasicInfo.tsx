@@ -178,8 +178,8 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
   const statusInfo = getStatusBadgeConfig(lead?.lifecycleStatus);
 
   return (
-    <div className="space-y-5">
-      <div className="overflow-hidden rounded-2xl border border-[#EAECF0] bg-white p-5 md:p-6 shadow-xs">
+    <div data-tour="tab-basic-info" className="space-y-5">
+      <div data-tour="project-summary" className="overflow-hidden rounded-2xl border border-[#EAECF0] bg-white p-5 md:p-6 shadow-xs">
         <div className="flex flex-col gap-5 sm:gap-6 md:flex-row md:items-stretch">
           <div className="flex h-44 w-full items-center justify-center rounded-xl bg-gray-200 shrink-0 md:h-auto md:w-56 lg:w-64">
             <Building2 className="h-12 w-12 text-gray-400" />
@@ -243,17 +243,21 @@ const ProjectBasicInfo = ({ data }: ProjectBasicInfoProps) => {
         </div>
       </div>
 
-      <ProgressSteps
-        steps={dynamicSteps}
-        currentStep={currentStep}
-        totalSteps={totalSteps}
-        assignedSales={lead?.assignedSales}
-      />
+      <div data-tour="project-steps">
+        <ProgressSteps
+          steps={dynamicSteps}
+          currentStep={currentStep}
+          totalSteps={totalSteps}
+          assignedSales={lead?.assignedSales}
+        />
+      </div>
       {/* <ProjectOrdersList leadId={lead?._id || ""} /> */}
 
-      <ProjectUpcomingDelivery leadId={lead?._id || ""} />
+      <div data-tour="project-upcoming">
+        <ProjectUpcomingDelivery leadId={lead?._id || ""} />
+      </div>
 
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-3">
+      <div data-tour="project-status" className="grid grid-cols-1 gap-4 xl:grid-cols-3">
         <ProjectStatusCard
           currentStep={currentStep}
           totalSteps={totalSteps}
