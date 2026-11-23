@@ -59,7 +59,7 @@ const ProjectRFQ = () => {
   const roofStyle = quotation?.roofStyle || rfq.roofStyle;
 
   return (
-    <div className="rounded-lg bg-white p-5">
+    <div data-tour="tab-rfq" className="rounded-lg bg-white p-5">
       <div className="mb-8 flex items-center gap-1">
         <span className="text-[16px] text-[#101828]">Lead ID -</span>
         <span className="text-[16px] font-bold text-[#101828]">{rfq.jobId || id || "-"}</span>
@@ -162,7 +162,7 @@ const ProjectRFQ = () => {
               asChild
               className="h-14 w-[280px] rounded-lg bg-[#1668E8] text-[16px] font-medium text-white hover:bg-[#1668E8]"
             >
-              <a href={quotation.pdfUrl} target="_blank" rel="noopener noreferrer" download>
+              <a data-tour="rfq-download" href={quotation.pdfUrl} target="_blank" rel="noopener noreferrer" download>
                 Downloadable PDF Quote
               </a>
             </Button>
