@@ -227,7 +227,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
         : "Quotation Not Received Yet");
 
     return (
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 sm:p-14 text-center w-full space-y-6">
+      <div data-tour="tab-quotation" data-tour-status={"waiting"} className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-8 sm:p-14 text-center w-full space-y-6">
         <div className="space-y-2 max-w-2xl mx-auto">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-[#101828]">
             {availability === "pending"
@@ -300,9 +300,9 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
       : null);
 
   return (
-    <div className="space-y-5 w-full">
+    <div data-tour="tab-quotation" data-tour-status={isApproved ? "approved" : isRejected ? "rejected" : "ready"} className="space-y-5 w-full">
       {/* Top Header Card with Actions */}
-      <div className="bg-white rounded-xl border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div data-tour="quotation-header" className="bg-white rounded-xl border border-slate-200/80 p-4 sm:p-5 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-2.5 flex-wrap">
             <h2 className="text-xl md:text-2xl font-bold text-[#0F172A]">
@@ -340,6 +340,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
         <div className="flex items-center gap-2.5 flex-wrap">
           {/* Download PDF button */}
           <Button
+            data-tour="quotation-download"
             size="sm"
             variant="outline"
             onClick={handleDownloadPdf}
@@ -359,6 +360,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
           {isPendingDecision && (
             <>
               <Button
+                data-tour="quotation-reject"
                 size="sm"
                 variant="outline"
                 onClick={() => setIsRejectModalOpen(true)}
@@ -369,6 +371,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
                 Reject
               </Button>
               <Button
+                data-tour="quotation-approve"
                 size="sm"
                 onClick={() => setIsApproveModalOpen(true)}
                 disabled={isApproving || isRejecting}
@@ -410,7 +413,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
 
       {/* Rejection Feedback Banner */}
       {isRejected && (
-        <div className="bg-amber-50/80 border border-amber-200/90 rounded-xl p-3.5 sm:p-4 shadow-2xs space-y-1.5">
+        <div data-tour="quotation-rejected" className="bg-amber-50/80 border border-amber-200/90 rounded-xl p-3.5 sm:p-4 shadow-2xs space-y-1.5">
           <div className="flex items-center gap-2">
             <XCircle className="h-4 w-4 text-red-600 shrink-0" />
             <h4 className="font-semibold text-slate-900 text-xs sm:text-sm">
@@ -442,7 +445,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
       )}
 
       {/* HTML Document Preview Card */}
-      <div className="w-full bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
+      <div data-tour="quotation-preview" className="w-full bg-white rounded-xl border border-slate-200/80 shadow-xs overflow-hidden">
         {isHtmlLoading ? (
           <div className="flex flex-col items-center justify-center py-28 text-slate-400 gap-3 min-h-125">
             <Loader2 className="h-8 w-8 text-[#1D51A4] animate-spin" />
@@ -488,7 +491,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
 
       {/* Approve Confirmation Modal */}
       <Dialog open={isApproveModalOpen} onOpenChange={setIsApproveModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent data-tour="quotation-approve-modal" className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <CheckCircle2 className="h-5 w-5 text-emerald-600" />
@@ -530,7 +533,7 @@ const ProjectQuotation: React.FC<ProjectQuotationProps> = ({ leadId }) => {
 
       {/* Reject Reason Modal */}
       <Dialog open={isRejectModalOpen} onOpenChange={setIsRejectModalOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent data-tour="quotation-reject-modal" className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
               <XCircle className="h-5 w-5 text-red-600" />
