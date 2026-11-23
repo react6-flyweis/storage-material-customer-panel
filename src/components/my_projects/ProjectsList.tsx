@@ -45,16 +45,18 @@ const ProjectsList = () => {
   const totalItems = data?.total || 0;
 
   return (
-    <div className="bg-white rounded-md shadow-sm border border-gray-100 overflow-hidden">
+    <div data-tour="projects-list" className="bg-white rounded-md shadow-sm border border-gray-100 overflow-hidden">
       <div className="xl:p-6 p-4 border-b border-[#00000026] flex items-center justify-between">
         <h2 className="text-xl font-semibold text-gray-800">Projects List</h2>
-        <ProjectStatusFilter
-          selectedStatus={selectedStatus}
-          onStatusChange={(status) => {
-            setSelectedStatus(status);
-            setPage(1);
-          }}
-        />
+        <div data-tour="projects-filter">
+          <ProjectStatusFilter
+            selectedStatus={selectedStatus}
+            onStatusChange={(status) => {
+              setSelectedStatus(status);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -169,6 +171,7 @@ const ProjectsList = () => {
                   {/* Action */}
                   <div className="col-span-1 flex justify-center items-center">
                     <button
+                      data-tour="project-row-view"
                       type="button"
                       onClick={() => navigate(`/my_projects/${project._id}`)}
                       className="p-2 text-gray-600 hover:text-[#1D51A4] hover:bg-gray-100 rounded-full transition-colors cursor-pointer"
