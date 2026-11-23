@@ -11,6 +11,7 @@ import TitleSubtitle from "@/components/common_components/TitleSubtitle";
 import CustomSelect from "@/components/common_components/CustomSelect";
 import ViewDrawingModal from "@/components/drawings_and_documents/ViewDrawingModal";
 import { useGetProjectDrawingsQuery } from "@/redux/api/projectsApi";
+import { getDrawingStage } from "@/utils/drawingStage";
 
 const getStatusDetails = (status: string) => {
   const s = status?.toLowerCase().trim();
@@ -107,6 +108,7 @@ const ProjectDrawingPage = () => {
     <div className="p-5 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-2">
         <Button
+          data-tour="project-drawings-back"
           onClick={() => navigate(-1)}
           className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs flex items-center gap-2 rounded-md"
         >
@@ -129,7 +131,7 @@ const ProjectDrawingPage = () => {
           ]}
         />
       </div>
-      <div className="rounded-lg border border-[#D0D5DD] bg-white p-5">
+      <div data-tour="project-drawings-list" className="rounded-lg border border-[#D0D5DD] bg-white p-5">
         <div>
           <h2 className="mb-5 text-[16px] font-bold text-[#101828]">
             Attached Drawings
@@ -180,7 +182,7 @@ const ProjectDrawingPage = () => {
                           </a>
                         )}
 
-                        <button onClick={() => onViewDrawing(file)}>
+                        <button data-tour="project-drawing-view" data-tour-status={getDrawingStage(file.status)} onClick={() => onViewDrawing(file)}>
                           <Eye
                             size={16}
                             className="text-[#2563EB]"
