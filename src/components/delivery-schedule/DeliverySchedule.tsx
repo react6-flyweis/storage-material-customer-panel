@@ -123,6 +123,7 @@ const DeliverySchedule: React.FC = () => {
           {projectsList.map((project) => {
             return (
               <div
+                data-tour="schedule-project"
                 key={project.leadId}
                 className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 rounded-2xl border border-[#E4E7EC] bg-white p-5 shadow-xs transition-shadow hover:shadow-md"
               >
@@ -197,6 +198,7 @@ const DeliverySchedule: React.FC = () => {
                 {/* Action Button */}
                 <div>
                   <button
+                    data-tour="schedule-project-view"
                     onClick={() => handleViewProject(project.leadId)}
                     className="w-full lg:w-auto px-7 py-2.5 rounded-lg bg-[#1E40AF] text-white font-semibold text-sm hover:bg-[#1d3999] transition-colors cursor-pointer"
                   >
