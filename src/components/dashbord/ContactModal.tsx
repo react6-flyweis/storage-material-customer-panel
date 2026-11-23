@@ -47,7 +47,7 @@ export default function ContactModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[512px] rounded-lg bg-white p-4 shadow-xl">
+      <div data-tour="contact-modal" className="w-full max-w-[512px] rounded-lg bg-white p-4 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-br from-[#22C55E] to-[#16A34A]">
@@ -61,7 +61,7 @@ export default function ContactModal({
             </h2>
           </div>
 
-          <button onClick={onClose}>
+          <button data-tour-close onClick={onClose}>
             <X className="h-6 w-6 text-slate-400" />
           </button>
         </div>
