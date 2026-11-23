@@ -184,6 +184,7 @@ const NotificationsView = () => {
         />
         {unreadCount > 0 && (
           <button
+            data-tour="notifications-read-all"
             onClick={handleMarkAllRead}
             disabled={isMarkingAll}
             className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-[#1D51A4] hover:bg-blue-100 font-medium text-xs sm:text-sm rounded-lg transition-colors cursor-pointer self-start sm:self-auto disabled:opacity-50"
@@ -195,7 +196,7 @@ const NotificationsView = () => {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
+      <div data-tour="notifications-stats" className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-5">
         {isLoading
           ? Array.from({ length: 4 }).map((_, idx) => (
             <StatCardSkeleton key={idx} />
@@ -212,7 +213,7 @@ const NotificationsView = () => {
       </div>
 
       {/* Filters Header */}
-      <div className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row items-start md:items-center gap-4">
+      <div data-tour="notifications-filters" className="bg-white rounded-xl shadow-sm p-4 mb-6 flex flex-col md:flex-row items-start md:items-center gap-4">
         <span className="text-gray-700 font-medium md:text-lg text-xs mr-2">
           Filter by:
         </span>
@@ -250,6 +251,7 @@ const NotificationsView = () => {
           <div className="divide-y divide-gray-100">
             {notifications.map((notification) => (
               <div
+                data-tour="notification-row"
                 key={notification._id}
                 onClick={() => handleNotificationClick(notification)}
                 className={`p-6 flex flex-col md:flex-row gap-4 hover:bg-gray-50 transition-colors cursor-pointer group ${!notification.isRead ? "bg-blue-50/30" : ""
