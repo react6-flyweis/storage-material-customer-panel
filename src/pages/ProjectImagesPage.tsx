@@ -21,6 +21,7 @@ const ProjectImagesPage: React.FC = () => {
       {/* Top Header Row with Back Button */}
       <div className="flex items-center gap-4">
         <Button
+          data-tour="images-back"
           onClick={() => navigate(-1)}
           className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs flex items-center gap-2 rounded-md"
         >
