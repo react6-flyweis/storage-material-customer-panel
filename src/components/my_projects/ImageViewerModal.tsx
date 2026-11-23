@@ -47,6 +47,7 @@ const ImageViewerModal: React.FC<ImageViewerModalProps> = ({
 
   return (
     <Modal
+      tourId="image-viewer"
       isOpen={isOpen}
       onClose={onClose}
       showHeader={false}
