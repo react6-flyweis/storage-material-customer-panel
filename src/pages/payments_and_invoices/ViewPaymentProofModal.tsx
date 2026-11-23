@@ -16,6 +16,7 @@ import {
 import Modal from "@/components/common_components/Modal";
 import { Button } from "@/components/ui/button";
 import type { PaymentItemDetail } from "@/redux/api/paymentsApi";
+import { getProofStatus } from "@/utils/paymentProofStatus";
 
 interface ViewPaymentProofModalProps {
   isOpen: boolean;
@@ -98,6 +99,8 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
 
   return (
     <Modal
+      tourId="payment-proof-modal"
+      tourStatus={getProofStatus(item)}
       isOpen={isOpen}
       onClose={onClose}
       title="Payment Proof Details"
@@ -189,7 +192,7 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
 
         {/* Review Notes if any */}
         {proof?.reviewNotes && (
-          <div className="space-y-1.5">
+          <div data-tour="payment-proof-review" className="space-y-1.5">
             <p className="text-xs font-semibold text-gray-600">Review Notes</p>
             <div className="p-3 bg-amber-50/60 rounded-lg border border-amber-200/80 text-xs text-amber-900 whitespace-pre-wrap">
               {proof.reviewNotes}
@@ -198,7 +201,7 @@ const ViewPaymentProofModal: React.FC<ViewPaymentProofModalProps> = ({
         )}
 
         {/* Uploaded Files Section */}
-        <div className="space-y-2">
+        <div data-tour="payment-proof-receipts" className="space-y-2">
           <p className="text-xs font-semibold text-gray-600">
             Attached Receipts / Proofs ({files.length})
           </p>
