@@ -20,6 +20,10 @@ interface ModalProps {
   showCloseButton?: boolean;
   customPadding?: string;
   className?: string;
+  /** Lets the product tour find this modal. */
+  tourId?: string;
+  /** Status of the record shown, so the tour can tell modals apart. */
+  tourStatus?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -34,10 +38,14 @@ const Modal: React.FC<ModalProps> = ({
   showCloseButton = false,
   customPadding = "p-6",
   className,
+  tourId,
+  tourStatus,
 }) => {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent
+        data-tour={tourId}
+        data-tour-status={tourStatus}
         showCloseButton={showCloseButton}
         className={cn(
           "bg-white rounded-xl shadow-2xl w-full p-0 gap-0 overflow-hidden flex flex-col",
