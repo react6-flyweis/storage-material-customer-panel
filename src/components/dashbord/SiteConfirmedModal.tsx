@@ -110,7 +110,7 @@ export default function SiteConfirmedModal({
   return (
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-        <div className="w-full max-w-[900px] rounded-lg max-h-[85vh] overflow-y-auto scroll-hide bg-white p-6 shadow-xl">
+        <div data-tour="site-ready-modal" className="w-full max-w-[900px] rounded-lg max-h-[85vh] overflow-y-auto scroll-hide bg-white p-6 shadow-xl">
           {/* Header */}
           <div className="flex items-start justify-between">
             <div>
@@ -121,7 +121,7 @@ export default function SiteConfirmedModal({
                 Delivery Date: {deliveryData?.deliveryInfo?.date || "-"}
               </p>
             </div>
-            <button onClick={onClose}>
+            <button data-tour-close onClick={onClose}>
               <X className="h-7 w-7 text-[#98A2B3]" />
             </button>
           </div>

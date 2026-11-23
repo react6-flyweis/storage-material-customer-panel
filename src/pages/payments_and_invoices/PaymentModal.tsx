@@ -384,7 +384,7 @@ const PaymentProofForm: React.FC<PaymentProofFormProps> = ({
         </div>
 
         {/* Proof of Payment File Upload */}
-        <div>
+        <div data-tour="payment-proof-files">
           <div className="flex items-center justify-between mb-1.5">
             <label className="block text-xs font-semibold text-[#344054]">
               Receipt / Proof Document <span className="text-rose-500">*</span>
@@ -491,6 +491,7 @@ const PaymentProofForm: React.FC<PaymentProofFormProps> = ({
           </button>
 
           <button
+            data-tour="payment-proof-submit"
             type="submit"
             disabled={
               isSubmitting ||
@@ -543,6 +544,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   return (
     <>
       <Modal
+        tourId="payment-proof-form"
         isOpen={isOpen}
         onClose={onClose}
         showHeader={false}

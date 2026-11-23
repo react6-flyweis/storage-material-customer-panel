@@ -124,7 +124,7 @@ export function HeaderSearch() {
   const showLoading = isLoading || isDebouncing;
 
   return (
-    <div ref={containerRef} className="relative w-44 sm:w-64 md:w-72 lg:w-80">
+    <div ref={containerRef} data-tour="header-search" className="relative w-44 sm:w-64 md:w-72 lg:w-80">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
         <Input

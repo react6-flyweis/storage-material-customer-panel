@@ -203,7 +203,7 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data, leadId: propLea
           </div>
 
           {/* Bottom Overall Progress */}
-          <div className="mt-6 border-t border-[#EAECF0] pt-4">
+          <div data-tour="tracking-progress" className="mt-6 border-t border-[#EAECF0] pt-4">
             <span className="text-xs font-semibold text-[#667085]">
               Overall Progress
             </span>
@@ -229,7 +229,7 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data, leadId: propLea
         {/* Right Column: Stacked Cards */}
         <div className="flex flex-col gap-6 lg:col-span-5">
           {/* Current Step Details Card */}
-          <div className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
+          <div data-tour="tracking-step" className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
             <h2 className="text-lg font-bold text-[#101828]">Current Step Details</h2>
 
             {activeStep ? (
@@ -299,7 +299,7 @@ const ProjectTracking: React.FC<ProjectTrackingProps> = ({ data, leadId: propLea
           </div>
 
           {/* Attachments & Documents Card */}
-          <div className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
+          <div data-tour="tracking-documents" className="rounded-2xl border border-[#EAECF0] bg-white p-6 shadow-xs">
             <div className="flex items-center gap-3">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#2563EB] text-white">
                 <FolderPlus className="h-4 w-4" />

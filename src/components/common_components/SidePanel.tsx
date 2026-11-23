@@ -27,6 +27,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
 
   return (
     <div
+      data-tour="sidepanel"
       className={`
         w-56 min-h-screen 
         fixed left-14 md:left-16 lg:left-20 top-0 
@@ -84,6 +85,7 @@ const SidePanel: React.FC<SidePanelProps> = ({
 
               return (
                 <button
+                  data-tour-nav-sub={item.path}
                   key={item.label}
                   onClick={() => onSubTabClick(item.label, item.path)}
                   style={

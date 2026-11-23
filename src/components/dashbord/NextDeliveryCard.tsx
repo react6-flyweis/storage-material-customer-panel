@@ -169,6 +169,8 @@ export default function NextDeliveryCard({
 
   return (
     <div
+      data-tour="delivery-card"
+      data-tour-status={isPastDelivery ? "past" : data.status}
       className={cn("rounded-lg border p-4 sm:p-5 bg-white", data.status === "inTransit" ? "border-lime-300 bg-[#F8FBF0]" : "")}
     >
       {dashboardpage && (
@@ -178,7 +180,7 @@ export default function NextDeliveryCard({
       )}
 
       {!isPastDelivery && data.status === "rescheduled" && !isAcknowledged && (
-        <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4 sm:p-5 mb-6">
+        <div data-tour="delivery-rescheduled" className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4 sm:p-5 mb-6">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
             <div className="space-y-2">
               <h3 className="text-base font-bold text-[#9A3412]">
@@ -204,6 +206,7 @@ export default function NextDeliveryCard({
             </div>
 
             <button
+              data-tour="delivery-acknowledge"
               onClick={() => setOpenAcknowledgeModal(true)}
               className="h-10 shrink-0 rounded-lg bg-[#EA580C] px-6 text-sm font-semibold text-white transition-all hover:bg-[#C2410C] shadow-sm"
             >
@@ -494,7 +497,7 @@ export default function NextDeliveryCard({
       </div>
 
       {!isPastDelivery && data.status !== "inTransit" && (
-        <div className="rounded-xl border border-[#E0E7FF] bg-[#EEF2FF] p-4 my-6">
+        <div data-tour="delivery-readiness" className="rounded-xl border border-[#E0E7FF] bg-[#EEF2FF] p-4 my-6">
           <h3 className="mb-3 text-[16px] font-bold text-[#4338CA]">
             Site Readiness Status
           </h3>
@@ -528,6 +531,7 @@ export default function NextDeliveryCard({
               <div className="flex flex-wrap items-center gap-3">
                 {!isSiteReady && (
                   <button
+                    data-tour="delivery-site-ready"
                     onClick={() => setSiteConfirmedModal(true)}
                     className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
                   >
@@ -537,6 +541,7 @@ export default function NextDeliveryCard({
 
                 {!isEquipmentReady && (
                   <button
+                    data-tour="delivery-equipment"
                     onClick={() => setConfirmEquipmentModal(true)}
                     className="h-[42px] bg-white rounded-lg border border-[#4F46E5] px-4 text-sm font-semibold text-[#4F46E5] transition-all hover:bg-[#4F46E5] hover:text-white shadow-sm"
                   >
@@ -555,6 +560,7 @@ export default function NextDeliveryCard({
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           <button
+            data-tour="delivery-contact-driver"
             onClick={() =>
               setContactModal({
                 open: true,
@@ -568,6 +574,7 @@ export default function NextDeliveryCard({
           </button>
 
           <button
+            data-tour="delivery-contact-company"
             onClick={() =>
               setContactModal({
                 open: true,
@@ -581,6 +588,7 @@ export default function NextDeliveryCard({
           </button>
 
           <button
+            data-tour="delivery-email"
             onClick={() => !data.confirmationEmailSent && setIsEmailModalOpen(true)}
             disabled={data.confirmationEmailSent}
             className={cn(
@@ -595,6 +603,7 @@ export default function NextDeliveryCard({
           </button>
 
           <button
+            data-tour="delivery-calendar"
             onClick={() => setCalendarModal(true)}
             className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#101828]"
           >
@@ -605,6 +614,7 @@ export default function NextDeliveryCard({
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <button
+            data-tour="delivery-instructions"
             onClick={() => setFullInstructionModal(true)}
             className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#9333EA]"
           >
@@ -613,6 +623,7 @@ export default function NextDeliveryCard({
           </button>
 
           <button
+            data-tour="delivery-callback"
             onClick={() => setCallbackModal(true)}
             className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#3B5FB8]"
           >
@@ -621,6 +632,7 @@ export default function NextDeliveryCard({
           </button>
 
           <button
+            data-tour="delivery-documents"
             onClick={() => setDocumentModal(true)}
             className="flex items-center justify-center gap-2 rounded-lg border bg-white py-2 text-sm px-2 font-semibold text-[#F97316]"
           >

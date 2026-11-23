@@ -58,7 +58,7 @@ export default function FullDeliveryInstructionModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[992px] max-h-[90vh] overflow-y-auto scroll-hide rounded-lg bg-white p-6 shadow-xl">
+      <div data-tour="instructions-modal" className="w-full max-w-[992px] max-h-[90vh] overflow-y-auto scroll-hide rounded-lg bg-white p-6 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gradient-to-br from-[#9333EA] to-[#C026D3]">
@@ -70,7 +70,7 @@ export default function FullDeliveryInstructionModal({
             </h2>
           </div>
 
-          <button onClick={onClose}>
+          <button data-tour-close onClick={onClose}>
             <X className="h-7 w-7 text-[#98A2B3]" />
           </button>
         </div>

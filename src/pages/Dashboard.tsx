@@ -331,7 +331,7 @@ const Dashboard = () => {
         subtitle={dashboardText.header.subtitle}
       />
 
-      <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <div data-tour="dashboard-stats" className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {dashboardStats.map((stat, index) => (
           <StatCard
             key={index}
@@ -343,7 +343,7 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div>
+      <div data-tour="dashboard-deliveries">
         <p className="text-[#212B36] text-[18px] font-semibold mb-3">
           Delivery Tracking
         </p>
@@ -366,10 +366,10 @@ const Dashboard = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-        <div className="">
+        <div data-tour="dashboard-project" className="">
           <ActiveProjectsOverview data={dashboardData?.activeProjectOverview} />
         </div>
-        <div className="">
+        <div data-tour="dashboard-drawings" className="">
           <DrawingsAndApprovals
             data={dashboardData?.drawingsApprovalsBreakdown}
             totalDrawingsAndApprovals={dashboardData?.drawingsAndApprovals}
@@ -395,7 +395,7 @@ const Dashboard = () => {
         Shipment Breakdown
       </h3>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div data-tour="dashboard-shipments" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {shipmentBreakdown.map((item) => {
           const Icon = item.icon;
 

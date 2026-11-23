@@ -8,6 +8,7 @@ import ViewPaymentProofModal from "./ViewPaymentProofModal";
 import { useState } from "react";
 import { useGetPaymentsQuery, type PaymentItemDetail } from "@/redux/api/paymentsApi";
 import { UploadCloud, Eye } from "lucide-react";
+import { getProofStatus } from "@/utils/paymentProofStatus";
 
 const formatDate = (dateString?: string | null) => {
   if (!dateString) return "-";
@@ -95,6 +96,8 @@ const PaymentsPage = () => {
         </td>
         <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center gap-1.5">
           <Button
+            data-tour="payment-upload"
+            data-tour-status={isUploaded ? "uploaded" : "open"}
             disabled={isUploaded}
             onClick={() => !isUploaded && handleOpenPaymentModal(item)}
             className={cn(
@@ -109,6 +112,8 @@ const PaymentsPage = () => {
           </Button>
           {isUploaded && (
             <Button
+              data-tour="payment-proof"
+              data-tour-status={getProofStatus(item)}
               variant="ghost"
               size="icon"
               className="h-8 w-8 text-[#6B7280] hover:text-black cursor-pointer"
@@ -161,6 +166,8 @@ const PaymentsPage = () => {
       </td>
       <td className="py-4 px-4 text-right last:pr-0 max-w-[150px] flex justify-center items-center">
         <Button
+          data-tour="payment-proof"
+          data-tour-status={getProofStatus(item)}
           variant="ghost"
           onClick={() => {
             setSelectedProofItem(item);
@@ -186,6 +193,7 @@ const PaymentsPage = () => {
 
       {/* Upcoming Payments */}
       <PaymentTable
+        tourId="payments-upcoming"
         title="Upcoming Payments"
         isLoading={isLoading}
         headers={[
@@ -206,6 +214,7 @@ const PaymentsPage = () => {
 
       {/* Payment Overdue */}
       <PaymentTable
+        tourId="payments-overdue"
         title="Payment Overdue"
         titleColor="text-[#EF4444]"
         isLoading={isLoading}
@@ -240,6 +249,7 @@ const PaymentsPage = () => {
 
       {/* Payment History */}
       <PaymentTable
+        tourId="payments-history"
         title="Payment History"
         isLoading={isLoading}
         headers={[

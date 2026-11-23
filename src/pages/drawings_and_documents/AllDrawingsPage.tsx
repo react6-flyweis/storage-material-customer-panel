@@ -121,6 +121,7 @@ const AllDrawingsPage = () => {
 
             return (
               <div
+                data-tour="drawings-project"
                 key={item.leadId}
                 className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 sm:p-5 flex flex-col xl:flex-row items-stretch xl:items-center justify-between gap-6 hover:shadow-md transition-shadow"
               >
@@ -205,6 +206,7 @@ const AllDrawingsPage = () => {
                   {/* View Action Button */}
                   <div className="pl-0 sm:pl-2 shrink-0">
                     <button
+                      data-tour="drawings-project-view"
                       onClick={() => navigate(`/project-buildings/${item.leadId}`)}
                       className="bg-[#1D51A4] hover:bg-[#18448b] text-white px-7 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-xs cursor-pointer"
                     >

@@ -44,7 +44,7 @@ export default function AcknowledgeRescheduleModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[512px] max-h-[90vh] overflow-auto rounded-lg bg-white p-5">
+      <div data-tour="acknowledge-modal" className="w-full max-w-[512px] max-h-[90vh] overflow-auto rounded-lg bg-white p-5">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -57,7 +57,7 @@ export default function AcknowledgeRescheduleModal({
             </h2>
           </div>
 
-          <button onClick={onClose}>
+          <button data-tour-close onClick={onClose}>
             <X className="h-6 w-6 text-[#98A2B3]" />
           </button>
         </div>

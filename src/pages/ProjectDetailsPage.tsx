@@ -129,6 +129,7 @@ const ProjectDetailsPage = () => {
     <div className="p-5 space-y-6">
       <div className="flex items-center flex-wrap justify-between gap-2">
         <Button
+          data-tour="project-back"
           onClick={() => navigate(-1)}
           className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs flex items-center gap-2 rounded-md"
         >
@@ -137,10 +138,15 @@ const ProjectDetailsPage = () => {
         </Button>
         {activeTab === "Basic info" && (
           <div className="flex items-center gap-3">
-            <Button onClick={() => navigate(`/project-drawings/${id}`)} className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md">
+            <Button
+              data-tour="project-drawings-btn"
+              onClick={() => navigate(`/project-drawings/${id}`)}
+              className="bg-[#78787833] hover:bg-[##787878] text-black xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md"
+            >
               Drawings
             </Button>
             <Button
+              data-tour="project-cancel"
               onClick={() => setIsCancelModalOpen(true)}
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white xl:px-4 xl:py-2 xl:text-sm text-xs rounded-md"
             >
@@ -149,7 +155,7 @@ const ProjectDetailsPage = () => {
           </div>
         )}
         {activeTab === "Quotation" && quotationData?.availability === "ready" && quotationData?.quotation?.status?.toLowerCase() !== "accepted" && quotationData?.quotation?.status?.toLowerCase() !== "rejected" && (
-          <div className="flex items-center gap-3">
+          <div data-tour="quotation-header-actions" className="flex items-center gap-3">
             <Button
               onClick={() => setIsRejectQuotationModalOpen(true)}
               disabled={isApprovingQuotation || isRejectingQuotation}
@@ -177,6 +183,7 @@ const ProjectDetailsPage = () => {
         />
 
         <Modal
+          tourId="project-cancel-modal"
           isOpen={isCancelModalOpen}
           onClose={() => {
             setIsCancelModalOpen(false);
@@ -216,6 +223,7 @@ const ProjectDetailsPage = () => {
 
             <div className="mt-10 flex justify-center">
               <button
+                data-tour="project-cancel-submit"
                 onClick={handleCancelProject}
                 disabled={isCancelling}
                 className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
@@ -286,9 +294,9 @@ const ProjectDetailsPage = () => {
       />
 
       <div className="overflow-x-auto bg-white p-3 rounded-xl  scrollbar-thin">
-        <div className="flex items-center justify-start gap-8 min-w-max">
+        <div data-tour="project-tabs" className="flex items-center justify-start gap-8 min-w-max">
           {tabs.map((tab) => (
-            <Button
+            <Button data-tour={`project-tab-${tab}`}
               key={tab}
               variant={tab === activeTab ? "default" : "outline"}
               onClick={() => {

@@ -329,7 +329,7 @@ const ProfileView: React.FC<ProfileViewProps> = () => {
         Basic Information
       </h3>
       {/* Basic Information */}
-      <div className="bg-white rounded-xl p-6 border border-gray-100">
+      <div data-tour="profile-info" className="bg-white rounded-xl p-6 border border-gray-100">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="flex flex-col gap-1.5">
             <label className="text-sm font-medium text-gray-700">

@@ -33,6 +33,7 @@ export default function SendRemarksModal({
     <>
       {/* Send Remarks Dialog */}
       <Modal
+        tourId="invoice-remark-modal"
         isOpen={isOpen}
         onClose={onClose}
         showHeader={false}

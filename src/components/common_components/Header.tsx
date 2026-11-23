@@ -16,6 +16,7 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "../ui/button";
+import { TourHubMenu } from "@/modules/tour/components/tour-hub-menu";
 
 interface HeaderProps {
   onMenuToggle: () => void;
@@ -56,8 +57,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
       </div>
 
       <div className="flex items-center gap-4 lg:gap-6">
+        <TourHubMenu />
         <div className="relative">
           <Button
+            data-tour="header-notifications"
             variant="ghost"
             onClick={() => navigate("/notification")}
             size="icon"
@@ -77,7 +80,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
         </div>
 
         <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+          <DropdownMenuTrigger data-tour="user-menu-btn" asChild>
             <Button
               variant="outline"
               size="icon"
@@ -85,7 +88,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
               <User className="w-5 h-5 text-gray-600" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56 mt-2">
+          <DropdownMenuContent data-tour="user-menu" align="end" className="w-56 mt-2">
             <DropdownMenuLabel className="font-normal py-3 px-4">
               <div className="flex flex-col space-y-1">
                 {/* <p className="text-sm font-semibold text-[#3A57E8] leading-none">
@@ -98,6 +101,7 @@ const Header: React.FC<HeaderProps> = ({ onMenuToggle }) => {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem
+              data-tour="user-menu-profile"
               onClick={() => navigate("/profile")}
               className="flex items-center gap-3 px-4 py-2.5"
             >

@@ -8,6 +8,7 @@ import {
   useApproveDrawingMutation,
   useRequestDrawingRevisionMutation,
 } from "@/redux/api/projectsApi";
+import { getDrawingStage } from "@/utils/drawingStage";
 
 interface ViewDrawingModalProps {
   isOpen: boolean;
@@ -178,6 +179,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
     return (
       <div
+        data-tour="drawing-feedback"
         className={`grid gap-4 py-2 border-b border-gray-200 ${
           hasRevision && hasComment
             ? "grid-cols-1 md:grid-cols-2"
@@ -217,6 +219,8 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
   return (
     <Modal
+      tourId="drawing-modal"
+      tourStatus={getDrawingStage(drawing.status)}
       isOpen={isOpen}
       onClose={onClose}
       showHeader={false}
@@ -300,6 +304,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <button
+              data-tour="drawing-modal-download"
               onClick={handleDownload}
               className="flex items-center gap-2 md:px-4 px-2 py-1 bg-[#9CA3AF] hover:bg-[#E2E8F0] text-white rounded-full md:text-base text-sm font-medium transition-all cursor-pointer"
             >
@@ -307,7 +312,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
               Download
             </button>
 
-            <div className="flex items-center gap-3 ml-auto flex-wrap">
+            <div data-tour="drawing-decision" className="flex items-center gap-3 ml-auto flex-wrap">
               {isApproved ? (
                 <div className="flex items-center gap-2">
                   <p className="text-black text-sm font-normal">
@@ -326,6 +331,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
               ) : (
                 <>
                   <button
+                    data-tour="drawing-revision"
                     onClick={() => setIsRevisionModalOpen(true)}
                     disabled={isUpdating}
                     className="px-5 py-1.5 bg-[#FF9409] text-white rounded-full text-sm font-medium shadow-sm shadow-orange-100 disabled:opacity-50"
@@ -333,6 +339,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
                     Revision Required
                   </button>
                   <button
+                    data-tour="drawing-approve"
                     onClick={handleApprove}
                     disabled={isUpdating}
                     className="px-5 py-1.5 bg-[#3AB449] text-white rounded-full text-sm font-normal shadow-sm shadow-green-100 disabled:opacity-50 flex items-center gap-1"
@@ -346,6 +353,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           </div>
 
           <Modal
+            tourId="drawing-revision-modal"
             isOpen={isRevisionModalOpen}
             onClose={() => {
               setIsRevisionModalOpen(false);
@@ -386,6 +394,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
 
               <div className="mt-10 flex justify-center">
                 <button
+                  data-tour="drawing-revision-submit"
                   onClick={handleRequestRevision}
                   disabled={isUpdating}
                   className="h-[48px] w-full rounded-lg bg-[linear-gradient(90deg,#2563EB_0%,#4F46E5_100%)] text-base font-semibold text-white flex items-center justify-center gap-2 disabled:opacity-50"
@@ -401,7 +410,7 @@ const ViewDrawingModal: React.FC<ViewDrawingModalProps> = ({
           {isPending &&
             (!Array.isArray(drawing?.comments) ||
               drawing.comments.length === 0) && (
-              <div className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
+              <div data-tour="drawing-comment" className="mt-2 flex items-center gap-2 border border-gray-200 rounded-xl p-1.5 focus-within:ring-2 focus-within:ring-blue-100 transition-all">
                 <input
                   type="text"
                   value={comment}

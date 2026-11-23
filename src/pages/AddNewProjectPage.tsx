@@ -483,6 +483,7 @@ export const AddNewProjectPage: React.FC = () => {
               Cancel
             </Button>
             <Button
+              data-tour="project-create-submit"
               type="submit"
               disabled={isSubmitting}
               className="px-8 py-2.5 text-sm font-semibold text-white bg-[#1D51A4] hover:bg-[#163e80] rounded-xl transition-colors cursor-pointer disabled:opacity-50"

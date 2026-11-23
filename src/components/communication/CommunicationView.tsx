@@ -446,7 +446,7 @@ export default function CommunicationView() {
             </div>
 
             {/* Input Composer */}
-            <div className="px-4 py-[10px] border-t flex items-center gap-3 bg-white shrink-0">
+            <div data-tour="chat-input" className="px-4 py-[10px] border-t flex items-center gap-3 bg-white shrink-0">
               <input
                 placeholder="Type your message..."
                 value={inputText}

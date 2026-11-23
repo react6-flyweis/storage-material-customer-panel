@@ -68,7 +68,7 @@ export default function CallbackModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
+      <div data-tour="callback-modal" className="w-full max-w-[520px] max-h-[85vh] overflow-y-auto rounded-lg bg-white p-4 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#3B5FB8]">
@@ -80,7 +80,7 @@ export default function CallbackModal({
             </h2>
           </div>
 
-          <button onClick={onClose}>
+          <button data-tour-close onClick={onClose}>
             <X className="h-6 w-6 text-slate-400" />
           </button>
         </div>

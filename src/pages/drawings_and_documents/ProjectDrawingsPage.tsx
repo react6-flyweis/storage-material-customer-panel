@@ -134,6 +134,7 @@ const ProjectDrawingsPage = () => {
         <div className="space-y-1.5">
           <div className="flex items-center gap-3">
             <button
+              data-tour="buildings-back"
               onClick={() => navigate(-1)}
               className="bg-[#2563EB] hover:bg-[#1D4ED8] text-white px-3.5 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors shadow-xs cursor-pointer"
             >
@@ -165,7 +166,7 @@ const ProjectDrawingsPage = () => {
           ) : (
             <>
               {/* Main Project Overview Top Section */}
-              <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 px-1 py-1">
+              <div data-tour="buildings-overview" className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-6 px-1 py-1">
                 {/* Left Info: Image + Details */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1 min-w-0">
                   <div className="w-full sm:w-[160px] md:w-[180px] h-[100px] sm:h-[110px] shrink-0 rounded-xl overflow-hidden bg-white border border-slate-200/80 flex items-center justify-center shadow-2xs">
@@ -247,6 +248,7 @@ const ProjectDrawingsPage = () => {
                 ) : (
                   buildingsList.map((building, index) => (
                     <div
+                      data-tour="building-card"
                       key={building.buildingLabel || index}
                       className="bg-white rounded-2xl border border-slate-100/80 shadow-xs p-4 sm:p-5 flex flex-col 2xl:flex-row items-stretch 2xl:items-center justify-between gap-5 2xl:gap-6 hover:shadow-md transition-shadow duration-200"
                     >
@@ -332,6 +334,7 @@ const ProjectDrawingsPage = () => {
                         {/* Open Drawings Button */}
                         <div className="w-full sm:w-auto mt-2 sm:mt-0 2xl:ml-2 shrink-0">
                           <button
+                            data-tour="building-open"
                             onClick={() => {
                               const buildingParam = encodeURIComponent(building.buildingLabel);
                               navigate(

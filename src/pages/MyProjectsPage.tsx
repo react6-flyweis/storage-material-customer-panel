@@ -73,6 +73,7 @@ const MyProjectsPage = () => {
           subtitle={MyProjectPageText.header.subtitle}
         />
         <Link
+          data-tour="projects-create"
           to="/add-new-project"
           className="flex items-center gap-2.5 bg-[#1D51A4] hover:bg-[#163e80] text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors cursor-pointer self-start sm:self-auto shrink-0"
         >
@@ -82,7 +83,7 @@ const MyProjectsPage = () => {
           <span>Create New Project</span>
         </Link>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
+      <div data-tour="projects-stats" className="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
         {DashboardStats.map((stat, index) => (
           <StatCard
             key={index}

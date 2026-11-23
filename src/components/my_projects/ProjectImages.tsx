@@ -124,7 +124,7 @@ const ProjectImages: React.FC<ProjectImagesProps> = ({ leadId, projectName }) =>
         </div>
 
         {/* Filter Buttons */}
-        <div className="flex items-center gap-2 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
+        <div data-tour="images-filter" className="flex items-center gap-2 bg-slate-100/80 p-1 rounded-xl border border-slate-200">
           <button
             type="button"
             onClick={() => setMediaType("all")}
@@ -203,6 +203,7 @@ const ProjectImages: React.FC<ProjectImagesProps> = ({ leadId, projectName }) =>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {mediaItems.map((item, index) => (
                 <div
+                  data-tour="images-item"
                   key={item.id}
                   onClick={() => handleOpenViewer(index)}
                   className="group border border-[#EAECF0] rounded-2xl p-3.5 bg-white transition-all duration-200 hover:shadow-md hover:border-blue-200 cursor-pointer flex flex-col justify-between"

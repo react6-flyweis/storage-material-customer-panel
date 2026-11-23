@@ -12,6 +12,8 @@ interface PaymentTableProps<T> {
   emptyMessage?: string;
   isLoading?: boolean;
   skeletonRowCount?: number;
+  /** Lets the product tour find this table. */
+  tourId?: string;
 }
 
 export const PaymentTableSkeleton = ({
@@ -55,9 +57,11 @@ const PaymentTable = <T extends object>({
   emptyMessage,
   isLoading = false,
   skeletonRowCount = 3,
+  tourId,
 }: PaymentTableProps<T>) => {
   return (
     <div
+      data-tour={tourId}
       className={cn(
         "bg-white rounded-md border border-gray-100 overflow-hidden",
         containerClassName

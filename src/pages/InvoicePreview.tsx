@@ -99,6 +99,7 @@ export default function InvoicePreview() {
     <div className="space-y-6 px-2 pb-10 pt-3 md:px-5 md:pt-5">
       <div className="w-full flex flex-wrap items-center justify-between gap-4">
         <Button
+          data-tour="invoice-back"
           variant="outline"
           className="min-w-[120px] bg-[#2563EB] text-white hover:bg-[#1D4ED8] hover:text-white border-0"
           onClick={() => navigate(-1)}
@@ -109,12 +110,13 @@ export default function InvoicePreview() {
 
         <div className="flex items-center gap-3">
           {isPaid ? (
-            <span className="bg-[#DCFCE7] text-[#3AB449] border border-[#BBF7D0] px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center justify-center">
+            <span data-tour="invoice-paid" className="bg-[#DCFCE7] text-[#3AB449] border border-[#BBF7D0] px-4 py-1.5 rounded-full text-xs font-semibold inline-flex items-center justify-center">
               Paid
             </span>
           ) : null}
 
           <Button
+            data-tour="invoice-preview-download"
             asChild
             className="bg-[#2563EB] text-white hover:bg-[#1D4ED8]"
           >
@@ -127,6 +129,7 @@ export default function InvoicePreview() {
           {!isPaid && (
             <>
               <Button
+                data-tour="invoice-remark"
                 variant="outline"
                 onClick={() => setIsRemarkModalOpen(true)}
               >
@@ -135,6 +138,7 @@ export default function InvoicePreview() {
               </Button>
 
               <Button
+                data-tour="invoice-proof"
                 variant="outline"
                 onClick={() => setIsPaymentModalOpen(true)}
               >

@@ -72,7 +72,7 @@ const DashboardWidgets = ({ data }: DashboardWidgetsProps) => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5">
       {/* Column 1: Financial Overview */}
-      <div className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
+      <div data-tour="dashboard-finance" className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
         <h2 className="md:text-lg font-light text-black-400 mb-6">
           Financial Overview
         </h2>
@@ -99,7 +99,7 @@ const DashboardWidgets = ({ data }: DashboardWidgetsProps) => {
       </div>
 
       {/* Column 2: Recent Messages / RFIs */}
-      <div className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
+      <div data-tour="dashboard-messages" className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
         <h2 className="md:text-[17px] font-semibold text-black-400 mb-6">
           Recent Messages / RFIs
         </h2>
@@ -141,7 +141,7 @@ const DashboardWidgets = ({ data }: DashboardWidgetsProps) => {
       </div>
 
       {/* Column 3: Notifications Feed */}
-      <div className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
+      <div data-tour="dashboard-notifications" className="bg-white rounded-md xl:p-6 p-4 flex flex-col h-full">
         <div className="p-0 pb-0 grow">
           <h2 className="text-sm font-bold text-[#3E4857] pb-4 mb-2 border-b border-[#00000021]">
             Notifications
@@ -170,6 +170,7 @@ const DashboardWidgets = ({ data }: DashboardWidgetsProps) => {
         </div>
         <div className="p-4 pb-0 border-t border-[#00000021] mt-4">
           <button
+            data-tour="dashboard-notifications-all"
             className="w-full text-center text-(--text-color-primary-blue) font-medium text-sm hover:underline cursor-pointer"
             onClick={() => navigate("/notification")}
           >
