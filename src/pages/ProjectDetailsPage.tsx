@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { MoveLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 // import { cn } from "@/lib/utils";
@@ -19,6 +19,7 @@ import ProjectQuotation from "@/components/my_projects/ProjectQuotation";
 import ProjectRFQ from "@/components/my_projects/ProjectRFQ";
 import ProjectTimeline from "@/components/my_projects/ProjectTimeline";
 import ProjectFollowUps from "@/components/my_projects/ProjectFollowUps";
+import ProjectMeetings from "@/components/my_projects/ProjectMeetings";
 import ProjectPayments from "@/components/my_projects/ProjectPayments";
 import ProjectTracking from "@/components/my_projects/ProjectTracking";
 import TrackLeadsLifecycleModal from "@/components/my_projects/TrackLeadsLifecycleModal";
@@ -33,10 +34,14 @@ const tabs = [
   "Open Chat",
   // "Timeline",
   // "Follow Ups",
+  "Meetings",
   "Payments",
   "Project Tracking",
   "Project Images"
 ];
+
+/** A tab's name in the URL, e.g. "Open Chat" → "open-chat". */
+const tabSlug = (tab: string) => tab.toLowerCase().replace(/\s+/g, "-");
 
 const ProjectDetailsPage = () => {
   const location = useLocation();
@@ -49,7 +54,8 @@ const ProjectDetailsPage = () => {
   const [modalTitle, setModalTitle] = useState("");
   const [modalSubSubTitle, setModalSubSubTitle] = useState("");
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("Basic info");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab = tabs.find((tab) => tabSlug(tab) === searchParams.get("tab")) ?? "Basic info";
   const [isTrackLifecycleOpen, setIsTrackLifecycleOpen] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelReason, setCancelReason] = useState("");
@@ -303,7 +309,8 @@ const ProjectDetailsPage = () => {
                 if (tab === "Project Images") {
                   navigate(`/project-images/${id}`);
                 } else {
-                  setActiveTab(tab);
+                  // Replace, so Back leaves the project instead of stepping through tabs.
+                  setSearchParams({ tab: tabSlug(tab) }, { replace: true });
                 }
               }}
               className="md:min-w-30 border "
@@ -336,6 +343,8 @@ const ProjectDetailsPage = () => {
           <ProjectTimeline data={data} />
         ) : activeTab === "Follow Ups" ? (
           <ProjectFollowUps leadId={id} />
+        ) : activeTab === "Meetings" ? (
+          <ProjectMeetings leadId={id} />
         ) : activeTab === "Payments" ? (
           <ProjectPayments invoices={data?.invoices} leadId={data?.lead?.projectId || id} />
         ) : activeTab === "Project Tracking" ? (
