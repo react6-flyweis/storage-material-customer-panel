@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import BlueBellIcon from "@/assets/BlueBellIcon.svg";
 import YellowBellIcon from "@/assets/yellowBellIcon.svg";
 import GreenBellIcon from "@/assets/greenBellIcon.svg";
@@ -52,7 +53,24 @@ const formatNotificationTime = (dateString: string): string => {
   return `${Math.floor(diffInSeconds / 86400)} days ago`;
 };
 
+/** The page a notification is about; null when it isn't tied to a project. */
+const getNotificationPath = ({ type, leadId }: NotificationItem): string | null => {
+  if (!leadId) return null;
+  switch (type) {
+    case "meeting":
+      return `/my_projects/${leadId}?tab=meetings`;
+    case "payment":
+    case "finance":
+      return `/my_projects/${leadId}?tab=payments`;
+    case "drawing":
+      return `/project-drawings/${leadId}`;
+    default:
+      return `/my_projects/${leadId}`;
+  }
+};
+
 const NotificationsView = () => {
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState<string>("all");
 
   const { data, isLoading, isFetching, error } = useGetNotificationsQuery(
@@ -66,6 +84,8 @@ const NotificationsView = () => {
     if (!notification.isRead) {
       markNotificationAsRead(notification._id);
     }
+    const path = getNotificationPath(notification);
+    if (path) navigate(path);
   };
 
   const handleMarkAllRead = () => {
