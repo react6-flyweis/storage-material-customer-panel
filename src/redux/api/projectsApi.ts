@@ -197,11 +197,11 @@ export const projectsApi = createApi({
       transformResponse: (response: GetProjectFollowUpsApiResponse) =>
         response.data as GetProjectFollowUpsResponseData,
     }),
-    // Customer portal meetings — per the Zoom FE handoff. Never includes
-    // the host start URL (zoomStartUrl).
+    // Uses /api/customer: the Zoom FE handoff's /api/customer-portal route
+    // returns "route not found".
     getProjectMeetings: builder.query<GetProjectMeetingsResponseData, GetProjectMeetingsParams>({
       query: ({ leadId, page = 1, limit = 20, status }) => ({
-        url: `/api/customer-portal/projects/${leadId}/meetings`,
+        url: `/api/customer/projects/${leadId}/meetings`,
         method: "GET",
         params: { page, limit, ...(status ? { status } : {}) },
       }),
