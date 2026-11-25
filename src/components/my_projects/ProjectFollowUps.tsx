@@ -4,7 +4,45 @@ import DarkBlueMailIcon from "../../assets/icon/DarkBlueMailIcon.svg";
 import PurpleBellIcon from "../../assets/icon/PurpleBellIcon.svg";
 import BlueMellIcon from "../../assets/icon/BlueMellIcon.svg";
 import { useGetProjectFollowUpsQuery, useGetProjectMeetingsQuery, type FollowUpItem, type MeetingItem } from "@/redux/api/projectsApi";
-import { Loader2 } from "lucide-react";
+import { Check, Copy, Loader2 } from "lucide-react";
+import { useState } from "react";
+
+/** Join only for a scheduled online meeting that has a link. */
+const isMeetingJoinable = (meeting: MeetingItem) =>
+  meeting.mode === "online" &&
+  meeting.status === "scheduled" &&
+  Boolean(meeting.meetingLink?.trim());
+
+const getMeetingStatusLabel = (meeting: MeetingItem) => {
+  if (meeting.status === "cancelled") return "Cancelled";
+  if (meeting.status === "completed") return "Completed";
+  if (meeting.status === "rescheduled") return "Rescheduled";
+  if (meeting.mode !== "online") return "In person";
+  return "Link pending";
+};
+
+const CopyLinkButton = ({ link }: { link: string }) => {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      type="button"
+      onClick={async () => {
+        try {
+          await navigator.clipboard.writeText(link);
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch {
+          // Clipboard unavailable — the Join button still works.
+        }
+      }}
+      className="flex items-center gap-1.5 text-xs text-(--text-color-gray-2) hover:underline cursor-pointer"
+      title="Copy meeting link"
+    >
+      {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? "Copied" : "Copy link"}
+    </button>
+  );
+};
 
 interface ProjectFollowUpsProps {
   leadId: string;
@@ -181,25 +219,38 @@ const ProjectFollowUps = ({ leadId }: ProjectFollowUpsProps) => {
                           </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => meeting.meetingLink && window.open(meeting.meetingLink, "_blank", "noopener,noreferrer")}
-                        className={cn(
-                          "flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-normal transition-colors min-w-[90px]",
-                          styles.buttonColor,
-                          meeting.meetingLink && "cursor-pointer hover:opacity-90"
-                        )}
-                      >
-                        <img
-                          src={
-                            meeting.mode === "online"
-                              ? GreenCallIcon
-                              : DarkBlueMailIcon
-                          }
-                          alt={meeting.mode}
-                          className="w-4 h-4"
-                        />
-                        {meeting.mode === "online" ? "Join" : "Meeting"}
-                      </button>
+                      {isMeetingJoinable(meeting) ? (
+                        <div className="flex flex-col items-end gap-2">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              window.open(meeting.meetingLink, "_blank", "noopener,noreferrer")
+                            }
+                            className={cn(
+                              "flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-normal transition-colors min-w-[90px] cursor-pointer hover:opacity-90",
+                              styles.buttonColor
+                            )}
+                          >
+                            <img src={GreenCallIcon} alt="online" className="w-4 h-4" />
+                            Join meeting
+                          </button>
+                          <CopyLinkButton link={meeting.meetingLink!} />
+                        </div>
+                      ) : (
+                        <span
+                          className={cn(
+                            "flex items-center gap-2 px-4 py-1.5 rounded-md text-sm font-normal min-w-[90px] opacity-80",
+                            styles.buttonColor
+                          )}
+                        >
+                          <img
+                            src={meeting.mode === "online" ? GreenCallIcon : DarkBlueMailIcon}
+                            alt={meeting.mode}
+                            className="w-4 h-4"
+                          />
+                          {getMeetingStatusLabel(meeting)}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>

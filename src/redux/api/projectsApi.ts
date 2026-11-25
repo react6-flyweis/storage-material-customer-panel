@@ -197,11 +197,13 @@ export const projectsApi = createApi({
       transformResponse: (response: GetProjectFollowUpsApiResponse) =>
         response.data as GetProjectFollowUpsResponseData,
     }),
+    // Customer portal meetings — per the Zoom FE handoff. Never includes
+    // the host start URL (zoomStartUrl).
     getProjectMeetings: builder.query<GetProjectMeetingsResponseData, GetProjectMeetingsParams>({
-      query: ({ leadId, page = 1, limit = 20 }) => ({
-        url: `/api/customer/projects/${leadId}/meetings`,
+      query: ({ leadId, page = 1, limit = 20, status }) => ({
+        url: `/api/customer-portal/projects/${leadId}/meetings`,
         method: "GET",
-        params: { page, limit },
+        params: { page, limit, ...(status ? { status } : {}) },
       }),
       transformResponse: (response: GetProjectMeetingsApiResponse) =>
         response.data as GetProjectMeetingsResponseData,
@@ -458,10 +460,12 @@ export interface MeetingItem {
   assignedTo: string;
   meetingTime: string;
   duration: number;
-  mode: string;
+  /** "online" | "offline" (older records may say "in-person"). */
+  mode: "online" | "offline" | "in-person" | string;
+  /** Public join URL. */
   meetingLink?: string;
   notes: string;
-  status: string;
+  status: "scheduled" | "completed" | "cancelled" | "rescheduled" | string;
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
@@ -472,6 +476,7 @@ export interface GetProjectMeetingsParams {
   leadId: string;
   page?: number;
   limit?: number;
+  status?: "scheduled" | "completed" | "cancelled" | "rescheduled";
 }
 
 export interface GetProjectMeetingsResponseData {
